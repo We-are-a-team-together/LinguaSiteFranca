@@ -2,21 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LinguaSiteFranca - Task View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.6/compressor.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
-        @media (max-width: 640px) {
-            .container-padding { padding: 1rem; }
-        }
-        @media (min-width: 641px) {
-            .container-padding { padding: 2rem; }
-        }
-    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -37,6 +29,77 @@
         </div>
     </div>
 
+    <!-- LANGUAGE SELECTION SCREEN -->
+    <div id="languageScreen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gray-100">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
+            <div class="text-center mb-6">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Select Your Language</h2>
+                <p class="text-gray-500 text-sm">Choose your preferred language for the app interface</p>
+            </div>
+            
+            <form id="languageForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Common Languages</label>
+                    <select id="commonLanguage" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base mb-3">
+                        <option value="">— Select or type below —</option>
+                        <option value="en">English</option>
+                        <option value="es">Español (Spanish)</option>
+                        <option value="fr">Français (French)</option>
+                        <option value="de">Deutsch (German)</option>
+                        <option value="it">Italiano (Italian)</option>
+                        <option value="pt">Português (Portuguese)</option>
+                        <option value="pl">Polski (Polish)</option>
+                        <option value="ro">Română (Romanian)</option>
+                        <option value="ru">Русский (Russian)</option>
+                        <option value="ar">العربية (Arabic)</option>
+                        <option value="zh">中文 (Chinese)</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="tr">Türkçe (Turkish)</option>
+                        <option value="nl">Nederlands (Dutch)</option>
+                        <option value="sv">Svenska (Swedish)</option>
+                        <option value="da">Dansk (Danish)</option>
+                        <option value="no">Norsk (Norwegian)</option>
+                        <option value="fi">Suomi (Finnish)</option>
+                        <option value="cs">Čeština (Czech)</option>
+                        <option value="sk">Slovenčina (Slovak)</option>
+                        <option value="hu">Magyar (Hungarian)</option>
+                        <option value="bg">Български (Bulgarian)</option>
+                        <option value="hr">Hrvatski (Croatian)</option>
+                        <option value="sr">Srpski (Serbian)</option>
+                        <option value="sl">Slovenščina (Slovenian)</option>
+                        <option value="uk">Українська (Ukrainian)</option>
+                        <option value="el">Ελληνικά (Greek)</option>
+                        <option value="he">עברית (Hebrew)</option>
+                        <option value="fa">فارسی (Persian)</option>
+                        <option value="ur">اردو (Urdu)</option>
+                        <option value="bn">বাংলা (Bengali)</option>
+                        <option value="ta">தமிழ் (Tamil)</option>
+                        <option value="te">తెలుగు (Telugu)</option>
+                        <option value="mr">मराठी (Marathi)</option>
+                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                        <option value="ml">മലയാളം (Malayalam)</option>
+                        <option value="th">ไทย (Thai)</option>
+                        <option value="vi">Tiếng Việt (Vietnamese)</option>
+                        <option value="id">Bahasa Indonesia (Indonesian)</option>
+                        <option value="ms">Bahasa Melayu (Malay)</option>
+                        <option value="tl">Tagalog (Filipino)</option>
+                        <option value="ja">日本語 (Japanese)</option>
+                        <option value="ko">한국어 (Korean)</option>
+                    </select>
+                    
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Or Type Your Language</label>
+                    <input type="text" id="customLanguage" placeholder="e.g., Albanian, Lithuanian, Latvian..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                    <p class="text-xs text-gray-500 mt-1">If your language is not listed above, type it here</p>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">
+                    Continue
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- TASK INTERFACE -->
     <div id="taskInterface" class="hidden min-h-screen flex flex-col">
         <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
@@ -49,7 +112,7 @@
             </div>
         </header>
 
-        <main class="flex-1 container-padding max-w-lg mx-auto w-full space-y-4 sm:space-y-6">
+        <main class="flex-1 p-4 max-w-lg mx-auto w-full space-y-4 sm:space-y-6">
             
             <!-- Task Card -->
             <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-l-4 border-blue-500">
@@ -73,6 +136,7 @@
                     <input type="file" id="photoInput" accept="image/*" capture="environment" multiple class="block w-full text-xs sm:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
                     <p class="text-xs text-gray-500 mt-1">Tap to take a photo or select from gallery</p>
                     <p id="photoCount" class="text-xs text-blue-600 mt-1 font-medium"></p>
+                    <p id="photoSize" class="text-xs text-green-600 mt-1 font-medium"></p>
                 </div>
 
                 <div>
@@ -110,7 +174,9 @@
 
         let currentUser = null;
         let currentTaskId = null;
+        let authHandled = false;
 
+        // Branding Listener
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
                 const b = doc.data();
@@ -128,23 +194,66 @@
             }
         });
 
+        // Auth State with Language Check
         auth.onAuthStateChanged(async (user) => {
+            if (authHandled) return;
+            
             if (user) {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().role === 'operative') {
-                    currentUser = { uid: user.uid, ...userDoc.data() };
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('taskInterface').classList.remove('hidden');
-                    loadTask();
-                } else {
-                    alert("Access denied. Field workers only.");
-                    auth.signOut();
+                try {
+                    authHandled = true;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        console.error('User document not found');
+                        await auth.signOut();
+                        showLogin();
+                        authHandled = false;
+                        return;
+                    }
+                    
+                    const userData = userDoc.data();
+                    
+                    if (userData.role !== 'operative') {
+                        console.error('User is not an operative');
+                        await auth.signOut();
+                        showLogin();
+                        authHandled = false;
+                        return;
+                    }
+                    
+                    currentUser = { uid: user.uid, ...userData };
+                    
+                    // Check if language is selected
+                    if (!userData.languageSelected || !userData.nativeLanguage) {
+                        // Show language selection
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('taskInterface').classList.add('hidden');
+                        document.getElementById('languageScreen').classList.remove('hidden');
+                    } else {
+                        // Language already selected, show task interface
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('languageScreen').classList.add('hidden');
+                        document.getElementById('taskInterface').classList.remove('hidden');
+                        loadTask();
+                    }
+                    
+                    authHandled = false;
+                    
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    authHandled = false;
                 }
             } else {
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('taskInterface').classList.add('hidden');
+                showLogin();
+                authHandled = false;
             }
         });
+
+        function showLogin() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('languageScreen').classList.add('hidden');
+            document.getElementById('taskInterface').classList.add('hidden');
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -158,12 +267,61 @@
             }
         });
 
+        // Language Selection Handler
+        document.getElementById('languageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const commonLang = document.getElementById('commonLanguage').value;
+            const customLang = document.getElementById('customLanguage').value.trim();
+            
+            let selectedLanguage = '';
+            let languageName = '';
+            
+            if (customLang) {
+                // User typed a custom language
+                selectedLanguage = customLang.toLowerCase().replace(/\s+/g, '_');
+                languageName = customLang;
+            } else if (commonLang) {
+                // User selected from dropdown
+                selectedLanguage = commonLang;
+                // Get the display name from the select element
+                const selectElement = document.getElementById('commonLanguage');
+                languageName = selectElement.options[selectElement.selectedIndex].text;
+            } else {
+                alert('Please select or type your language');
+                return;
+            }
+            
+            try {
+                // Save language to user profile
+                await db.collection('users').doc(currentUser.uid).update({
+                    nativeLanguage: selectedLanguage,
+                    languageDisplayName: languageName,
+                    languageSelected: true
+                });
+                
+                // Update currentUser
+                currentUser.nativeLanguage = selectedLanguage;
+                
+                // Show task interface
+                document.getElementById('languageScreen').classList.add('hidden');
+                document.getElementById('taskInterface').classList.remove('hidden');
+                
+                alert(`✅ Language set to: ${languageName}`);
+                loadTask();
+                
+            } catch (error) {
+                alert(' Error saving language: ' + error.message);
+            }
+        });
+
         document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
 
-        // Photo count display
+        // Photo count and size display
         document.getElementById('photoInput').addEventListener('change', (e) => {
             const count = e.target.files.length;
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) selected` : '';
+            document.getElementById('photoSize').innerText = '';
         });
 
         async function loadTask() {
@@ -211,22 +369,29 @@
                 return;
             }
 
+            if (photoInput.files.length > 3) {
+                alert("Maximum 3 photos allowed per task.");
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.innerText = "Compressing photos...";
 
             try {
                 const compressedPhotos = [];
                 let processed = 0;
+                let totalSize = 0;
 
                 for (let i = 0; i < photoInput.files.length; i++) {
                     const file = photoInput.files[i];
                     
                     await new Promise((resolve, reject) => {
                         new Compressor(file, {
-                            quality: 0.5,
-                            maxWidth: 1024,
-                            maxHeight: 1024,
+                            quality: 0.4,
+                            maxWidth: 800,
+                            maxHeight: 800,
                             mimeType: 'image/jpeg',
+                            convertSize: 80000,
                             success: (compressedFile) => {
                                 const reader = new FileReader();
                                 reader.onload = () => {
@@ -235,7 +400,9 @@
                                         name: compressedFile.name,
                                         size: compressedFile.size
                                     });
+                                    totalSize += compressedFile.size;
                                     processed++;
+                                    document.getElementById('photoSize').innerText = `Total size: ${(totalSize / 1024).toFixed(1)}KB`;
                                     if (processed === photoInput.files.length) {
                                         resolve();
                                     }
@@ -247,6 +414,10 @@
                             }
                         });
                     });
+                }
+
+                if (totalSize > 900000) {
+                    throw new Error('Photos are too large. Please try fewer or smaller photos.');
                 }
 
                 submitBtn.innerText = "Uploading...";
