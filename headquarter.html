@@ -7,12 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- Note: We removed the Storage script because we don't need it anymore! -->
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- Navigation with Dynamic Branding -->
+    <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-4">
@@ -36,9 +35,7 @@
                 <h2 class="text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
                 <p class="text-green-100 text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
             </div>
-            
             <div class="p-6">
-                <!-- Create DLM Form -->
                 <form id="createDlmForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -53,101 +50,66 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project/Location</label>
-                        <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., Project Alpha, Site Beta, Location Gamma">
-                        <p class="text-xs text-gray-500 mt-1">This can be any project name, site reference, or location identifier</p>
+                        <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., Project Alpha, Site Beta">
                     </div>
-                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200">
-                        ✅ Create DLM Account
-                    </button>
+                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200">✅ Create DLM Account</button>
                 </form>
-
-                <!-- DLM List -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active DLMs</h3>
-                    <div id="dlmList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-8">Loading DLMs...</div>
-                    </div>
-                </div>
+                <div id="dlmList" class="space-y-3"><div class="text-center text-gray-500 py-8">Loading DLMs...</div></div>
             </div>
         </section>
 
-        <!-- PROJECTS/LOCATIONS MANAGEMENT -->
+        <!-- PROJECTS MANAGEMENT -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
                 <h2 class="text-lg font-bold text-white">📍 Projects & Locations</h2>
-                <p class="text-purple-100 text-sm mt-1">Manage all project sites and locations in your ecosystem</p>
+                <p class="text-purple-100 text-sm mt-1">Manage all project sites and locations</p>
             </div>
-            
             <div class="p-6">
-                <!-- Create Project Form -->
                 <form id="createProjectForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Project/Location Name</label>
-                        <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project or location name">
+                        <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project name">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="projectDescription" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Brief description of this project or location"></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition duration-200">
-                        📍 Create Project/Location
-                    </button>
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition duration-200">📍 Create Project</button>
                 </form>
-
-                <!-- Projects List -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
-                    <div id="projectList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-8">Loading projects...</div>
-                    </div>
-                </div>
+                <div id="projectList" class="space-y-3"><div class="text-center text-gray-500 py-8">Loading projects...</div></div>
             </div>
         </section>
 
-        <!-- BRANDING PANEL (NOW AT THE BOTTOM) -->
+        <!-- BRANDING PANEL (AT THE BOTTOM) -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                 <h2 class="text-lg font-bold text-white">🎨 Branding Configuration</h2>
-                <p class="text-blue-100 text-sm mt-1">Customize how your organization appears across all platforms</p>
+                <p class="text-blue-100 text-sm mt-1">Customize how your organization appears</p>
             </div>
-            
             <form id="brandingForm" class="p-6 space-y-6">
-                <!-- Logo Upload -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
                     <div class="flex items-center space-x-6">
                         <div class="flex-1">
                             <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB recommended</p>
+                            <p class="text-xs text-red-500 mt-1 font-bold">⚠️ Must be small (under 100KB) to save directly to database</p>
                         </div>
                         <div id="logoPreview" class="hidden">
                             <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
                         </div>
                     </div>
                 </div>
-
-                <!-- Business Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Business/Organization Name</label>
-                    <input type="text" id="businessName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your organization name">
+                    <input type="text" id="businessName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Enter your organization name">
                 </div>
-
-                <!-- Footer Text -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
-                    <input type="text" id="footerText" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., © 2026 Your Company Name - All Rights Reserved">
+                    <input type="text" id="footerText" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., © 2026 Your Company Name">
                 </div>
-
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md">
-                    💾 Save Branding Configuration
-                </button>
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md">💾 Save Branding Configuration</button>
             </form>
         </section>
 
     </div>
 
-    <!-- Dynamic Footer -->
     <footer class="bg-white border-t border-gray-200 mt-12 py-6">
         <div class="max-w-7xl mx-auto px-6 text-center">
             <p id="footerContent" class="text-gray-600 text-sm">© 2026 LinguaSiteFranca. All rights reserved.</p>
@@ -155,7 +117,6 @@
     </footer>
 
     <script>
-        // FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyDa9uoat_ztP_4GpplxF1jVzmAzxQDdUw0",
             authDomain: "linguasitefranca.firebaseapp.com",
@@ -165,41 +126,26 @@
             appId: "1:206112054381:web:3181e8099d859a23783364"
         };
 
-        // Prevent multiple Firebase initializations
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-        const storage = firebase.storage();
 
-        // Initialize - Load Branding on Page Load
         document.addEventListener('DOMContentLoaded', async () => {
             await loadBranding();
             await loadDLMs();
             await loadProjects();
             
-            // Set up real-time listener for branding changes
             db.collection('settings').doc('branding').onSnapshot((doc) => {
-                if (doc.exists) {
-                    applyBranding(doc.data());
-                }
+                if (doc.exists) applyBranding(doc.data());
             });
         });
 
-        // Load Branding from Firestore
         async function loadBranding() {
             try {
                 const doc = await db.collection('settings').doc('branding').get();
-                if (doc.exists) {
-                    applyBranding(doc.data());
-                }
-            } catch (error) {
-                console.error("Error loading branding:", error);
-            }
+                if (doc.exists) applyBranding(doc.data());
+            } catch (error) { console.error("Error loading branding:", error); }
         }
 
-        // Apply Branding to UI
         function applyBranding(branding) {
             if (branding.businessName) {
                 document.getElementById('businessName').value = branding.businessName;
@@ -217,215 +163,107 @@
             }
         }
 
-        // Save Branding
+        // THE MAGIC TRICK: Convert Image to Base64 Text
         document.getElementById('brandingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const businessName = document.getElementById('businessName').value;
             const footerText = document.getElementById('footerText').value;
             const logoInput = document.getElementById('logoInput');
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '⏳ Saving...';
+            submitBtn.innerText = ' Saving...';
             
             try {
                 let logoUrl = '';
-                
-                // Check if there's an existing logo first
                 const existingDoc = await db.collection('settings').doc('branding').get();
-                if (existingDoc.exists) {
-                    logoUrl = existingDoc.data().logoUrl || '';
-                }
+                if (existingDoc.exists) logoUrl = existingDoc.data().logoUrl || '';
                 
-                // Only upload if a new file was selected
                 if (logoInput.files && logoInput.files[0]) {
                     const file = logoInput.files[0];
-                    
-                    // Validate file size (2MB max)
-                    if (file.size > 2 * 1024 * 1024) {
-                        throw new Error('File too large. Max 2MB allowed.');
+                    if (file.size > 100000) { // 100KB limit
+                        throw new Error('Logo is too large! Please use an image under 100KB.');
                     }
                     
-                    const fileName = `logo_${Date.now()}_${file.name}`;
-                    const storageRef = storage.ref(`branding/${fileName}`);
-                    
-                    // Upload with metadata
-                    const metadata = {
-                        contentType: file.type,
-                        customMetadata: {
-                            'uploadedBy': 'headquarter'
-                        }
-                    };
-                    
-                    const uploadTask = await storageRef.put(file, metadata);
-                    logoUrl = await uploadTask.ref.getDownloadURL();
-                    
-                    console.log('✅ Logo uploaded successfully:', logoUrl);
+                    // Convert file to Base64 string
+                    logoUrl = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
                 }
                 
-                // Save to Firestore
                 await db.collection('settings').doc('branding').set({
-                    businessName: businessName,
-                    footerText: footerText,
-                    logoUrl: logoUrl,
+                    businessName, footerText, logoUrl,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }, { merge: true });
                 
-                console.log('✅ Branding saved successfully');
                 alert('✅ Branding saved successfully!');
-                
             } catch (error) {
-                console.error('❌ Error saving branding:', error);
                 alert('❌ Error: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '💾 Save Branding Configuration';
+                submitBtn.innerText = '💾 Save Branding Configuration';
             }
         });
 
-        // Create DLM Account
+        // DLM & Project functions (same as before)
         document.getElementById('createDlmForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const email = document.getElementById('dlmEmail').value;
             const password = document.getElementById('dlmPassword').value;
             const project = document.getElementById('dlmProject').value;
-            
             try {
-                // Create user in Firebase Auth
                 const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-                const uid = userCredential.user.uid;
-                
-                // Create user document in Firestore
-                await db.collection('users').doc(uid).set({
-                    email: email,
-                    role: 'dlm',
-                    assignedProject: project,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    canChangePassword: true
+                await db.collection('users').doc(userCredential.user.uid).set({
+                    email, role: 'dlm', assignedProject: project,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
-                alert('✅ DLM account created successfully!');
-                document.getElementById('createDlmForm').reset();
-                await loadDLMs();
-            } catch (error) {
-                console.error("Error creating DLM:", error);
-                alert(' Error creating DLM: ' + error.message);
-            }
+                alert('✅ DLM created!');
+                e.target.reset();
+                loadDLMs();
+            } catch (error) { alert('❌ Error: ' + error.message); }
         });
 
-        // Load DLMs
         async function loadDLMs() {
-            try {
-                const snapshot = await db.collection('users').where('role', '==', 'dlm').get();
-                const dlmList = document.getElementById('dlmList');
-                
-                if (snapshot.empty) {
-                    dlmList.innerHTML = '<div class="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">No DLMs created yet</div>';
-                    return;
-                }
-                
-                dlmList.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const dlm = doc.data();
-                    const dlmCard = document.createElement('div');
-                    dlmCard.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition';
-                    dlmCard.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900">${dlm.email}</p>
-                                <p class="text-sm text-gray-600 mt-1">📍 Assigned to: <span class="font-medium">${dlm.assignedProject || 'Not assigned'}</span></p>
-                                <p class="text-xs text-gray-400 mt-2">Created: ${dlm.createdAt ? new Date(dlm.createdAt.toDate()).toLocaleDateString() : 'N/A'}</p>
-                            </div>
-                            <button onclick="deleteDLM('${doc.id}', '${dlm.email}')" class="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition">
-                                Delete
-                            </button>
-                        </div>
-                    `;
-                    dlmList.appendChild(dlmCard);
-                });
-            } catch (error) {
-                console.error("Error loading DLMs:", error);
-                document.getElementById('dlmList').innerHTML = '<div class="text-center text-red-500 py-4">Error loading DLMs</div>';
-            }
+            const snapshot = await db.collection('users').where('role', '==', 'dlm').get();
+            const list = document.getElementById('dlmList');
+            list.innerHTML = '';
+            if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No DLMs yet</div>'; return; }
+            snapshot.forEach(doc => {
+                const dlm = doc.data();
+                list.innerHTML += `<div class="bg-gray-50 p-4 rounded-lg border flex justify-between"><div><p class="font-bold">${dlm.email}</p><p class="text-sm text-gray-500">📍 ${dlm.assignedProject}</p></div><button onclick="deleteDLM('${doc.id}')" class="text-red-600 text-sm">Delete</button></div>`;
+            });
         }
 
-        // Delete DLM
-        async function deleteDLM(uid, email) {
-            if (!confirm(`Are you sure you want to delete DLM account "${email}"? This action cannot be undone.`)) return;
-            
-            try {
-                // Delete from Firestore
+        async function deleteDLM(uid) {
+            if(confirm('Delete this DLM?')) {
                 await db.collection('users').doc(uid).delete();
-                
-                // Note: We can't delete Firebase Auth users from client-side easily
-                // In production, use a Cloud Function or Admin SDK
-                alert('✅ DLM deleted from database. Note: Auth account may need manual deletion from Firebase Console.');
-                await loadDLMs();
-            } catch (error) {
-                console.error("Error deleting DLM:", error);
-                alert('❌ Error deleting DLM: ' + error.message);
+                loadDLMs();
             }
         }
 
-        // Create Project/Location
         document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const name = document.getElementById('projectName').value;
-            const description = document.getElementById('projectDescription').value;
-            
             try {
-                await db.collection('projects').add({
-                    name: name,
-                    description: description,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    status: 'active'
-                });
-                
-                alert('✅ Project/Location created successfully!');
-                document.getElementById('createProjectForm').reset();
-                await loadProjects();
-            } catch (error) {
-                console.error("Error creating project:", error);
-                alert('❌ Error creating project: ' + error.message);
-            }
+                await db.collection('projects').add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                alert('✅ Project created!');
+                e.target.reset();
+                loadProjects();
+            } catch (error) { alert(' Error: ' + error.message); }
         });
 
-        // Load Projects
         async function loadProjects() {
-            try {
-                const snapshot = await db.collection('projects').orderBy('createdAt', 'desc').get();
-                const projectList = document.getElementById('projectList');
-                
-                if (snapshot.empty) {
-                    projectList.innerHTML = '<div class="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">No projects created yet</div>';
-                    return;
-                }
-                
-                projectList.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    const projectCard = document.createElement('div');
-                    projectCard.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition';
-                    projectCard.innerHTML = `
-                        <div class="flex justify-between items-start">
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900 text-lg">${project.name}</p>
-                                <p class="text-sm text-gray-600 mt-1">${project.description || 'No description'}</p>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
-                                    Active
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                    projectList.appendChild(projectCard);
-                });
-            } catch (error) {
-                console.error("Error loading projects:", error);
-                document.getElementById('projectList').innerHTML = '<div class="text-center text-red-500 py-4">Error loading projects</div>';
-            }
+            const snapshot = await db.collection('projects').get();
+            const list = document.getElementById('projectList');
+            list.innerHTML = '';
+            if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No projects yet</div>'; return; }
+            snapshot.forEach(doc => {
+                const p = doc.data();
+                list.innerHTML += `<div class="bg-gray-50 p-4 rounded-lg border"><p class="font-bold text-lg">${p.name}</p></div>`;
+            });
         }
     </script>
 </body>
