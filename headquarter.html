@@ -8,20 +8,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
-        @media (max-width: 640px) {
-            .container-padding { padding: 1rem; }
-            .form-grid { grid-template-columns: 1fr; }
-        }
-        @media (min-width: 641px) {
-            .container-padding { padding: 2rem; }
-            .form-grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3 sm:space-x-4">
@@ -37,7 +26,7 @@
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto container-padding space-y-6 sm:space-y-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
 
         <!-- DLM MANAGEMENT -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -48,7 +37,11 @@
             <div class="p-4 sm:p-6">
                 <form id="createDlmForm" class="space-y-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
-                    <div class="form-grid gap-3 sm:gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">DLM Full Name</label>
+                        <input type="text" id="dlmName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="e.g., John Smith">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">DLM Email Address</label>
                             <input type="email" id="dlmEmail" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="manager@organization.com">
@@ -97,7 +90,7 @@
             </div>
         </section>
 
-        <!-- BRANDING PANEL (AT THE BOTTOM) -->
+        <!-- BRANDING PANEL -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4">
                 <h2 class="text-base sm:text-lg font-bold text-white">🎨 Branding Configuration</h2>
@@ -109,7 +102,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
                         <div class="flex-1 w-full">
                             <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <p class="text-xs text-red-500 mt-1 font-bold">⚠️ Must be small (under 100KB)</p>
+                            <p class="text-xs text-red-500 mt-1 font-bold">️ Must be small (under 100KB)</p>
                         </div>
                         <div id="logoPreview" class="hidden">
                             <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
@@ -124,7 +117,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
                     <input type="text" id="footerText" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="e.g., © 2026 Your Company Name">
                 </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md text-sm sm:text-base">💾 Save Branding Configuration</button>
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md text-sm sm:text-base"> Save Branding Configuration</button>
             </form>
         </section>
 
@@ -192,7 +185,7 @@
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
             submitBtn.disabled = true;
-            submitBtn.innerText = ' Saving...';
+            submitBtn.innerText = '⏳ Saving...';
             
             try {
                 let logoUrl = '';
@@ -229,20 +222,21 @@
 
         document.getElementById('createDlmForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const name = document.getElementById('dlmName').value;
             const email = document.getElementById('dlmEmail').value;
             const password = document.getElementById('dlmPassword').value;
             const project = document.getElementById('dlmProject').value;
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 await db.collection('users').doc(userCredential.user.uid).set({
-                    email, role: 'dlm', assignedProject: project,
+                    name, email, role: 'dlm', assignedProject: project,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 alert('✅ DLM created successfully!');
                 e.target.reset();
                 loadDLMs();
             } catch (error) {
-                alert(' Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             }
         });
 
@@ -253,7 +247,7 @@
             if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No DLMs yet</div>'; return; }
             snapshot.forEach(doc => {
                 const dlm = doc.data();
-                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0"><div><p class="font-bold text-sm sm:text-base">${dlm.email}</p><p class="text-xs sm:text-sm text-gray-500">📍 ${dlm.assignedProject}</p></div><button onclick="deleteDLM('${doc.id}')" class="text-red-600 text-xs sm:text-sm hover:text-red-800">Delete</button></div>`;
+                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0"><div><p class="font-bold text-sm sm:text-base">${dlm.name || 'No name'}</p><p class="text-xs sm:text-sm text-gray-500">${dlm.email} • 📍 ${dlm.assignedProject}</p></div><button onclick="deleteDLM('${doc.id}')" class="text-red-600 text-xs sm:text-sm hover:text-red-800">Delete</button></div>`;
             });
         }
 
