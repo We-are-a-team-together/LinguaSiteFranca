@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinguaSiteFranca - Head Office</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FIREBASE SDKs - ALL REQUIRED ONES -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <!-- Note: We removed the Storage script because we don't need it anymore! -->
+    <!-- We don't need storage anymore since we use Base64 -->
 </head>
 <body class="bg-gray-50 min-h-screen">
 
@@ -77,7 +80,7 @@
             </div>
         </section>
 
-        <!-- BRANDING PANEL (AT THE BOTTOM) -->
+        <!-- BRANDING PANEL -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                 <h2 class="text-lg font-bold text-white">🎨 Branding Configuration</h2>
@@ -89,7 +92,7 @@
                     <div class="flex items-center space-x-6">
                         <div class="flex-1">
                             <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <p class="text-xs text-red-500 mt-1 font-bold">⚠️ Must be small (under 100KB) to save directly to database</p>
+                            <p class="text-xs text-red-500 mt-1 font-bold">️ Must be small (under 100KB)</p>
                         </div>
                         <div id="logoPreview" class="hidden">
                             <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
@@ -127,6 +130,8 @@
         };
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        
+        const auth = firebase.auth(); // NOW THIS WORKS!
         const db = firebase.firestore();
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -163,7 +168,6 @@
             }
         }
 
-        // THE MAGIC TRICK: Convert Image to Base64 Text
         document.getElementById('brandingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const businessName = document.getElementById('businessName').value;
@@ -172,7 +176,7 @@
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
             submitBtn.disabled = true;
-            submitBtn.innerText = ' Saving...';
+            submitBtn.innerText = '⏳ Saving...';
             
             try {
                 let logoUrl = '';
@@ -181,11 +185,10 @@
                 
                 if (logoInput.files && logoInput.files[0]) {
                     const file = logoInput.files[0];
-                    if (file.size > 100000) { // 100KB limit
+                    if (file.size > 100000) {
                         throw new Error('Logo is too large! Please use an image under 100KB.');
                     }
                     
-                    // Convert file to Base64 string
                     logoUrl = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result);
@@ -208,22 +211,23 @@
             }
         });
 
-        // DLM & Project functions (same as before)
         document.getElementById('createDlmForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('dlmEmail').value;
             const password = document.getElementById('dlmPassword').value;
             const project = document.getElementById('dlmProject').value;
             try {
-                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 await db.collection('users').doc(userCredential.user.uid).set({
                     email, role: 'dlm', assignedProject: project,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                alert('✅ DLM created!');
+                alert('✅ DLM created successfully!');
                 e.target.reset();
                 loadDLMs();
-            } catch (error) { alert('❌ Error: ' + error.message); }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
         });
 
         async function loadDLMs() {
@@ -252,7 +256,7 @@
                 alert('✅ Project created!');
                 e.target.reset();
                 loadProjects();
-            } catch (error) { alert(' Error: ' + error.message); }
+            } catch (error) { alert('❌ Error: ' + error.message); }
         });
 
         async function loadProjects() {
