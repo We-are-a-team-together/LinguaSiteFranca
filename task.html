@@ -2,7 +2,111 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content=<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LinguaSiteFranca - Task View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add Compressor.js for client-side image compression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.6/compressor.min.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- ... [ALL THE SAME HTML AS BEFORE] ... -->
+
+    <script>
+        // ... [ALL THE SAME JAVASCRIPT AS BEFORE] ...
+
+        // COMPRESSED PHOTO UPLOAD (NO STORAGE NEEDED)
+        document.getElementById('submitTaskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const photoInput = document.getElementById('photoInput');
+            const comment = document.getElementById('operativeComment').value;
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (photoInput.files.length === 0) {
+                alert("Please attach at least 1 photo.");
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Compressing...";
+
+            try {
+                const compressedPhotos = [];
+                for (let i = 0; i < photoInput.files.length; i++) {
+                    const file = photoInput.files[i];
+                    
+                    // Compress the image to under 100KB
+                    const compressor = new Compressor(file, {
+                        quality: 50, // 50% quality (adjust as needed)
+                        maxWidth: 1024, // Max width for compression
+                        maxHeight: 1024,
+                        mimeType: 'image/jpeg',
+                        convertSize: 100 * 1024, // Target: 100KB
+                        success: (compressedFile) => {
+                            // Convert to Base64
+                            const reader = new FileReader();
+                            reader.onload = () => {
+                                compressedPhotos.push({
+                                    data: reader.result, // Base64 string
+                                    name: compressedFile.name,
+                                    size: compressedFile.size
+                                });
+                                if (compressedPhotos.length === photoInput.files.length) {
+                                    submitTask(compressedPhotos, comment);
+                                }
+                            };
+                            reader.readAsDataURL(compressedFile);
+                        },
+                        error: (err) => {
+                            console.error('Compression error:', err);
+                            alert('Error compressing photo. Please try a smaller image.');
+                            submitBtn.disabled = false;
+                            submitBtn.innerText = "Submit Task";
+                        }
+                    });
+                }
+            } catch (error) {
+                alert("Error: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Task";
+            }
+        });
+
+        // Submit the task with compressed photos
+        async function submitTask(compressedPhotos, comment) {
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerText = "Uploading...";
+
+            try {
+                // Save Base64 photos directly to Firestore
+                await db.collection('tasks').doc(currentTaskId).update({
+                    status: 'submitted',
+                    operative_comment_native: comment,
+                    operative_comment_en: '', // Will be translated later
+                    photos: compressedPhotos, // Base64 strings
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert("✅ Task submitted successfully!");
+                window.location.reload();
+            } catch (error) {
+                alert("❌ Error: " + error.message);
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Task";
+            }
+        }
+    </script>
+</body>
+</html>"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LinguaSiteFranca - Task View</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
