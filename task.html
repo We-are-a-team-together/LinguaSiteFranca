@@ -12,7 +12,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
             <div class="text-center mb-6 sm:mb-8">
@@ -29,7 +28,6 @@
         </div>
     </div>
 
-    <!-- LANGUAGE SELECTION SCREEN -->
     <div id="languageScreen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gray-100">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
             <div class="text-center mb-6">
@@ -86,6 +84,10 @@
                         <option value="tl">Tagalog (Filipino)</option>
                         <option value="ja">日本語 (Japanese)</option>
                         <option value="ko">한국어 (Korean)</option>
+                        <option value="sq">Shqip (Albanian)</option>
+                        <option value="lt">Lietuvių (Lithuanian)</option>
+                        <option value="lv">Latviešu (Latvian)</option>
+                        <option value="et">Eesti (Estonian)</option>
                     </select>
                     
                     <label class="block text-sm font-medium text-gray-700 mb-1">Or Type Your Language</label>
@@ -100,7 +102,6 @@
         </div>
     </div>
 
-    <!-- TASK INTERFACE -->
     <div id="taskInterface" class="hidden min-h-screen flex flex-col">
         <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
             <div class="max-w-lg mx-auto flex justify-between items-center">
@@ -114,20 +115,17 @@
 
         <main class="flex-1 p-4 max-w-lg mx-auto w-full space-y-4 sm:space-y-6">
             
-            <!-- Task Card -->
             <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-l-4 border-blue-500">
                 <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">Your Assigned Task</h2>
                 <p id="taskDescription" class="text-base sm:text-lg font-semibold text-gray-800">Loading task...</p>
                 <div id="taskStatusBadge" class="mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">Pending</div>
             </div>
 
-            <!-- DLM Feedback -->
             <div id="feedbackSection" class="hidden bg-orange-50 rounded-xl shadow-sm p-4 sm:p-6 border-l-4 border-orange-500">
                 <h2 class="text-xs font-bold text-orange-700 uppercase mb-2">Manager Feedback</h2>
                 <p id="dlmFeedback" class="text-sm sm:text-base text-gray-800 italic"></p>
             </div>
 
-            <!-- Submission Form -->
             <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 space-y-4">
                 <h2 class="text-base sm:text-lg font-bold text-gray-800 mb-2">Submit Completion</h2>
                 
@@ -176,7 +174,6 @@
         let currentTaskId = null;
         let authHandled = false;
 
-        // Branding Listener
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
                 const b = doc.data();
@@ -194,7 +191,6 @@
             }
         });
 
-        // Auth State with Language Check
         auth.onAuthStateChanged(async (user) => {
             if (authHandled) return;
             
@@ -223,14 +219,11 @@
                     
                     currentUser = { uid: user.uid, ...userData };
                     
-                    // Check if language is selected
                     if (!userData.languageSelected || !userData.nativeLanguage) {
-                        // Show language selection
                         document.getElementById('loginScreen').classList.add('hidden');
                         document.getElementById('taskInterface').classList.add('hidden');
                         document.getElementById('languageScreen').classList.remove('hidden');
                     } else {
-                        // Language already selected, show task interface
                         document.getElementById('loginScreen').classList.add('hidden');
                         document.getElementById('languageScreen').classList.add('hidden');
                         document.getElementById('taskInterface').classList.remove('hidden');
@@ -267,7 +260,6 @@
             }
         });
 
-        // Language Selection Handler
         document.getElementById('languageForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -278,13 +270,10 @@
             let languageName = '';
             
             if (customLang) {
-                // User typed a custom language
                 selectedLanguage = customLang.toLowerCase().replace(/\s+/g, '_');
                 languageName = customLang;
             } else if (commonLang) {
-                // User selected from dropdown
                 selectedLanguage = commonLang;
-                // Get the display name from the select element
                 const selectElement = document.getElementById('commonLanguage');
                 languageName = selectElement.options[selectElement.selectedIndex].text;
             } else {
@@ -293,17 +282,14 @@
             }
             
             try {
-                // Save language to user profile
                 await db.collection('users').doc(currentUser.uid).update({
                     nativeLanguage: selectedLanguage,
                     languageDisplayName: languageName,
                     languageSelected: true
                 });
                 
-                // Update currentUser
                 currentUser.nativeLanguage = selectedLanguage;
                 
-                // Show task interface
                 document.getElementById('languageScreen').classList.add('hidden');
                 document.getElementById('taskInterface').classList.remove('hidden');
                 
@@ -311,13 +297,12 @@
                 loadTask();
                 
             } catch (error) {
-                alert(' Error saving language: ' + error.message);
+                alert('❌ Error saving language: ' + error.message);
             }
         });
 
         document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
 
-        // Photo count and size display
         document.getElementById('photoInput').addEventListener('change', (e) => {
             const count = e.target.files.length;
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) selected` : '';
@@ -434,7 +419,7 @@
                 window.location.reload();
 
             } catch (error) {
-                alert("❌ Error: " + error.message);
+                alert(" Error: " + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Submit Task";
             }
