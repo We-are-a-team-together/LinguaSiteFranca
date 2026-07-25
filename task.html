@@ -2,191 +2,91 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content=<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinguaSiteFranca - Task View</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Add Compressor.js for client-side image compression -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.6/compressor.min.js"></script>
-    
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
-
-    <!-- ... [ALL THE SAME HTML AS BEFORE] ... -->
-
-    <script>
-        // ... [ALL THE SAME JAVASCRIPT AS BEFORE] ...
-
-        // COMPRESSED PHOTO UPLOAD (NO STORAGE NEEDED)
-        document.getElementById('submitTaskForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const photoInput = document.getElementById('photoInput');
-            const comment = document.getElementById('operativeComment').value;
-            const submitBtn = document.getElementById('submitBtn');
-
-            if (photoInput.files.length === 0) {
-                alert("Please attach at least 1 photo.");
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Compressing...";
-
-            try {
-                const compressedPhotos = [];
-                for (let i = 0; i < photoInput.files.length; i++) {
-                    const file = photoInput.files[i];
-                    
-                    // Compress the image to under 100KB
-                    const compressor = new Compressor(file, {
-                        quality: 50, // 50% quality (adjust as needed)
-                        maxWidth: 1024, // Max width for compression
-                        maxHeight: 1024,
-                        mimeType: 'image/jpeg',
-                        convertSize: 100 * 1024, // Target: 100KB
-                        success: (compressedFile) => {
-                            // Convert to Base64
-                            const reader = new FileReader();
-                            reader.onload = () => {
-                                compressedPhotos.push({
-                                    data: reader.result, // Base64 string
-                                    name: compressedFile.name,
-                                    size: compressedFile.size
-                                });
-                                if (compressedPhotos.length === photoInput.files.length) {
-                                    submitTask(compressedPhotos, comment);
-                                }
-                            };
-                            reader.readAsDataURL(compressedFile);
-                        },
-                        error: (err) => {
-                            console.error('Compression error:', err);
-                            alert('Error compressing photo. Please try a smaller image.');
-                            submitBtn.disabled = false;
-                            submitBtn.innerText = "Submit Task";
-                        }
-                    });
-                }
-            } catch (error) {
-                alert("Error: " + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Submit Task";
-            }
-        });
-
-        // Submit the task with compressed photos
-        async function submitTask(compressedPhotos, comment) {
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.innerText = "Uploading...";
-
-            try {
-                // Save Base64 photos directly to Firestore
-                await db.collection('tasks').doc(currentTaskId).update({
-                    status: 'submitted',
-                    operative_comment_native: comment,
-                    operative_comment_en: '', // Will be translated later
-                    photos: compressedPhotos, // Base64 strings
-                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                alert("✅ Task submitted successfully!");
-                window.location.reload();
-            } catch (error) {
-                alert("❌ Error: " + error.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Submit Task";
-            }
+    <style>
+        @media (max-width: 640px) {
+            .container-padding { padding: 1rem; }
         }
-    </script>
-</body>
-</html>"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LinguaSiteFranca - Task View</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+        @media (min-width: 641px) {
+            .container-padding { padding: 2rem; }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
     <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-            <div class="text-center mb-8">
+        <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
+            <div class="text-center mb-6 sm:mb-8">
                 <img id="loginLogo" src="" class="h-12 mx-auto mb-4 hidden">
-                <h1 id="loginTitle" class="text-2xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                <p class="text-gray-500 text-sm mt-2">Field Worker Portal</p>
+                <h1 id="loginTitle" class="text-xl sm:text-2xl font-bold text-gray-800">LinguaSiteFranca</h1>
+                <p class="text-gray-500 text-xs sm:text-sm mt-2">Field Worker Portal</p>
             </div>
             <form id="loginForm" class="space-y-4">
-                <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition">Sign In</button>
+                <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">Sign In</button>
             </form>
-            <p id="loginError" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+            <p id="loginError" class="text-red-500 text-xs sm:text-sm text-center mt-4 hidden"></p>
         </div>
     </div>
 
-    <!-- TASK INTERFACE (Hidden until logged in) -->
+    <!-- TASK INTERFACE -->
     <div id="taskInterface" class="hidden min-h-screen flex flex-col">
-        <!-- Header -->
         <header class="bg-white shadow-sm p-4 sticky top-0 z-50">
             <div class="max-w-lg mx-auto flex justify-between items-center">
                 <div class="flex items-center space-x-3">
                     <img id="navLogo" src="" class="h-8 w-auto hidden rounded">
-                    <h1 id="navTitle" class="text-lg font-bold text-gray-800">LinguaSiteFranca</h1>
+                    <h1 id="navTitle" class="text-base sm:text-lg font-bold text-gray-800">LinguaSiteFranca</h1>
                 </div>
-                <button id="logoutBtn" class="text-sm text-red-600 font-medium">Sign Out</button>
+                <button id="logoutBtn" class="text-xs sm:text-sm text-red-600 font-medium">Sign Out</button>
             </div>
         </header>
 
-        <!-- Main Content -->
-        <main class="flex-1 p-4 max-w-lg mx-auto w-full space-y-6">
+        <main class="flex-1 container-padding max-w-lg mx-auto w-full space-y-4 sm:space-y-6">
             
             <!-- Task Card -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border-l-4 border-blue-500">
                 <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">Your Assigned Task</h2>
-                <p id="taskDescription" class="text-lg font-semibold text-gray-800">Loading task...</p>
+                <p id="taskDescription" class="text-base sm:text-lg font-semibold text-gray-800">Loading task...</p>
                 <div id="taskStatusBadge" class="mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800">Pending</div>
             </div>
 
-            <!-- DLM Feedback (Hidden by default) -->
-            <div id="feedbackSection" class="hidden bg-orange-50 rounded-xl shadow-sm p-6 border-l-4 border-orange-500">
+            <!-- DLM Feedback -->
+            <div id="feedbackSection" class="hidden bg-orange-50 rounded-xl shadow-sm p-4 sm:p-6 border-l-4 border-orange-500">
                 <h2 class="text-xs font-bold text-orange-700 uppercase mb-2">Manager Feedback</h2>
-                <p id="dlmFeedback" class="text-base text-gray-800 italic"></p>
+                <p id="dlmFeedback" class="text-sm sm:text-base text-gray-800 italic"></p>
             </div>
 
             <!-- Submission Form -->
-            <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-6 space-y-4">
-                <h2 class="text-lg font-bold text-gray-800 mb-2">Submit Completion</h2>
+            <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 space-y-4">
+                <h2 class="text-base sm:text-lg font-bold text-gray-800 mb-2">Submit Completion</h2>
                 
-                <!-- Photo Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Photo Proof (1-3 photos)</label>
-                    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Photo Proof (1-3 photos)</label>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" multiple class="block w-full text-xs sm:text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs sm:file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
                     <p class="text-xs text-gray-500 mt-1">Tap to take a photo or select from gallery</p>
+                    <p id="photoCount" class="text-xs text-blue-600 mt-1 font-medium"></p>
                 </div>
 
-                <!-- Comment -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Comments (in your language)</label>
-                    <textarea id="operativeComment" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Describe the completed work..."></textarea>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Comments (in your language)</label>
+                    <textarea id="operativeComment" rows="3" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="Describe the completed work..."></textarea>
                 </div>
 
-                <button type="submit" id="submitBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-xl shadow-md transition text-lg">
+                <button type="submit" id="submitBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 sm:py-4 rounded-xl shadow-md transition text-base sm:text-lg">
                     Submit Task
                 </button>
             </form>
 
         </main>
 
-        <!-- Footer -->
         <footer class="bg-white border-t border-gray-200 py-4 mt-8">
             <div class="max-w-lg mx-auto px-4 text-center">
                 <p id="footerContent" class="text-gray-600 text-xs">© 2026 LinguaSiteFranca. All rights reserved.</p>
@@ -207,12 +107,10 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        const storage = firebase.storage();
 
         let currentUser = null;
         let currentTaskId = null;
 
-        // Branding Listener
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
                 const b = doc.data();
@@ -230,7 +128,6 @@
             }
         });
 
-        // Auth State
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 const userDoc = await db.collection('users').doc(user.uid).get();
@@ -263,8 +160,13 @@
 
         document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
 
+        // Photo count display
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            const count = e.target.files.length;
+            document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) selected` : '';
+        });
+
         async function loadTask() {
-            // Find the task assigned to this operative
             const snapshot = await db.collection('tasks')
                 .where('operativeId', '==', currentUser.uid)
                 .where('status', 'in', ['assigned', 'rejected'])
@@ -281,17 +183,16 @@
             currentTaskId = taskDoc.id;
             const task = taskDoc.data();
 
-            document.getElementById('taskDescription').innerText = task.description_en; // In future, this will be the translated version
+            document.getElementById('taskDescription').innerText = task.description_en;
             
             const badge = document.getElementById('taskStatusBadge');
             if (task.status === 'rejected') {
                 badge.innerText = "Needs Revision";
                 badge.className = "mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800";
                 
-                // Show feedback
                 if (task.dlm_feedback_en) {
                     document.getElementById('feedbackSection').classList.remove('hidden');
-                    document.getElementById('dlmFeedback').innerText = task.dlm_feedback_en; // In future, translated
+                    document.getElementById('dlmFeedback').innerText = task.dlm_feedback_en;
                 }
             } else {
                 badge.innerText = "Pending Action";
@@ -311,23 +212,50 @@
             }
 
             submitBtn.disabled = true;
-            submitBtn.innerText = "Uploading...";
+            submitBtn.innerText = "Compressing photos...";
 
             try {
-                const photoUrls = [];
+                const compressedPhotos = [];
+                let processed = 0;
+
                 for (let i = 0; i < photoInput.files.length; i++) {
                     const file = photoInput.files[i];
-                    const storageRef = storage.ref(`tasks/${currentTaskId}/${Date.now()}_${file.name}`);
-                    await storageRef.put(file);
-                    const url = await storageRef.getDownloadURL();
-                    photoUrls.push(url);
+                    
+                    await new Promise((resolve, reject) => {
+                        new Compressor(file, {
+                            quality: 0.5,
+                            maxWidth: 1024,
+                            maxHeight: 1024,
+                            mimeType: 'image/jpeg',
+                            success: (compressedFile) => {
+                                const reader = new FileReader();
+                                reader.onload = () => {
+                                    compressedPhotos.push({
+                                        data: reader.result,
+                                        name: compressedFile.name,
+                                        size: compressedFile.size
+                                    });
+                                    processed++;
+                                    if (processed === photoInput.files.length) {
+                                        resolve();
+                                    }
+                                };
+                                reader.readAsDataURL(compressedFile);
+                            },
+                            error: (err) => {
+                                reject(err);
+                            }
+                        });
+                    });
                 }
+
+                submitBtn.innerText = "Uploading...";
 
                 await db.collection('tasks').doc(currentTaskId).update({
                     status: 'submitted',
                     operative_comment_native: comment,
-                    operative_comment_en: '', // Cloud function will translate this later
-                    photos: photoUrls,
+                    operative_comment_en: '',
+                    photos: compressedPhotos,
                     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
