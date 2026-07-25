@@ -3,39 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - Login</title>
+    <title>LinguaSiteFranca - Head Office</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen">
 
-    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-blue-800">LinguaSiteFranca</h1>
-            <p class="text-gray-500 text-sm mt-2">Secure Field Communication Portal</p>
-        </div>
-
-        <form id="loginForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                <input type="email" id="email" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+    <!-- Navigation with Dynamic Branding -->
+    <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img id="navLogo" src="" alt="Logo" class="h-10 w-auto hidden rounded">
+                <div>
+                    <h1 id="navTitle" class="text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
+                    <p class="text-xs text-gray-500">Head Office Control Panel</p>
+                </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input type="password" id="password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <div class="flex items-center space-x-3">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">Public Access</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        <!-- BRANDING PANEL -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                <h2 class="text-lg font-bold text-white">🎨 Branding Configuration</h2>
+                <p class="text-blue-100 text-sm mt-1">Customize how your organization appears across all platforms</p>
             </div>
             
-            <button type="submit" id="loginBtn" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition duration-200">
-                Sign In
-            </button>
-        </form>
+            <form id="brandingForm" class="p-6 space-y-6">
+                <!-- Logo Upload -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+                    <div class="flex items-center space-x-6">
+                        <div class="flex-1">
+                            <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                            <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB recommended</p>
+                        </div>
+                        <div id="logoPreview" class="hidden">
+                            <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
+                        </div>
+                    </div>
+                </div>
 
-        <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+                <!-- Business Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Business/Organization Name</label>
+                    <input type="text" id="businessName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Enter your organization name">
+                </div>
+
+                <!-- Footer Text -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
+                    <input type="text" id="footerText" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., © 2026 Your Company Name - All Rights Reserved">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition duration-200 shadow-md">
+                    💾 Save Branding Configuration
+                </button>
+            </form>
+        </section>
+
+        <!-- DLM MANAGEMENT -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <h2 class="text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
+                <p class="text-green-100 text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Create DLM Form -->
+                <form id="createDlmForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DLM Email Address</label>
+                            <input type="email" id="dlmEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="manager@organization.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password</label>
+                            <input type="password" id="dlmPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Minimum 6 characters">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project/Location</label>
+                        <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., Project Alpha, Site Beta, Location Gamma">
+                        <p class="text-xs text-gray-500 mt-1">This can be any project name, site reference, or location identifier</p>
+                    </div>
+                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200">
+                         Create DLM Account
+                    </button>
+                </form>
+
+                <!-- DLM List -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Active DLMs</h3>
+                    <div id="dlmList" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">Loading DLMs...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS/LOCATIONS MANAGEMENT -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                <h2 class="text-lg font-bold text-white"> Projects & Locations</h2>
+                <p class="text-purple-100 text-sm mt-1">Manage all project sites and locations in your ecosystem</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Create Project Form -->
+                <form id="createProjectForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project/Location Name</label>
+                        <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project or location name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="projectDescription" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Brief description of this project or location"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition duration-200">
+                        📍 Create Project/Location
+                    </button>
+                </form>
+
+                <!-- Projects List -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
+                    <div id="projectList" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">Loading projects...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </div>
 
+    <!-- Dynamic Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p id="footerContent" class="text-gray-600 text-sm">© 2026 LinguaSiteFranca. All rights reserved.</p>
+        </div>
+    </footer>
+
     <script>
+        // FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyDa9uoat_ztP_4GpplxF1jVzmAzxQDdUw0",
             authDomain: "linguasitefranca.firebaseapp.com",
@@ -46,50 +166,235 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
         const db = firebase.firestore();
+        const storage = firebase.storage();
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMsg');
-            const loginBtn = document.getElementById('loginBtn');
+        // Initialize - Load Branding on Page Load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadBranding();
+            await loadDLMs();
+            await loadProjects();
+            
+            // Set up real-time listener for branding changes
+            db.collection('settings').doc('branding').onSnapshot((doc) => {
+                if (doc.exists) {
+                    applyBranding(doc.data());
+                }
+            });
+        });
 
-            loginBtn.disabled = true;
-            loginBtn.innerText = "Signing in...";
-            errorMsg.classList.add('hidden');
-
+        // Load Branding from Firestore
+        async function loadBranding() {
             try {
-                const userCredential = await auth.signInWithEmailAndPassword(email, password);
-                const uid = userCredential.user.uid;
-                const userDoc = await db.collection('users').doc(uid).get();
-                
-                if (!userDoc.exists) {
-                    throw new Error("User profile not found. Contact Head Office.");
+                const doc = await db.collection('settings').doc('branding').get();
+                if (doc.exists) {
+                    applyBranding(doc.data());
                 }
-
-                const role = userDoc.data().role;
-
-                // UPDATED REDIRECTS TO MATCH YOUR NEW FILE NAMES
-                if (role === 'head_office') {
-                    window.location.href = 'headoffice.html'; 
-                } else if (role === 'dlm') {
-                    window.location.href = 'dlm.html';    
-                } else if (role === 'operative') {
-                    window.location.href = 'operative.html'; 
-                } else {
-                    throw new Error("Invalid user role.");
-                }
-
             } catch (error) {
-                console.error(error);
-                errorMsg.innerText = "Login failed: " + error.message;
-                errorMsg.classList.remove('hidden');
-                loginBtn.disabled = false;
-                loginBtn.innerText = "Sign In";
+                console.error("Error loading branding:", error);
+            }
+        }
+
+        // Apply Branding to UI
+        function applyBranding(branding) {
+            if (branding.businessName) {
+                document.getElementById('businessName').value = branding.businessName;
+                document.getElementById('navTitle').textContent = branding.businessName;
+            }
+            if (branding.footerText) {
+                document.getElementById('footerText').value = branding.footerText;
+                document.getElementById('footerContent').textContent = branding.footerText;
+            }
+            if (branding.logoUrl) {
+                document.getElementById('navLogo').src = branding.logoUrl;
+                document.getElementById('navLogo').classList.remove('hidden');
+                document.getElementById('logoPreview').classList.remove('hidden');
+                document.querySelector('#logoPreview img').src = branding.logoUrl;
+            }
+        }
+
+        // Save Branding
+        document.getElementById('brandingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const businessName = document.getElementById('businessName').value;
+            const footerText = document.getElementById('footerText').value;
+            const logoInput = document.getElementById('logoInput');
+            
+            try {
+                let logoUrl = '';
+                
+                // Upload logo if provided
+                if (logoInput.files && logoInput.files[0]) {
+                    const file = logoInput.files[0];
+                    const storageRef = storage.ref(`branding/logo_${Date.now()}`);
+                    await storageRef.put(file);
+                    logoUrl = await storageRef.getDownloadURL();
+                }
+                
+                // Get existing logo if not uploading new one
+                const existingDoc = await db.collection('settings').doc('branding').get();
+                if (existingDoc.exists && !logoUrl) {
+                    logoUrl = existingDoc.data().logoUrl || '';
+                }
+                
+                await db.collection('settings').doc('branding').set({
+                    businessName: businessName,
+                    footerText: footerText,
+                    logoUrl: logoUrl,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('✅ Branding saved successfully! All pages will update automatically.');
+            } catch (error) {
+                console.error("Error saving branding:", error);
+                alert('❌ Error saving branding: ' + error.message);
             }
         });
+
+        // Create DLM Account
+        document.getElementById('createDlmForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('dlmEmail').value;
+            const password = document.getElementById('dlmPassword').value;
+            const project = document.getElementById('dlmProject').value;
+            
+            try {
+                // Create user in Firebase Auth
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                const uid = userCredential.user.uid;
+                
+                // Create user document in Firestore
+                await db.collection('users').doc(uid).set({
+                    email: email,
+                    role: 'dlm',
+                    assignedProject: project,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    canChangePassword: true
+                });
+                
+                alert('✅ DLM account created successfully!');
+                document.getElementById('createDlmForm').reset();
+                await loadDLMs();
+            } catch (error) {
+                console.error("Error creating DLM:", error);
+                alert('❌ Error creating DLM: ' + error.message);
+            }
+        });
+
+        // Load DLMs
+        async function loadDLMs() {
+            try {
+                const snapshot = await db.collection('users').where('role', '==', 'dlm').get();
+                const dlmList = document.getElementById('dlmList');
+                
+                if (snapshot.empty) {
+                    dlmList.innerHTML = '<div class="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">No DLMs created yet</div>';
+                    return;
+                }
+                
+                dlmList.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const dlm = doc.data();
+                    const dlmCard = document.createElement('div');
+                    dlmCard.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition';
+                    dlmCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900">${dlm.email}</p>
+                                <p class="text-sm text-gray-600 mt-1">📍 Assigned to: <span class="font-medium">${dlm.assignedProject || 'Not assigned'}</span></p>
+                                <p class="text-xs text-gray-400 mt-2">Created: ${dlm.createdAt ? new Date(dlm.createdAt.toDate()).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <button onclick="deleteDLM('${doc.id}', '${dlm.email}')" class="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition">
+                                Delete
+                            </button>
+                        </div>
+                    `;
+                    dlmList.appendChild(dlmCard);
+                });
+            } catch (error) {
+                console.error("Error loading DLMs:", error);
+                document.getElementById('dlmList').innerHTML = '<div class="text-center text-red-500 py-4">Error loading DLMs</div>';
+            }
+        }
+
+        // Delete DLM
+        async function deleteDLM(uid, email) {
+            if (!confirm(`Are you sure you want to delete DLM account "${email}"? This action cannot be undone.`)) return;
+            
+            try {
+                // Delete from Firestore
+                await db.collection('users').doc(uid).delete();
+                
+                // Note: We can't delete Firebase Auth users from client-side easily
+                // In production, use a Cloud Function or Admin SDK
+                alert('✅ DLM deleted from database. Note: Auth account may need manual deletion from Firebase Console.');
+                await loadDLMs();
+            } catch (error) {
+                console.error("Error deleting DLM:", error);
+                alert('❌ Error deleting DLM: ' + error.message);
+            }
+        }
+
+        // Create Project/Location
+        document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('projectName').value;
+            const description = document.getElementById('projectDescription').value;
+            
+            try {
+                await db.collection('projects').add({
+                    name: name,
+                    description: description,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'active'
+                });
+                
+                alert('✅ Project/Location created successfully!');
+                document.getElementById('createProjectForm').reset();
+                await loadProjects();
+            } catch (error) {
+                console.error("Error creating project:", error);
+                alert('❌ Error creating project: ' + error.message);
+            }
+        });
+
+        // Load Projects
+        async function loadProjects() {
+            try {
+                const snapshot = await db.collection('projects').orderBy('createdAt', 'desc').get();
+                const projectList = document.getElementById('projectList');
+                
+                if (snapshot.empty) {
+                    projectList.innerHTML = '<div class="text-center text-gray-500 py-4 bg-gray-50 rounded-lg">No projects created yet</div>';
+                    return;
+                }
+                
+                projectList.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    const projectCard = document.createElement('div');
+                    projectCard.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition';
+                    projectCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-semibold text-gray-900 text-lg">${project.name}</p>
+                                <p class="text-sm text-gray-600 mt-1">${project.description || 'No description'}</p>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-2">
+                                    Active
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                    projectList.appendChild(projectCard);
+                });
+            } catch (error) {
+                console.error("Error loading projects:", error);
+                document.getElementById('projectList').innerHTML = '<div class="text-center text-red-500 py-4">Error loading projects</div>';
+            }
+        }
     </script>
 </body>
 </html>
