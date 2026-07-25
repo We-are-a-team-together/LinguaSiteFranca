@@ -8,20 +8,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    <style>
-        @media (max-width: 640px) {
-            .container-padding { padding: 1rem; }
-            .form-grid { grid-template-columns: 1fr; }
-        }
-        @media (min-width: 641px) {
-            .container-padding { padding: 2rem; }
-            .form-grid { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
-    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
             <div class="text-center mb-6 sm:mb-8">
@@ -38,7 +27,6 @@
         </div>
     </div>
 
-    <!-- DLM DASHBOARD -->
     <div id="dlmDashboard" class="hidden">
         <nav class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 shadow-sm sticky top-0 z-50">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
@@ -53,17 +41,16 @@
             </div>
         </nav>
 
-        <div class="max-w-7xl mx-auto container-padding space-y-6 sm:space-y-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
             
-            <!-- MANAGE OPERATIVES -->
             <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-4 sm:px-6 py-4">
                     <h2 class="text-base sm:text-lg font-bold text-white">👷 Manage Operatives</h2>
                     <p class="text-indigo-100 text-xs sm:text-sm mt-1">Create accounts for your field workers</p>
                 </div>
                 <div class="p-4 sm:p-6">
-                    <form id="createOperativeForm" class="form-grid gap-3 sm:gap-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h3 class="font-bold text-gray-800 mb-3 col-span-full">Create New Operative Account</h3>
+                    <form id="createOperativeForm" class="space-y-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <h3 class="font-bold text-gray-800 mb-3">Create New Operative Account</h3>
                         <div>
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Operative Full Name</label>
                             <input type="text" id="opName" placeholder="Full Name" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
@@ -76,29 +63,10 @@
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Initial Password</label>
                             <input type="password" id="opPassword" placeholder="Min 6 chars" required minlength="6" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
                         </div>
-                        <div>
-                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Operative's Native Language</label>
-                            <select id="opLanguage" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
-                                <option value="" disabled selected>— Select Language —</option>
-                                <option value="en">English</option>
-                                <option value="es">Español (Spanish)</option>
-                                <option value="fr">Français (French)</option>
-                                <option value="de">Deutsch (German)</option>
-                                <option value="it">Italiano (Italian)</option>
-                                <option value="pt">Português (Portuguese)</option>
-                                <option value="pl">Polski (Polish)</option>
-                                <option value="ro">Română (Romanian)</option>
-                                <option value="ru">Русский (Russian)</option>
-                                <option value="ar">العربية (Arabic)</option>
-                                <option value="zh">中文 (Chinese)</option>
-                                <option value="hi">हिन्दी (Hindi)</option>
-                                <option value="tr">Türkçe (Turkish)</option>
-                                <option value="nl">Nederlands (Dutch)</option>
-                                <option value="sv">Svenska (Swedish)</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Their interface will auto-translate to this language</p>
+                        <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                            <p class="text-xs text-blue-700">ℹ️ The operative will select their preferred language on first login</p>
                         </div>
-                        <button type="submit" class="col-span-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">Create Operative Account</button>
+                        <button type="submit" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">Create Operative Account</button>
                     </form>
                     <div>
                         <h3 class="font-bold text-gray-800 mb-3">Active Operatives</h3>
@@ -109,7 +77,6 @@
                 </div>
             </section>
 
-            <!-- ASSIGN TASKS -->
             <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4">
                     <h2 class="text-base sm:text-lg font-bold text-white">📋 Assign New Task</h2>
@@ -127,12 +94,11 @@
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Task Description (English)</label>
                             <textarea id="taskDescription" rows="3" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="Describe the task in English..."></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base"> Assign Task</button>
+                        <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">🚀 Assign Task</button>
                     </form>
                 </div>
             </section>
 
-            <!-- REVIEW SUBMISSIONS -->
             <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="bg-gradient-to-r from-green-600 to-green-700 px-4 sm:px-6 py-4">
                     <h2 class="text-base sm:text-lg font-bold text-white">✅ Review Task Submissions</h2>
@@ -170,6 +136,7 @@
         const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
 
         let currentDlmId = null;
+        let authHandled = false;
 
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
@@ -189,23 +156,52 @@
         });
 
         auth.onAuthStateChanged(async (user) => {
+            if (authHandled) return;
+            
             if (user) {
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                if (userDoc.exists && userDoc.data().role === 'dlm') {
+                try {
+                    authHandled = true;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    
+                    if (!userDoc.exists) {
+                        console.error('User document not found');
+                        await auth.signOut();
+                        showLogin();
+                        authHandled = false;
+                        return;
+                    }
+                    
+                    const userData = userDoc.data();
+                    
+                    if (userData.role !== 'dlm') {
+                        console.error('User is not a DLM');
+                        await auth.signOut();
+                        showLogin();
+                        authHandled = false;
+                        return;
+                    }
+                    
                     currentDlmId = user.uid;
                     document.getElementById('loginScreen').classList.add('hidden');
                     document.getElementById('dlmDashboard').classList.remove('hidden');
                     loadOperatives();
                     loadTasks();
-                } else {
-                    alert("Access denied. DLMs only.");
-                    auth.signOut();
+                    authHandled = false;
+                    
+                } catch (error) {
+                    console.error('Auth error:', error);
+                    authHandled = false;
                 }
             } else {
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('dlmDashboard').classList.add('hidden');
+                showLogin();
+                authHandled = false;
             }
         });
+
+        function showLogin() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('dlmDashboard').classList.add('hidden');
+        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -226,7 +222,6 @@
             const name = document.getElementById('opName').value;
             const email = document.getElementById('opEmail').value;
             const password = document.getElementById('opPassword').value;
-            const language = document.getElementById('opLanguage').value;
 
             try {
                 const cred = await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
@@ -235,17 +230,17 @@
                 await db.collection('users').doc(uid).set({
                     name, email,
                     role: 'operative',
-                    nativeLanguage: language,
                     assignedDlm: currentDlmId,
+                    languageSelected: false,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
                 await secondaryApp.auth().signOut();
-                alert('✅ Operative created successfully!\n\nTheir interface will be in: ' + language.toUpperCase());
+                alert('✅ Operative created successfully!\n\nThey will select their language on first login.');
                 e.target.reset();
                 loadOperatives();
             } catch (error) {
-                alert(' Error: ' + error.message);
+                alert('❌ Error: ' + error.message);
             }
         });
 
@@ -262,26 +257,20 @@
                 return;
             }
 
-            const languageNames = {
-                'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
-                'it': 'Italian', 'pt': 'Portuguese', 'pl': 'Polish', 'ro': 'Romanian',
-                'ru': 'Russian', 'ar': 'Arabic', 'zh': 'Chinese', 'hi': 'Hindi',
-                'tr': 'Turkish', 'nl': 'Dutch', 'sv': 'Swedish'
-            };
-
             snapshot.forEach(doc => {
                 const op = doc.data();
+                const langDisplay = op.languageSelected ? (op.languageDisplayName || op.nativeLanguage || 'Set') : 'Not set yet';
                 list.innerHTML += `
                     <div class="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
                         <p class="font-bold text-sm sm:text-base text-gray-800">${op.name}</p>
                         <p class="text-xs sm:text-sm text-gray-500">${op.email}</p>
-                        <p class="text-xs text-indigo-600 mt-1">🌐 Language: ${languageNames[op.nativeLanguage] || op.nativeLanguage}</p>
+                        <p class="text-xs text-indigo-600 mt-1">🌐 Language: ${langDisplay}</p>
                     </div>
                 `;
                 
                 const option = document.createElement('option');
                 option.value = doc.id;
-                option.textContent = `${op.name} (${languageNames[op.nativeLanguage] || op.nativeLanguage})`;
+                option.textContent = `${op.name} (${langDisplay})`;
                 select.appendChild(option);
             });
         }
