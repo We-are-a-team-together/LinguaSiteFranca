@@ -30,7 +30,82 @@
 
     <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-        <!-- BRANDING PANEL -->
+        <!-- DLM MANAGEMENT -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                <h2 class="text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
+                <p class="text-green-100 text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Create DLM Form -->
+                <form id="createDlmForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DLM Email Address</label>
+                            <input type="email" id="dlmEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="manager@organization.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password</label>
+                            <input type="password" id="dlmPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Minimum 6 characters">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project/Location</label>
+                        <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., Project Alpha, Site Beta, Location Gamma">
+                        <p class="text-xs text-gray-500 mt-1">This can be any project name, site reference, or location identifier</p>
+                    </div>
+                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200">
+                        ✅ Create DLM Account
+                    </button>
+                </form>
+
+                <!-- DLM List -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Active DLMs</h3>
+                    <div id="dlmList" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">Loading DLMs...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS/LOCATIONS MANAGEMENT -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                <h2 class="text-lg font-bold text-white">📍 Projects & Locations</h2>
+                <p class="text-purple-100 text-sm mt-1">Manage all project sites and locations in your ecosystem</p>
+            </div>
+            
+            <div class="p-6">
+                <!-- Create Project Form -->
+                <form id="createProjectForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project/Location Name</label>
+                        <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project or location name">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="projectDescription" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Brief description of this project or location"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition duration-200">
+                        📍 Create Project/Location
+                    </button>
+                </form>
+
+                <!-- Projects List -->
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
+                    <div id="projectList" class="space-y-3">
+                        <div class="text-center text-gray-500 py-8">Loading projects...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BRANDING PANEL (NOW AT THE BOTTOM) -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                 <h2 class="text-lg font-bold text-white">🎨 Branding Configuration</h2>
@@ -70,81 +145,6 @@
             </form>
         </section>
 
-        <!-- DLM MANAGEMENT -->
-        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                <h2 class="text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
-                <p class="text-green-100 text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
-            </div>
-            
-            <div class="p-6">
-                <!-- Create DLM Form -->
-                <form id="createDlmForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">DLM Email Address</label>
-                            <input type="email" id="dlmEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="manager@organization.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password</label>
-                            <input type="password" id="dlmPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Minimum 6 characters">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project/Location</label>
-                        <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="e.g., Project Alpha, Site Beta, Location Gamma">
-                        <p class="text-xs text-gray-500 mt-1">This can be any project name, site reference, or location identifier</p>
-                    </div>
-                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-3 rounded-lg transition duration-200">
-                         Create DLM Account
-                    </button>
-                </form>
-
-                <!-- DLM List -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active DLMs</h3>
-                    <div id="dlmList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-8">Loading DLMs...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROJECTS/LOCATIONS MANAGEMENT -->
-        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                <h2 class="text-lg font-bold text-white"> Projects & Locations</h2>
-                <p class="text-purple-100 text-sm mt-1">Manage all project sites and locations in your ecosystem</p>
-            </div>
-            
-            <div class="p-6">
-                <!-- Create Project Form -->
-                <form id="createProjectForm" class="space-y-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Project/Location Name</label>
-                        <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project or location name">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="projectDescription" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Brief description of this project or location"></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-3 rounded-lg transition duration-200">
-                        📍 Create Project/Location
-                    </button>
-                </form>
-
-                <!-- Projects List -->
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
-                    <div id="projectList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-8">Loading projects...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </div>
 
     <!-- Dynamic Footer -->
@@ -165,7 +165,11 @@
             appId: "1:206112054381:web:3181e8099d859a23783364"
         };
 
-        firebase.initializeApp(firebaseConfig);
+        // Prevent multiple Firebase initializations
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
         const db = firebase.firestore();
         const storage = firebase.storage();
 
@@ -220,35 +224,63 @@
             const businessName = document.getElementById('businessName').value;
             const footerText = document.getElementById('footerText').value;
             const logoInput = document.getElementById('logoInput');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Saving...';
             
             try {
                 let logoUrl = '';
                 
-                // Upload logo if provided
-                if (logoInput.files && logoInput.files[0]) {
-                    const file = logoInput.files[0];
-                    const storageRef = storage.ref(`branding/logo_${Date.now()}`);
-                    await storageRef.put(file);
-                    logoUrl = await storageRef.getDownloadURL();
-                }
-                
-                // Get existing logo if not uploading new one
+                // Check if there's an existing logo first
                 const existingDoc = await db.collection('settings').doc('branding').get();
-                if (existingDoc.exists && !logoUrl) {
+                if (existingDoc.exists) {
                     logoUrl = existingDoc.data().logoUrl || '';
                 }
                 
+                // Only upload if a new file was selected
+                if (logoInput.files && logoInput.files[0]) {
+                    const file = logoInput.files[0];
+                    
+                    // Validate file size (2MB max)
+                    if (file.size > 2 * 1024 * 1024) {
+                        throw new Error('File too large. Max 2MB allowed.');
+                    }
+                    
+                    const fileName = `logo_${Date.now()}_${file.name}`;
+                    const storageRef = storage.ref(`branding/${fileName}`);
+                    
+                    // Upload with metadata
+                    const metadata = {
+                        contentType: file.type,
+                        customMetadata: {
+                            'uploadedBy': 'headquarter'
+                        }
+                    };
+                    
+                    const uploadTask = await storageRef.put(file, metadata);
+                    logoUrl = await uploadTask.ref.getDownloadURL();
+                    
+                    console.log('✅ Logo uploaded successfully:', logoUrl);
+                }
+                
+                // Save to Firestore
                 await db.collection('settings').doc('branding').set({
                     businessName: businessName,
                     footerText: footerText,
                     logoUrl: logoUrl,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                }, { merge: true });
                 
-                alert('✅ Branding saved successfully! All pages will update automatically.');
+                console.log('✅ Branding saved successfully');
+                alert('✅ Branding saved successfully!');
+                
             } catch (error) {
-                console.error("Error saving branding:", error);
-                alert('❌ Error saving branding: ' + error.message);
+                console.error('❌ Error saving branding:', error);
+                alert('❌ Error: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '💾 Save Branding Configuration';
             }
         });
 
@@ -279,7 +311,7 @@
                 await loadDLMs();
             } catch (error) {
                 console.error("Error creating DLM:", error);
-                alert('❌ Error creating DLM: ' + error.message);
+                alert(' Error creating DLM: ' + error.message);
             }
         });
 
