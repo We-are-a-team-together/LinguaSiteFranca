@@ -32,6 +32,9 @@
     .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
     .task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
     .task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent); }
+    
+    /* New style for the translated return note */
+    .return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
 
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
@@ -190,13 +193,20 @@
         if (task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
           hasTasks = true;
           const translatedDetails = await translateText(task.details, langCode);
+          
+          // Logic added to translate the return note
+          let returnNoteHTML = '';
+          if (task.returnNote) {
+            const translatedReturnNote = await translateText(task.returnNote, langCode);
+            returnNoteHTML = `<div class="return-note-desc"><strong>Return Note:</strong><br>${translatedReturnNote}</div>`;
+          }
 
           const card = document.createElement('div');
           card.className = 'card';
           card.innerHTML = `
             <div class="task-title">Task (${task.status})</div>
             <div class="task-desc">${translatedDetails}</div>
-            ${task.returnNote ? `<div style="color: var(--danger); margin-bottom: 15px;"><strong>Return Note:</strong> ${task.returnNote}</div>` : ''}
+            ${returnNoteHTML}
             <form onsubmit="submitTask(event, '${key}')">
               <div class="form-group">
                 <label>Photo Evidence</label>
