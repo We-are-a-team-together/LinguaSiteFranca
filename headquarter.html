@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinguaSiteFranca - Head Office</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="h<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - Head Office</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -38,7 +31,7 @@
         <!-- DLM MANAGEMENT -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-green-600 to-green-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
+                <h2 class="text-base sm:text-lg font-bold text-white"> Direct Line Managers (DLMs)</h2>
                 <p class="text-green-100 text-xs sm:text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
             </div>
             <div class="p-4 sm:p-6">
@@ -90,7 +83,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Physical Location / Address</label>
                         <input type="text" id="projectLocation" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="e.g., 123 Main St, London">
                     </div>
-                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 text-sm sm:text-base">📍 Create Project</button>
+                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 text-sm sm:text-base"> Create Project</button>
                 </form>
                 <div>
                     <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
@@ -104,7 +97,7 @@
         <!-- BRANDING PANEL -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white"> Branding Configuration</h2>
+                <h2 class="text-base sm:text-lg font-bold text-white">🎨 Branding Configuration</h2>
                 <p class="text-blue-100 text-xs sm:text-sm mt-1">Customize how your organization appears</p>
             </div>
             <form id="brandingForm" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
@@ -192,7 +185,7 @@
             const logoInput = document.getElementById('logoInput');
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
-            submitBtn.innerText = '⏳ Saving...';
+            submitBtn.innerText = ' Saving...';
             try {
                 let logoUrl = '';
                 const existingDoc = await db.collection('settings').doc('branding').get();
@@ -227,7 +220,7 @@
                 alert('✅ DLM created successfully!');
                 e.target.reset();
                 loadDLMs();
-            } catch (error) { alert('❌ Error: ' + error.message); }
+            } catch (error) { alert(' Error: ' + error.message); }
         });
 
         async function loadDLMs() {
@@ -278,263 +271,6 @@
                     alert('❌ Error deleting project: ' + error.message);
                 }
             }
-        }
-    </script>
-</body>
-</html>ttps://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-
-    <nav class="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3 sm:space-x-4">
-                <img id="navLogo" src="" alt="Logo" class="h-8 sm:h-10 w-auto hidden rounded">
-                <div>
-                    <h1 id="navTitle" class="text-lg sm:text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                    <p class="text-xs text-gray-500">Head Office Control Panel</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 sm:px-3 py-1 rounded-full">Public Access</span>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
-
-        <!-- DLM MANAGEMENT -->
-        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-green-600 to-green-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white">👥 Direct Line Managers (DLMs)</h2>
-                <p class="text-green-100 text-xs sm:text-sm mt-1">Create DLM accounts and assign them to projects/locations</p>
-            </div>
-            <div class="p-4 sm:p-6">
-                <form id="createDlmForm" class="space-y-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">DLM Full Name</label>
-                        <input type="text" id="dlmName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="e.g., John Smith">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">DLM Email Address</label>
-                            <input type="email" id="dlmEmail" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="manager@organization.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Initial Password</label>
-                            <input type="password" id="dlmPassword" required minlength="6" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="Minimum 6 characters">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project/Location</label>
-                        <input type="text" id="dlmProject" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm sm:text-base" placeholder="e.g., Project Alpha, Site Beta">
-                    </div>
-                    <button type="submit" class="w-full bg-green-700 hover:bg-green-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 text-sm sm:text-base">✅ Create DLM Account</button>
-                </form>
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active DLMs</h3>
-                    <div id="dlmList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-4">Loading DLMs...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROJECTS MANAGEMENT (UPDATED WITH LOCATION) -->
-        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white"> Projects & Locations</h2>
-                <p class="text-purple-100 text-xs sm:text-sm mt-1">Manage all project sites and locations</p>
-            </div>
-            <div class="p-4 sm:p-6">
-                <form id="createProjectForm" class="space-y-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-                        <input type="text" id="projectName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="e.g., HQ Renovation">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Physical Location / Address</label>
-                        <input type="text" id="projectLocation" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="e.g., 123 Main St, London">
-                    </div>
-                    <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 text-sm sm:text-base">📍 Create Project</button>
-                </form>
-                <div>
-                    <h3 class="font-bold text-gray-800 mb-3">Active Projects/Locations</h3>
-                    <div id="projectList" class="space-y-3">
-                        <div class="text-center text-gray-500 py-4">Loading projects...</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- BRANDING PANEL -->
-        <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white">🎨 Branding Configuration</h2>
-                <p class="text-blue-100 text-xs sm:text-sm mt-1">Customize how your organization appears</p>
-            </div>
-            <form id="brandingForm" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
-                    <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                        <div class="flex-1 w-full">
-                            <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <p class="text-xs text-red-500 mt-1 font-bold">⚠️ Must be small (under 100KB)</p>
-                        </div>
-                        <div id="logoPreview" class="hidden">
-                            <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Business/Organization Name</label>
-                    <input type="text" id="businessName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="Enter your organization name">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
-                    <input type="text" id="footerText" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="e.g., © 2026 Your Company Name">
-                </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md text-sm sm:text-base">💾 Save Branding Configuration</button>
-            </form>
-        </section>
-
-    </div>
-
-    <footer class="bg-white border-t border-gray-200 mt-8 sm:mt-12 py-4 sm:py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-            <p id="footerContent" class="text-gray-600 text-xs sm:text-sm">© 2026 LinguaSiteFranca. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDa9uoat_ztP_4GpplxF1jVzmAzxQDdUw0",
-            authDomain: "linguasitefranca.firebaseapp.com",
-            projectId: "linguasitefranca",
-            storageBucket: "linguasitefranca.firebasestorage.app",
-            messagingSenderId: "206112054381",
-            appId: "1:206112054381:web:3181e8099d859a23783364"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadBranding();
-            await loadDLMs();
-            await loadProjects();
-            db.collection('settings').doc('branding').onSnapshot((doc) => { if (doc.exists) applyBranding(doc.data()); });
-        });
-
-        async function loadBranding() {
-            try {
-                const doc = await db.collection('settings').doc('branding').get();
-                if (doc.exists) applyBranding(doc.data());
-            } catch (error) { console.error("Error loading branding:", error); }
-        }
-
-        function applyBranding(branding) {
-            if (branding.businessName) {
-                document.getElementById('businessName').value = branding.businessName;
-                document.getElementById('navTitle').textContent = branding.businessName;
-            }
-            if (branding.footerText) {
-                document.getElementById('footerText').value = branding.footerText;
-                document.getElementById('footerContent').textContent = branding.footerText;
-            }
-            if (branding.logoUrl) {
-                document.getElementById('navLogo').src = branding.logoUrl;
-                document.getElementById('navLogo').classList.remove('hidden');
-                document.getElementById('logoPreview').classList.remove('hidden');
-                document.querySelector('#logoPreview img').src = branding.logoUrl;
-            }
-        }
-
-        document.getElementById('brandingForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const businessName = document.getElementById('businessName').value;
-            const footerText = document.getElementById('footerText').value;
-            const logoInput = document.getElementById('logoInput');
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.innerText = '⏳ Saving...';
-            try {
-                let logoUrl = '';
-                const existingDoc = await db.collection('settings').doc('branding').get();
-                if (existingDoc.exists) logoUrl = existingDoc.data().logoUrl || '';
-                if (logoInput.files && logoInput.files[0]) {
-                    const file = logoInput.files[0];
-                    if (file.size > 100000) throw new Error('Logo is too large! Please use an image under 100KB.');
-                    logoUrl = await new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.onerror = reject;
-                        reader.readAsDataURL(file);
-                    });
-                }
-                await db.collection('settings').doc('branding').set({ businessName, footerText, logoUrl, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-                alert('✅ Branding saved successfully!');
-            } catch (error) { alert('❌ Error: ' + error.message); } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = '💾 Save Branding Configuration';
-            }
-        });
-
-        document.getElementById('createDlmForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('dlmName').value;
-            const email = document.getElementById('dlmEmail').value;
-            const password = document.getElementById('dlmPassword').value;
-            const project = document.getElementById('dlmProject').value;
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection('users').doc(userCredential.user.uid).set({ name, email, role: 'dlm', assignedProject: project, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                alert('✅ DLM created successfully!');
-                e.target.reset();
-                loadDLMs();
-            } catch (error) { alert(' Error: ' + error.message); }
-        });
-
-        async function loadDLMs() {
-            const snapshot = await db.collection('users').where('role', '==', 'dlm').get();
-            const list = document.getElementById('dlmList');
-            list.innerHTML = '';
-            if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No DLMs yet</div>'; return; }
-            snapshot.forEach(doc => {
-                const dlm = doc.data();
-                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0"><div><p class="font-bold text-sm sm:text-base">${dlm.name || 'No name'}</p><p class="text-xs sm:text-sm text-gray-500">${dlm.email} • 📍 ${dlm.assignedProject}</p></div><button onclick="deleteDLM('${doc.id}')" class="text-red-600 text-xs sm:text-sm hover:text-red-800">Delete</button></div>`;
-            });
-        }
-
-        async function deleteDLM(uid) {
-            if(confirm('Delete this DLM?')) { await db.collection('users').doc(uid).delete(); loadDLMs(); }
-        }
-
-        document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const name = document.getElementById('projectName').value;
-            const location = document.getElementById('projectLocation').value;
-            try {
-                await db.collection('projects').add({ name, location, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-                alert('✅ Project created!');
-                e.target.reset();
-                loadProjects();
-            } catch (error) { alert('❌ Error: ' + error.message); }
-        });
-
-        async function loadProjects() {
-            const snapshot = await db.collection('projects').get();
-            const list = document.getElementById('projectList');
-            list.innerHTML = '';
-            if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No projects yet</div>'; return; }
-            snapshot.forEach(doc => {
-                const p = doc.data();
-                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border"><p class="font-bold text-base sm:text-lg">${p.name}</p><p class="text-sm text-gray-600">📍 ${p.location || 'No location specified'}</p></div>`;
-            });
         }
     </script>
 </body>
