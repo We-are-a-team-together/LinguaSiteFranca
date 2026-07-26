@@ -10,8 +10,8 @@
     <div id="app"></div>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, remove, push, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getDatabase, ref, set, onValue, push, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -84,32 +84,16 @@
                     <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
                             <h2 class="text-lg font-bold text-white">👷 Manage Operatives</h2>
-                            <p class="text-indigo-100 text-sm mt-1">Create operative accounts</p>
+                            <p class="text-indigo-100 text-sm mt-1">View assigned operatives</p>
                         </div>
                         <div class="p-6">
-                            <form id="createOperativeForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 class="font-bold text-gray-800 mb-3">Create New Operative</h3>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                    <input type="text" id="opName" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="John Doe">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" id="opEmail" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="operative@company.com">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Password (min 6 chars)</label>
-                                    <input type="password" id="opPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg">
-                                </div>
-                                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg">Create Operative</button>
-                            </form>
                             <div id="operativeList" class="space-y-3"><p class="text-gray-500 text-center py-4">Loading operatives...</p></div>
                         </div>
                     </section>
 
                     <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white"> Assign Task</h2>
+                            <h2 class="text-lg font-bold text-white">📋 Assign Task</h2>
                             <p class="text-blue-100 text-sm mt-1">Create and assign tasks</p>
                         </div>
                         <div class="p-6">
@@ -142,37 +126,10 @@
             `;
 
             document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-            document.getElementById('createOperativeForm').addEventListener('submit', handleCreateOperative);
             document.getElementById('assignTaskForm').addEventListener('submit', handleAssignTask);
 
             loadOperatives();
             loadTasks();
-        }
-
-        async function handleCreateOperative(e) {
-            e.preventDefault();
-            const name = document.getElementById('opName').value;
-            const email = document.getElementById('opEmail').value;
-            const password = document.getElementById('opPassword').value;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const uid = userCredential.user.uid;
-                
-                await set(ref(db, `users/${uid}`), {
-                    name,
-                    email,
-                    role: 'operative',
-                    assignedDlm: currentDlmId,
-                    languageSelected: false,
-                    createdAt: new Date().toISOString()
-                });
-
-                alert('✅ Operative created successfully!');
-                e.target.reset();
-            } catch (error) {
-                alert(' Error: ' + error.message);
-            }
         }
 
         async function handleAssignTask(e) {
