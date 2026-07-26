@@ -3,60 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Office Platform</title>
+    <title>Office Platform — Head Office Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
     
-    <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
-        <h1 class="text-xl font-bold" id="brand-title"></h1>
-        <span class="text-green-400">● Live</span>
+    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
+        <h1 class="text-lg sm:text-2xl font-bold" id="brand-title"></h1>
+        <span class="text-xs sm:text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-500">● Live Operations</span>
     </header>
 
-    <main class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Project Creation -->
-        <section class="bg-gray-800 p-6 rounded-lg shadow">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Create Project</h2>
-            <div class="flex flex-col gap-3">
-                <label class="text-sm text-gray-300">Project Name</label>
-                <input type="text" id="proj-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <label class="text-sm text-gray-300">Geographic Address</label>
-                <input type="text" id="proj-address" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <button id="btn-create-proj" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Add Project</button>
+    <main class="flex-grow p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-8">
+        
+        <!-- Top Management Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Project Creation -->
+            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Create New Site Project</h2>
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400">Project Name</label>
+                        <input type="text" id="proj-name" placeholder="e.g. The Monument Court" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Geographic Address</label>
+                        <input type="text" id="proj-address" placeholder="e.g. 12 High Street, Exeter" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button id="btn-create-proj" class="bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition mt-2">Add Project</button>
+                </div>
+            </section>
+
+            <!-- DLM Assignment -->
+            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Assign DLM to Project</h2>
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400">DLM Full Name</label>
+                        <input type="text" id="dlm-name" placeholder="e.g. John Smith" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400">Select Project</label>
+                        <select id="dlm-project" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
+                    </div>
+                    <button id="btn-create-dlm" class="bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition mt-2">Assign DLM</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Table 1: Projects & Assigned DLMs Overview -->
+        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Active Site Projects Directory</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300 min-w-[600px]">
+                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
+                        <tr>
+                            <th class="p-3">Project Name</th>
+                            <th class="p-3">Location Address</th>
+                            <th class="p-3">Assigned DLM</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projects-table-body"></tbody>
+                </table>
             </div>
         </section>
 
-        <!-- DLM Assignment -->
-        <section class="bg-gray-800 p-6 rounded-lg shadow">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Assign DLM</h2>
-            <div class="flex flex-col gap-3">
-                <label class="text-sm text-gray-300">DLM Full Name</label>
-                <input type="text" id="dlm-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <label class="text-sm text-gray-300">Assign to Project</label>
-                <select id="dlm-project" class="p-2 rounded bg-gray-700 text-white focus:outline-none"></select>
-                <button id="btn-create-dlm" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Assign DLM</button>
+        <!-- Table 2: Task Performance & Duration Metrics -->
+        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b border-gray-700 pb-3">
+                <div>
+                    <h2 class="text-lg font-semibold">Task Duration & Performance Metrics</h2>
+                    <p class="text-xs text-gray-400">Real-time tracking of task creation, submission speed, and duration.</p>
+                </div>
+                <!-- Export Buttons -->
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded text-xs font-semibold flex-1 sm:flex-none">Extract CSV</button>
+                    <button id="btn-export-pdf" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded text-xs font-semibold flex-1 sm:flex-none">Extract PDF Report</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="performance-table" class="w-full text-left text-sm text-gray-300 min-w-[700px]">
+                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
+                        <tr>
+                            <th class="p-3">Project</th>
+                            <th class="p-3">Operative</th>
+                            <th class="p-3">Task Details</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Assigned</th>
+                            <th class="p-3">Completed</th>
+                            <th class="p-3">Duration</th>
+                        </tr>
+                    </thead>
+                    <tbody id="performance-table-body"></tbody>
+                </table>
             </div>
         </section>
     </main>
 
     <!-- Global Branding Panel -->
-    <section class="bg-gray-950 p-6 border-t border-gray-700">
-        <h2 class="text-lg font-semibold mb-4">Global Branding Panel</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="flex flex-col">
-                <label class="text-xs text-gray-400 mb-1">System Title</label>
-                <input type="text" id="brand-title-input" class="p-2 rounded bg-gray-800 text-white border border-gray-700">
-            </div>
-            <div class="flex flex-col">
-                <label class="text-xs text-gray-400 mb-1">Header Color</label>
-                <input type="color" id="brand-header-color" class="p-1 rounded bg-gray-800 h-10 w-full cursor-pointer">
-            </div>
-            <div class="flex flex-col">
-                <label class="text-xs text-gray-400 mb-1">Footer Text</label>
-                <input type="text" id="brand-footer-input" class="p-2 rounded bg-gray-800 text-white border border-gray-700">
-            </div>
-            <div class="flex flex-col justify-end">
-                <button id="btn-save-branding" class="bg-green-600 p-2 rounded hover:bg-green-500 font-medium">Apply Globally</button>
+    <section class="bg-gray-950 p-6 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-lg font-semibold mb-4 text-gray-200">Global Branding Panel</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">System Title</label>
+                    <input type="text" id="brand-title-input" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">Header Color</label>
+                    <input type="color" id="brand-header-color" class="w-full p-1 rounded bg-gray-800 h-10 cursor-pointer">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block">Footer Text</label>
+                    <input type="text" id="brand-footer-input" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700">
+                </div>
+                <div class="flex items-end">
+                    <button id="btn-save-branding" class="w-full bg-green-600 p-2 rounded hover:bg-green-500 font-medium transition">Apply Branding</button>
+                </div>
             </div>
         </div>
     </section>
@@ -79,6 +142,8 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        let performanceReportData = [];
 
         const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
@@ -109,14 +174,46 @@
             }
         });
 
+        // Load Projects and Populate Dropdown & Project Table
         onValue(ref(db, 'projects'), (snapshot) => {
             const select = document.getElementById('dlm-project');
+            const tbody = document.getElementById('projects-table-body');
             select.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const projectsMap = {};
+
             snapshot.forEach((child) => {
+                const proj = child.val();
+                projectsMap[proj.name] = { address: proj.address, dlm: 'Unassigned' };
+
                 const opt = document.createElement('option');
-                opt.value = child.val().name;
-                opt.text = `${child.val().name} (${child.val().address})`;
+                opt.value = proj.name;
+                opt.text = `${proj.name} (${proj.address})`;
                 select.appendChild(opt);
+            });
+
+            // Match DLMs to Projects
+            onValue(ref(db, 'dlms'), (dlmSnapshot) => {
+                dlmSnapshot.forEach((d) => {
+                    const dlm = d.val();
+                    if(projectsMap[dlm.projectName]) {
+                        projectsMap[dlm.projectName].dlm = dlm.name;
+                    }
+                });
+
+                tbody.innerHTML = '';
+                Object.keys(projectsMap).forEach((projName) => {
+                    const p = projectsMap[projName];
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-700 hover:bg-gray-750";
+                    tr.innerHTML = `
+                        <td class="p-3 font-semibold text-white">${projName}</td>
+                        <td class="p-3">${p.address}</td>
+                        <td class="p-3 text-blue-400 font-medium">${p.dlm}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
             });
         });
 
@@ -128,6 +225,97 @@
                 set(ref(db, 'dlms/' + key), { name, projectName });
                 document.getElementById('dlm-name').value = '';
             }
+        });
+
+        // Load Task Performance Metrics Table
+        onValue(ref(db, 'tasks'), (snapshot) => {
+            const tbody = document.getElementById('performance-table-body');
+            tbody.innerHTML = '';
+            performanceReportData = [];
+
+            snapshot.forEach((opTasks) => {
+                const opKey = opTasks.key;
+                opTasks.forEach((taskSnap) => {
+                    const task = taskSnap.val();
+                    const assignedTime = task.timestamp ? new Date(task.timestamp) : null;
+                    const completedTime = task.completedTimestamp ? new Date(task.completedTimestamp) : null;
+                    
+                    let durationStr = "In Progress";
+                    let durationMins = "";
+                    if (assignedTime && completedTime) {
+                        const diffMs = completedTime - assignedTime;
+                        const diffMins = Math.round(diffMs / 60000);
+                        durationStr = `${diffMins} Mins`;
+                        durationMins = diffMins;
+                    }
+
+                    const record = {
+                        project: task.projectName || "General Site",
+                        operative: opKey.replace(/_/g, ' ').toUpperCase(),
+                        description: task.description,
+                        status: task.status,
+                        assigned: assignedTime ? assignedTime.toLocaleString() : "N/A",
+                        completed: completedTime ? completedTime.toLocaleString() : "N/A",
+                        duration: durationStr,
+                        durationMins: durationMins
+                    };
+
+                    performanceReportData.push(record);
+
+                    let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
+                    if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
+                    if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
+                    if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Returned</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-700";
+                    tr.innerHTML = `
+                        <td class="p-3 font-semibold">${record.project}</td>
+                        <td class="p-3">${record.operative}</td>
+                        <td class="p-3 max-w-xs">${record.description}</td>
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3 text-xs text-gray-400">${record.assigned}</td>
+                        <td class="p-3 text-xs text-gray-400">${record.completed}</td>
+                        <td class="p-3 font-bold text-amber-400">${record.duration}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        });
+
+        // CSV Export
+        document.getElementById('btn-export-csv').addEventListener('click', () => {
+            if(performanceReportData.length === 0) {
+                alert("No data available to export.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Project,Operative,Task Description,Status,Assigned Time,Completed Time,Duration\n";
+            performanceReportData.forEach(r => {
+                csvContent += `"${r.project}","${r.operative}","${r.description.replace(/"/g, '""')}","${r.status}","${r.assigned}","${r.completed}","${r.duration}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Task_Performance_Report_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // PDF Print/Export
+        document.getElementById('btn-export-pdf').addEventListener('click', () => {
+            const printWindow = window.open('', '', 'height=700,width=900');
+            printWindow.document.write('<html><head><title>Task Performance Analytics</title>');
+            printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;color:#000} h1{font-size:20px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:11px;} th{background:#e2e8f0;}</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h1>Lingua Site Franca — Task Performance Analytics Report</h1>');
+            printWindow.document.write(`<p>Generated: ${new Date().toLocaleString()}</p>`);
+            printWindow.document.write(document.getElementById('performance-table').outerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
         });
     </script>
 </body>
