@@ -100,31 +100,18 @@
 
   <div class="card">
     <div class="card-title">Master Operative & Qualifications Directory</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Operative Name</th>
-            <th>Assigned Site</th>
-            <th>Employer / Company</th>
-            <th>Qualification / Card</th>
-            <th>Expiry Date</th>
-            <th>Compliance Status</th>
-          </tr>
-        </thead>
-        <tbody id="officeOpsBody"></tbody>
-      </table>
-    </div>
+    <table>
+      <thead><tr><th>Operative Name</th><th>Assigned Site</th><th>Qualification / Card</th><th>Expiry Date</th><th>Compliance Status</th></tr></thead>
+      <tbody id="officeOpsBody"></tbody>
+    </table>
   </div>
 
   <div class="card">
     <div class="card-title">Master Task Log & Submissions</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead><tr><th>Site</th><th>Operative</th><th>Task Details</th><th>Status</th><th>Photo / Evidence</th><th>Comments</th></tr></thead>
-        <tbody id="officeTasksBody"></tbody>
-      </table>
-    </div>
+    <table>
+      <thead><tr><th>Site</th><th>Operative</th><th>Task Details</th><th>Status</th><th>Photo / Evidence</th><th>Comments</th></tr></thead>
+      <tbody id="officeTasksBody"></tbody>
+    </table>
   </div>
 
   <div class="card no-print">
@@ -212,15 +199,7 @@
       const op = data[key];
       const isExp = op.expiry && op.expiry < today;
       if (isExp) expired++; else valid++;
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${op.name}</strong></td>
-          <td>${op.assignedSite || 'N/A'}</td>
-          <td>${op.employer || 'Direct / Self'}</td>
-          <td>${op.qualification || 'N/A'}</td>
-          <td>${op.expiry || 'N/A'}</td>
-          <td><span class="badge ${isExp ? 'badge-expired' : 'badge-valid'}">${isExp ? 'EXPIRED' : 'VALID'}</span></td>
-        </tr>`;
+      tbody.innerHTML += `<tr><td><strong>${op.name}</strong></td><td>${op.assignedSite || 'N/A'}</td><td>${op.qualification || 'N/A'}</td><td>${op.expiry || 'N/A'}</td><td><span class="badge ${isExp ? 'badge-expired' : 'badge-valid'}">${isExp ? 'EXPIRED' : 'VALID'}</span></td></tr>`;
     });
     renderComplianceChart(valid, expired);
   });
