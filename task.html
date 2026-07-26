@@ -8,7 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.0.6/compressor.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -17,12 +17,12 @@
             <div class="text-center mb-6 sm:mb-8">
                 <img id="loginLogo" src="" class="h-12 mx-auto mb-4 hidden">
                 <h1 id="loginTitle" class="text-xl sm:text-2xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                <p class="text-gray-500 text-xs sm:text-sm mt-2">Field Worker Portal</p>
+                <p class="text-gray-500 text-xs sm:text-sm mt-2">Operative Portal</p>
             </div>
             <form id="loginForm" class="space-y-4">
                 <input type="email" id="loginEmail" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
                 <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">Sign In</button>
+                <button type="submit" id="btnSignIn" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">Sign In</button>
             </form>
             <p id="loginError" class="text-red-500 text-xs sm:text-sm text-center mt-4 hidden"></p>
         </div>
@@ -31,7 +31,7 @@
     <div id="languageScreen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gray-100">
         <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-lg w-full max-w-md">
             <div class="text-center mb-6">
-                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Select Your Language</h2>
+                <h2 id="lblSelectLang" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Select Your Language</h2>
                 <p class="text-gray-500 text-sm">Choose your preferred language for the app interface</p>
             </div>
             <form id="languageForm" class="space-y-4">
@@ -92,7 +92,7 @@
                     <input type="text" id="customLanguage" placeholder="e.g., Albanian, Lithuanian, Latvian..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
                     <p class="text-xs text-gray-500 mt-1">If your language is not listed above, type it here</p>
                 </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">Continue</button>
+                <button type="submit" id="btnContinue" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-lg transition text-sm sm:text-base">Continue</button>
             </form>
         </div>
     </div>
@@ -120,6 +120,7 @@
                 <p id="dlmFeedback" class="text-sm sm:text-base text-gray-800 italic"></p>
             </div>
 
+            <!-- ALWAYS SHOW THE FORM - even if no task -->
             <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-4 sm:p-6 space-y-4">
                 <h2 id="lblSubmitTitle" class="text-base sm:text-lg font-bold text-gray-800 mb-2">Submit Completion</h2>
                 <div>
@@ -156,26 +157,147 @@
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
+        const db = firebase.database();
 
         let currentUser = null;
         let currentTaskId = null;
+        let authStateResolved = false;
 
-        // TRANSLATION DICTIONARY
+        // COMPREHENSIVE TRANSLATION DICTIONARY
         const translations = {
-            'en': { taskTitle: 'Your Assigned Task', feedback: 'Manager Feedback', submitTitle: 'Submit Completion', photo: 'Photo Proof (1-3 photos)', photoHint: 'Tap to take a photo or select from gallery', comment: 'Comments (in your language)', btnSubmit: 'Submit Task', btnLogout: 'Sign Out' },
-            'ro': { taskTitle: 'Sarcina Ta Atribuită', feedback: 'Feedback Manager', submitTitle: 'Trimite Completarea', photo: 'Dovadă Foto (1-3 poze)', photoHint: 'Apasă pentru a face o poză sau alege din galerie', comment: 'Comentarii (în limba ta)', btnSubmit: 'Trimite Sarcina', btnLogout: 'Deconectare' },
-            'es': { taskTitle: 'Tu Tarea Asignada', feedback: 'Comentarios del Gerente', submitTitle: 'Enviar Completación', photo: 'Prueba de Foto (1-3 fotos)', photoHint: 'Toca para tomar una foto o seleccionar de la galería', comment: 'Comentarios (en tu idioma)', btnSubmit: 'Enviar Tarea', btnLogout: 'Cerrar Sesión' },
-            'fr': { taskTitle: 'Votre Tâche Assignée', feedback: 'Commentaires du Manager', submitTitle: 'Soumettre l\'achèvement', photo: 'Preuve Photo (1-3 photos)', photoHint: 'Appuyez pour prendre une photo ou sélectionner dans la galerie', comment: 'Commentaires (dans votre langue)', btnSubmit: 'Soumettre la Tâche', btnLogout: 'Se Déconnecter' },
-            'de': { taskTitle: 'Ihre Zugewiesene Aufgabe', feedback: 'Manager-Feedback', submitTitle: 'Abschluss Einreichen', photo: 'Fotonachweis (1-3 Fotos)', photoHint: 'Tippen Sie, um ein Foto aufzunehmen oder aus der Galerie auszuwählen', comment: 'Kommentare (in Ihrer Sprache)', btnSubmit: 'Aufgabe Einreichen', btnLogout: 'Abmelden' },
-            'it': { taskTitle: 'Il Tuo Compito Assegnato', feedback: 'Feedback del Manager', submitTitle: 'Invia Completamento', photo: 'Prova Foto (1-3 foto)', photoHint: 'Tocca per scattare una foto o selezionare dalla galleria', comment: 'Commenti (nella tua lingua)', btnSubmit: 'Invia Compito', btnLogout: 'Disconnetti' },
-            'pl': { taskTitle: 'Twoje Przydzielone Zadanie', feedback: 'Opinia Kierownika', submitTitle: 'Zatwierdź Zakończenie', photo: 'Dowód Zdjęciowy (1-3 zdjęcia)', photoHint: 'Stuknij, aby zrobić zdjęcie lub wybrać z galerii', comment: 'Komentarze (w Twoim języku)', btnSubmit: 'Zatwierdź Zadanie', btnLogout: 'Wyloguj' }
+            'en': { 
+                taskTitle: 'Your Assigned Task', 
+                feedback: 'Manager Feedback', 
+                submitTitle: 'Submit Completion', 
+                photo: 'Photo Proof (1-3 photos)', 
+                photoHint: 'Tap to take a photo or select from gallery', 
+                comment: 'Comments (in your language)', 
+                btnSubmit: 'Submit Task', 
+                btnLogout: 'Sign Out',
+                lblSelectLang: 'Select Your Language',
+                btnContinue: 'Continue',
+                btnSignIn: 'Sign In',
+                noTask: 'No active tasks assigned to you right now.',
+                pending: 'Pending',
+                pendingAction: 'Pending Action',
+                needsRevision: 'Needs Revision'
+            },
+            'ro': { 
+                taskTitle: 'Sarcina Ta Atribuită', 
+                feedback: 'Feedback Manager', 
+                submitTitle: 'Trimite Completarea', 
+                photo: 'Dovadă Foto (1-3 poze)', 
+                photoHint: 'Apasă pentru a face o poză sau alege din galerie', 
+                comment: 'Comentarii (în limba ta)', 
+                btnSubmit: 'Trimite Sarcina', 
+                btnLogout: 'Deconectare',
+                lblSelectLang: 'Selectează Limba Ta',
+                btnContinue: 'Continuă',
+                btnSignIn: 'Autentificare',
+                noTask: 'Nu ai sarcini active în acest moment.',
+                pending: 'În Așteptare',
+                pendingAction: 'Acțiune Necesară',
+                needsRevision: 'Necesită Revizuire'
+            },
+            'es': { 
+                taskTitle: 'Tu Tarea Asignada', 
+                feedback: 'Comentarios del Gerente', 
+                submitTitle: 'Enviar Completación', 
+                photo: 'Prueba de Foto (1-3 fotos)', 
+                photoHint: 'Toca para tomar una foto o seleccionar de la galería', 
+                comment: 'Comentarios (en tu idioma)', 
+                btnSubmit: 'Enviar Tarea', 
+                btnLogout: 'Cerrar Sesión',
+                lblSelectLang: 'Selecciona Tu Idioma',
+                btnContinue: 'Continuar',
+                btnSignIn: 'Iniciar Sesión',
+                noTask: 'No tienes tareas activas en este momento.',
+                pending: 'Pendiente',
+                pendingAction: 'Acción Pendiente',
+                needsRevision: 'Necesita Revisión'
+            },
+            'fr': { 
+                taskTitle: 'Votre Tâche Assignée', 
+                feedback: 'Commentaires du Manager', 
+                submitTitle: 'Soumettre l\'achèvement', 
+                photo: 'Preuve Photo (1-3 photos)', 
+                photoHint: 'Appuyez pour prendre une photo ou sélectionner dans la galerie', 
+                comment: 'Commentaires (dans votre langue)', 
+                btnSubmit: 'Soumettre la Tâche', 
+                btnLogout: 'Se Déconnecter',
+                lblSelectLang: 'Sélectionnez Votre Langue',
+                btnContinue: 'Continuer',
+                btnSignIn: 'Se Connecter',
+                noTask: 'Vous n\'avez pas de tâches actives en ce moment.',
+                pending: 'En attente',
+                pendingAction: 'Action Requise',
+                needsRevision: 'Nécessite Révision'
+            },
+            'de': { 
+                taskTitle: 'Ihre Zugewiesene Aufgabe', 
+                feedback: 'Manager-Feedback', 
+                submitTitle: 'Abschluss Einreichen', 
+                photo: 'Fotonachweis (1-3 Fotos)', 
+                photoHint: 'Tippen Sie, um ein Foto aufzunehmen oder aus der Galerie auszuwählen', 
+                comment: 'Kommentare (in Ihrer Sprache)', 
+                btnSubmit: 'Aufgabe Einreichen', 
+                btnLogout: 'Abmelden',
+                lblSelectLang: 'Wählen Sie Ihre Sprache',
+                btnContinue: 'Fortfahren',
+                btnSignIn: 'Anmelden',
+                noTask: 'Sie haben derzeit keine aktiven Aufgaben.',
+                pending: 'Ausstehend',
+                pendingAction: 'Aktion Erforderlich',
+                needsRevision: 'Überarbeitung Erforderlich'
+            },
+            'it': { 
+                taskTitle: 'Il Tuo Compito Assegnato', 
+                feedback: 'Feedback del Manager', 
+                submitTitle: 'Invia Completamento', 
+                photo: 'Prova Foto (1-3 foto)', 
+                photoHint: 'Tocca per scattare una foto o selezionare dalla galleria', 
+                comment: 'Commenti (nella tua lingua)', 
+                btnSubmit: 'Invia Compito', 
+                btnLogout: 'Disconnetti',
+                lblSelectLang: 'Seleziona la Tua Lingua',
+                btnContinue: 'Continua',
+                btnSignIn: 'Accedi',
+                noTask: 'Non hai compiti attivi in questo momento.',
+                pending: 'In Attesa',
+                pendingAction: 'Azione Richiesta',
+                needsRevision: 'Necessita Revisione'
+            },
+            'pl': { 
+                taskTitle: 'Twoje Przydzielone Zadanie', 
+                feedback: 'Opinia Kierownika', 
+                submitTitle: 'Zatwierdź Zakończenie', 
+                photo: 'Dowód Zdjęciowy (1-3 zdjęcia)', 
+                photoHint: 'Stuknij, aby zrobić zdjęcie lub wybrać z galerii', 
+                comment: 'Komentarze (w Twoim języku)', 
+                btnSubmit: 'Zatwierdź Zadanie', 
+                btnLogout: 'Wyloguj',
+                lblSelectLang: 'Wybierz Swój Język',
+                btnContinue: 'Kontynuuj',
+                btnSignIn: 'Zaloguj Się',
+                noTask: 'Nie masz obecnie aktywnych zadań.',
+                pending: 'Oczekujące',
+                pendingAction: 'Wymagane Działanie',
+                needsRevision: 'Wymaga Poprawki'
+            }
         };
 
         function applyInterfaceTranslation(langCode) {
-            // Default to English if translation missing
             const t = translations[langCode] || translations['en'];
             
+            // Login Screen
+            const signInBtn = document.getElementById('btnSignIn');
+            if (signInBtn) signInBtn.innerText = t.btnSignIn;
+            
+            // Language Screen
+            document.getElementById('lblSelectLang').innerText = t.lblSelectLang;
+            document.getElementById('btnContinue').innerText = t.btnContinue;
+            
+            // Task Interface
             document.getElementById('lblTaskTitle').innerText = t.taskTitle;
             document.getElementById('lblFeedbackTitle').innerText = t.feedback;
             document.getElementById('lblSubmitTitle').innerText = t.submitTitle;
@@ -184,26 +306,49 @@
             document.getElementById('lblComment').innerText = t.comment;
             document.getElementById('submitBtn').innerText = t.btnSubmit;
             document.getElementById('logoutBtn').innerText = t.btnLogout;
+            
+            // Task Description
+            if (!currentTaskId) {
+                document.getElementById('taskDescription').innerText = t.noTask;
+            }
+            
+            // Status Badges
+            const badge = document.getElementById('taskStatusBadge');
+            if (badge) {
+                if (badge.innerText === 'Pending') badge.innerText = t.pending;
+                if (badge.innerText === 'Pending Action') badge.innerText = t.pendingAction;
+                if (badge.innerText === 'Needs Revision') badge.innerText = t.needsRevision;
+            }
         }
 
-        db.collection('settings').doc('branding').onSnapshot((doc) => {
-            if (doc.exists) {
-                const b = doc.data();
-                if (b.businessName) { document.getElementById('navTitle').textContent = b.businessName; document.getElementById('loginTitle').textContent = b.businessName; }
+        db.ref('settings/branding').on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                const b = snapshot.val();
+                if (b.businessName) {
+                    document.getElementById('navTitle').textContent = b.businessName;
+                    document.getElementById('loginTitle').textContent = b.businessName;
+                }
                 if (b.footerText) document.getElementById('footerContent').textContent = b.footerText;
                 if (b.logoUrl) {
-                    document.getElementById('navLogo').src = b.logoUrl; document.getElementById('navLogo').classList.remove('hidden');
-                    document.getElementById('loginLogo').src = b.logoUrl; document.getElementById('loginLogo').classList.remove('hidden');
+                    document.getElementById('navLogo').src = b.logoUrl;
+                    document.getElementById('navLogo').classList.remove('hidden');
+                    document.getElementById('loginLogo').src = b.logoUrl;
+                    document.getElementById('loginLogo').classList.remove('hidden');
                 }
             }
         });
 
         auth.onAuthStateChanged(async (user) => {
+            if (authStateResolved) return;
+
             if (user) {
+                authStateResolved = true;
                 try {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().role === 'operative') {
-                        currentUser = { uid: user.uid, ...userDoc.data() };
+                    const userSnapshot = await db.ref(`users/${user.uid}`).get();
+                    if (userSnapshot.exists() && userSnapshot.val().role === 'operative') {
+                        currentUser = { uid: user.uid, ...userSnapshot.val() };
+                        document.getElementById('loginError').classList.add('hidden');
+                        
                         if (!currentUser.languageSelected) {
                             document.getElementById('loginScreen').classList.add('hidden');
                             document.getElementById('taskInterface').classList.add('hidden');
@@ -212,29 +357,42 @@
                             document.getElementById('loginScreen').classList.add('hidden');
                             document.getElementById('languageScreen').classList.add('hidden');
                             document.getElementById('taskInterface').classList.remove('hidden');
-                            applyInterfaceTranslation(currentUser.nativeLanguage); // APPLY TRANSLATION HERE
+                            applyInterfaceTranslation(currentUser.nativeLanguage);
                             loadTask();
                         }
                     } else {
-                        console.log("Not an operative. Forcing logout.");
-                        await auth.signOut();
+                        document.getElementById('loginError').innerText = "Access Denied: User profile not found.";
+                        document.getElementById('loginError').classList.remove('hidden');
+                        document.getElementById('loginScreen').classList.remove('hidden');
+                        document.getElementById('languageScreen').classList.add('hidden');
+                        document.getElementById('taskInterface').classList.add('hidden');
+                        authStateResolved = false;
                     }
                 } catch (error) {
                     console.error("DB Error:", error);
-                    await auth.signOut();
+                    document.getElementById('loginError').innerText = "Database connection error. Please check Realtime Database Rules.";
+                    document.getElementById('loginError').classList.remove('hidden');
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('languageScreen').classList.add('hidden');
+                    document.getElementById('taskInterface').classList.add('hidden');
+                    authStateResolved = false;
                 }
             } else {
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('languageScreen').classList.add('hidden');
                 document.getElementById('taskInterface').classList.add('hidden');
+                authStateResolved = false;
             }
         });
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            authStateResolved = false;
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            try { await auth.signInWithEmailAndPassword(email, password); } catch (error) {
+            try { 
+                await auth.signInWithEmailAndPassword(email, password); 
+            } catch (error) {
                 document.getElementById('loginError').innerText = error.message;
                 document.getElementById('loginError').classList.remove('hidden');
             }
@@ -250,17 +408,25 @@
             else { alert('Please select or type your language'); return; }
             
             try {
-                await db.collection('users').doc(currentUser.uid).update({ nativeLanguage: selectedLanguage, languageDisplayName: languageName, languageSelected: true });
+                await db.ref(`users/${currentUser.uid}`).update({ 
+                    nativeLanguage: selectedLanguage, 
+                    languageDisplayName: languageName, 
+                    languageSelected: true
+                });
                 currentUser.nativeLanguage = selectedLanguage;
                 document.getElementById('languageScreen').classList.add('hidden');
                 document.getElementById('taskInterface').classList.remove('hidden');
-                applyInterfaceTranslation(selectedLanguage); // APPLY TRANSLATION HERE
+                applyInterfaceTranslation(selectedLanguage);
                 alert(`✅ Language set to: ${languageName}`);
                 loadTask();
             } catch (error) { alert('❌ Error saving language: ' + error.message); }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            authStateResolved = false;
+            await auth.signOut();
+        });
+
         document.getElementById('photoInput').addEventListener('change', (e) => {
             const count = e.target.files.length;
             document.getElementById('photoCount').innerText = count > 0 ? `${count} photo(s) selected` : '';
@@ -268,55 +434,124 @@
         });
 
         async function loadTask() {
-            const snapshot = await db.collection('tasks').where('operativeId', '==', currentUser.uid).where('status', 'in', ['assigned', 'rejected']).limit(1).get();
-            if (snapshot.empty) {
-                document.getElementById('taskDescription').innerText = "No active tasks assigned to you right now.";
-                document.getElementById('submitTaskForm').classList.add('hidden');
+            const snapshot = await db.ref('tasks').get();
+            if (!snapshot.exists()) {
+                const t = translations[currentUser.nativeLanguage] || translations['en'];
+                document.getElementById('taskDescription').innerText = t.noTask;
                 return;
             }
-            const taskDoc = snapshot.docs[0];
-            currentTaskId = taskDoc.id;
-            const task = taskDoc.data();
-            document.getElementById('taskDescription').innerText = task.description_en;
-            const badge = document.getElementById('taskStatusBadge');
-            if (task.status === 'rejected') {
-                badge.innerText = "Needs Revision"; badge.className = "mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800";
-                if (task.dlm_feedback_en) { document.getElementById('feedbackSection').classList.remove('hidden'); document.getElementById('dlmFeedback').innerText = task.dlm_feedback_en; }
-            } else { badge.innerText = "Pending Action"; badge.className = "mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800"; }
+
+            let foundTask = false;
+            snapshot.forEach((childSnapshot) => {
+                const task = childSnapshot.val();
+                if (task.operativeId === currentUser.uid && ['assigned', 'rejected'].includes(task.status)) {
+                    foundTask = true;
+                    currentTaskId = childSnapshot.key;
+                    document.getElementById('taskDescription').innerText = task.description_en;
+                    const badge = document.getElementById('taskStatusBadge');
+                    const t = translations[currentUser.nativeLanguage] || translations['en'];
+                    
+                    if (task.status === 'rejected') {
+                        badge.innerText = t.needsRevision; 
+                        badge.className = "mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800";
+                        if (task.dlm_feedback_en) {
+                            document.getElementById('feedbackSection').classList.remove('hidden');
+                            document.getElementById('dlmFeedback').innerText = task.dlm_feedback_en;
+                        }
+                    } else {
+                        badge.innerText = t.pendingAction; 
+                        badge.className = "mt-3 inline-block px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800";
+                    }
+                }
+            });
+            
+            if (!foundTask) {
+                const t = translations[currentUser.nativeLanguage] || translations['en'];
+                document.getElementById('taskDescription').innerText = t.noTask;
+            }
         }
 
         document.getElementById('submitTaskForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            if (!currentTaskId) {
+                alert("No active task to submit. Please wait for a task assignment.");
+                return;
+            }
+            
             const photoInput = document.getElementById('photoInput');
             const comment = document.getElementById('operativeComment').value;
             const submitBtn = document.getElementById('submitBtn');
-            if (photoInput.files.length === 0) { alert("Please attach at least 1 photo."); return; }
-            if (photoInput.files.length > 3) { alert("Maximum 3 photos allowed per task."); return; }
-            submitBtn.disabled = true; submitBtn.innerText = "Compressing photos...";
+            
+            if (photoInput.files.length === 0) { 
+                const t = translations[currentUser.nativeLanguage] || translations['en'];
+                alert("Please attach at least 1 photo."); 
+                return; 
+            }
+            if (photoInput.files.length > 3) { 
+                alert("Maximum 3 photos allowed per task."); 
+                return; 
+            }
+            
+            submitBtn.disabled = true; 
+            submitBtn.innerText = "Compressing photos...";
+            
             try {
-                const compressedPhotos = []; let processed = 0; let totalSize = 0;
+                const compressedPhotos = []; 
+                let processed = 0; 
+                let totalSize = 0;
+                
                 for (let i = 0; i < photoInput.files.length; i++) {
                     const file = photoInput.files[i];
                     await new Promise((resolve, reject) => {
-                        new Compressor(file, { quality: 0.4, maxWidth: 800, maxHeight: 800, mimeType: 'image/jpeg', convertSize: 80000,
+                        new Compressor(file, { 
+                            quality: 0.4, 
+                            maxWidth: 800, 
+                            maxHeight: 800, 
+                            mimeType: 'image/jpeg', 
+                            convertSize: 80000,
                             success: (compressedFile) => {
                                 const reader = new FileReader();
                                 reader.onload = () => {
-                                    compressedPhotos.push({ data: reader.result, name: compressedFile.name, size: compressedFile.size });
-                                    totalSize += compressedFile.size; processed++;
+                                    compressedPhotos.push({ 
+                                        data: reader.result, 
+                                        name: compressedFile.name, 
+                                        size: compressedFile.size 
+                                    });
+                                    totalSize += compressedFile.size; 
+                                    processed++;
                                     document.getElementById('photoSize').innerText = `Total size: ${(totalSize / 1024).toFixed(1)}KB`;
                                     if (processed === photoInput.files.length) resolve();
                                 };
                                 reader.readAsDataURL(compressedFile);
-                            }, error: (err) => { reject(err); }
+                            }, 
+                            error: (err) => { reject(err); }
                         });
                     });
                 }
+                
                 if (totalSize > 900000) throw new Error('Photos are too large. Please try fewer or smaller photos.');
+                
                 submitBtn.innerText = "Uploading...";
-                await db.collection('tasks').doc(currentTaskId).update({ status: 'submitted', operative_comment_native: comment, operative_comment_en: '', photos: compressedPhotos, submittedAt: firebase.firestore.FieldValue.serverTimestamp() });
-                alert("✅ Task submitted successfully!"); window.location.reload();
-            } catch (error) { alert("❌ Error: " + error.message); submitBtn.disabled = false; submitBtn.innerText = "Submit Task"; }
+                
+                await db.ref(`tasks/${currentTaskId}`).update({
+                    status: 'submitted',
+                    operative_comment_native: comment,
+                    operative_comment_en: '',
+                    photos: compressedPhotos,
+                    submittedAt: new Date().toISOString()
+                });
+                
+                const t = translations[currentUser.nativeLanguage] || translations['en'];
+                alert("✅ Task submitted successfully!"); 
+                window.location.reload();
+                
+            } catch (error) { 
+                alert("❌ Error: " + error.message); 
+                submitBtn.disabled = false;
+                const t = translations[currentUser.nativeLanguage] || translations['en'];
+                submitBtn.innerText = t.btnSubmit;
+            }
         });
     </script>
 </body>
