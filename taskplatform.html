@@ -10,25 +10,37 @@
     
     <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
         <h1 class="text-xl font-bold" id="brand-title"></h1>
-        <select id="lang-select" class="bg-gray-800 text-white p-1 rounded focus:outline-none">
+        
+        <!-- Extended Language Menu -->
+        <select id="lang-select" class="bg-gray-800 text-white p-2 rounded border border-gray-700 focus:outline-none text-sm">
             <option value="en">English</option>
-            <option value="ro">Română</option>
-            <option value="es">Español</option>
-            <option value="pl">Polski</option>
+            <option value="ro">Română (Romanian)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="pl">Polski (Polish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="de">Deutsch (German)</option>
+            <option value="it">Italiano (Italian)</option>
+            <option value="pt">Português (Portuguese)</option>
+            <option value="uk">Українська (Ukrainian)</option>
+            <option value="bg">Български (Bulgarian)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="ar">العربية (Arabic)</option>
+            <option value="zh">中文 (Chinese)</option>
         </select>
     </header>
 
     <!-- Login Section -->
-    <div id="login-section" class="flex flex-col items-center justify-center flex-grow">
-        <div class="bg-gray-800 p-8 rounded-lg w-96 text-center">
-            <input type="email" id="login-email" class="w-full p-2 mb-4 rounded bg-gray-700 text-white focus:outline-none" value="">
-            <button id="btn-login" class="w-full bg-blue-600 p-2 rounded hover:bg-blue-500"></button>
+    <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
+        <div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center shadow-lg">
+            <h2 class="text-xl font-bold mb-4">Operative Access</h2>
+            <input type="text" id="login-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">View Tasks</button>
         </div>
     </div>
 
     <!-- Task List Section -->
     <main id="tasks-section" class="hidden flex-grow p-6">
-        <div id="task-container" class="flex flex-col gap-4 max-w-2xl mx-auto"></div>
+        <div id="task-container" class="flex flex-col gap-6 max-w-2xl mx-auto"></div>
     </main>
 
     <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
@@ -49,9 +61,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let currentUserEmail = null;
+        
+        let currentOpKey = null;
+        let activeTasksCache = [];
 
-        // Branding Sync
+        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
         onValue(ref(db, 'branding'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -61,59 +76,85 @@
             }
         });
 
-        // Basic Client-Side Dictionary for UI elements
-        const dict = {
-            en: { loginBtn: "Access Tasks", submit: "Complete Task" },
-            ro: { loginBtn: "Accesați Sarcinile", submit: "Finalizați Sarcina" },
-            es: { loginBtn: "Acceder a Tareas", submit: "Completar Tarea" },
-            pl: { loginBtn: "Dostęp do Zadań", submit: "Zakończ Zadanie" }
-        };
-
-        function updateUI() {
-            const lang = document.getElementById('lang-select').value;
-            document.getElementById('btn-login').innerText = dict[lang].loginBtn;
+        // On-the-Fly Dynamic Translation
+        async function translateText(text, targetLang) {
+            if (targetLang === 'en' || !text) return text;
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`);
+                const data = await res.json();
+                return data.responseData.translatedText || text;
+            } catch (err) {
+                return text;
+            }
         }
-        
-        document.getElementById('lang-select').addEventListener('change', updateUI);
-        updateUI();
 
-        // Login Logic
         document.getElementById('btn-login').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.replace(/\./g, ',');
-            const snapshot = await get(ref(db, 'operatives/' + email));
+            const name = document.getElementById('login-name').value.trim();
+            if(!name) return;
+
+            currentOpKey = sanitizeKey(name);
+            const snapshot = await get(ref(db, 'operatives/' + currentOpKey));
+
             if (snapshot.exists()) {
-                currentUserEmail = email;
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('tasks-section').classList.remove('hidden');
-                loadTasks();
+                listenForTasks();
+            } else {
+                alert("Operative name not found. Please ask your DLM to register you.");
             }
         });
 
-        function loadTasks() {
-            onValue(ref(db, `tasks/${currentUserEmail}`), (snapshot) => {
-                const container = document.getElementById('task-container');
-                container.innerHTML = '';
+        document.getElementById('lang-select').addEventListener('change', () => {
+            renderTasks();
+        });
+
+        function listenForTasks() {
+            onValue(ref(db, `tasks/${currentOpKey}`), (snapshot) => {
+                activeTasksCache = [];
                 snapshot.forEach((child) => {
                     const task = child.val();
-                    if(task.status === 'pending' || task.status === 'reassigned') {
-                        const card = document.createElement('div');
-                        card.className = "bg-gray-800 p-4 rounded-lg";
-                        
-                        card.innerHTML = `
-                            <p class="mb-4">${task.description}</p>
-                            <input type="file" id="file-${child.key}" accept="image/*" class="mb-2 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white">
-                            <textarea id="comment-${child.key}" class="w-full p-2 mb-2 rounded bg-gray-700 text-white focus:outline-none h-16" value=""></textarea>
-                            <button id="submit-btn-${child.key}" class="bg-green-600 p-2 rounded hover:bg-green-500 w-full">${dict[document.getElementById('lang-select').value].submit}</button>
-                        `;
-                        container.appendChild(card);
-
-                        // Attach event listener directly to the dynamically created button
-                        document.getElementById(`submit-btn-${child.key}`).addEventListener('click', () => {
-                            submitTask(child.key);
-                        });
+                    if (task.status === 'pending' || task.status === 'rejected') {
+                        activeTasksCache.push({ id: child.key, ...task });
                     }
                 });
+
+                // Chronological Sorting (Oldest tasks first)
+                activeTasksCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                renderTasks();
             });
+        }
+
+        async function renderTasks() {
+            const targetLang = document.getElementById('lang-select').value;
+            const container = document.getElementById('task-container');
+            container.innerHTML = '<p class="text-center text-gray-400">Loading & Translating Tasks...</p>';
+
+            if (activeTasksCache.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400">No active tasks currently assigned.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            for (const task of activeTasksCache) {
+                const translatedDesc = await translateText(task.description, targetLang);
+
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 flex flex-col gap-3";
+
+                card.innerHTML = `
+                    <div class="text-xs text-gray-400">${new Date(task.timestamp).toLocaleString()}</div>
+                    <p class="text-lg leading-relaxed text-gray-100">${translatedDesc}</p>
+                    <input type="file" id="file-${task.id}" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white">
+                    <textarea id="comment-${task.id}" placeholder="Comments..." class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-16 text-sm"></textarea>
+                    <button id="submit-btn-${task.id}" class="bg-green-600 p-3 rounded font-medium hover:bg-green-500 w-full transition">Submit Completion</button>
+                `;
+                container.appendChild(card);
+
+                document.getElementById(`submit-btn-${task.id}`).addEventListener('click', () => {
+                    submitTask(task.id);
+                });
+            }
         }
 
         async function submitTask(taskId) {
@@ -131,7 +172,7 @@
                 });
             }
 
-            update(ref(db, `tasks/${currentUserEmail}/${taskId}`), {
+            update(ref(db, `tasks/${currentOpKey}/${taskId}`), {
                 status: 'submitted',
                 photo: photoData,
                 originalComment: comment,
