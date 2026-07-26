@@ -1,228 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace — Operative Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operative Task Portal</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; }
+    .container { width: 95%; max-width: 1400px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .lang-select { padding: 8px 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.9rem; }
+
+    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
+    .task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+    .task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    textarea, input[type="file"] { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; }
+
+    button { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem; }
+    button:hover { opacity: 0.9; }
+
+    .empty-state { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 1.1rem; }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
-    
-    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300 flex-wrap gap-2" id="main-header">
-        <h1 class="text-lg sm:text-2xl font-bold" id="brand-title"></h1>
-        
-        <!-- 35+ Languages Menu -->
-        <select id="lang-select" class="bg-gray-800 text-white p-2 rounded border border-gray-700 focus:outline-none text-xs sm:text-sm">
-            <option value="en">English</option>
-            <option value="ro" selected>Română (Romanian)</option>
-            <option value="es">Español (Spanish)</option>
-            <option value="pl">Polski (Polish)</option>
-            <option value="uk">Українська (Ukrainian)</option>
-            <option value="bg">Български (Bulgarian)</option>
-            <option value="fr">Français (French)</option>
-            <option value="de">Deutsch (German)</option>
-            <option value="it">Italiano (Italian)</option>
-            <option value="pt">Português (Portuguese)</option>
-            <option value="hu">Magyar (Hungarian)</option>
-            <option value="cs">Čeština (Czech)</option>
-            <option value="sk">Slovenčina (Slovak)</option>
-            <option value="el">Ελληνικά (Greek)</option>
-            <option value="tr">Türkçe (Turkish)</option>
-            <option value="nl">Nederlands (Dutch)</option>
-            <option value="sv">Svenska (Swedish)</option>
-            <option value="no">Norsk (Norwegian)</option>
-            <option value="da">Dansk (Danish)</option>
-            <option value="fi">Suomi (Finnish)</option>
-            <option value="lt">Lietuvių (Lithuanian)</option>
-            <option value="lv">Latviešu (Latvian)</option>
-            <option value="et">Eesti (Estonian)</option>
-            <option value="hi">हिन्दी (Hindi)</option>
-            <option value="ur">اردو (Urdu)</option>
-            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
-            <option value="bn">বাংলা (Bengali)</option>
-            <option value="ar">العربية (Arabic)</option>
-            <option value="zh">中文 (Chinese)</option>
-            <option value="ja">日本語 (Japanese)</option>
-            <option value="vi">Tiếng Việt (Vietnamese)</option>
-            <option value="tl">Tagalog (Filipino)</option>
-            <option value="th">ไทย (Thai)</option>
-            <option value="id">Bahasa Indonesia</option>
-            <option value="sw">Kiswahili (Swahili)</option>
-        </select>
-    </header>
+<body>
 
-    <!-- Login Section -->
-    <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
-        <div class="bg-gray-800 p-6 sm:p-8 rounded-lg w-full max-w-md text-center shadow-lg border border-gray-700">
-            <h2 class="text-xl font-bold mb-4">Operative Access</h2>
-            <input type="text" id="login-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">View Tasks</button>
-        </div>
-    </div>
+<div class="container">
+  <header>
+    <h2>Operative Task Workspace</h2>
+    <select id="langSelect" class="lang-select">
+      <option value="ro">Română (Romanian)</option>
+      <option value="pl">Polski (Polish)</option>
+      <option value="bg">Български (Bulgarian)</option>
+      <option value="uk">Українська (Ukrainian)</option>
+      <option value="es">Español (Spanish)</option>
+      <option value="pt">Português (Portuguese)</option>
+      <option value="it">Italiano (Italian)</option>
+      <option value="fr">Français (French)</option>
+      <option value="lt">Lietuvių (Lithuanian)</option>
+      <option value="lv">Latviešu (Latvian)</option>
+      <option value="hu">Magyar (Hungarian)</option>
+      <option value="sk">Slovenčina (Slovak)</option>
+    </select>
+  </header>
 
-    <!-- Task List Section -->
-    <main id="tasks-section" class="hidden flex-grow p-4 sm:p-6">
-        <div id="task-container" class="flex flex-col gap-6 max-w-2xl mx-auto"></div>
-    </main>
+  <div id="tasksContainer">
+    <div class="empty-state">No active tasks assigned.</div>
+  </div>
+</div>
 
-    <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  const firebaseConfig = {
+    databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
+  };
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-            authDomain: "lingua-site-franca.firebaseapp.com",
-            databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "lingua-site-franca",
-            storageBucket: "lingua-site-franca.firebasestorage.app",
-            messagingSenderId: "737514168886",
-            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-        };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        
-        let currentOpKey = null;
-        let activeTasksCache = [];
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentOp = urlParams.get('op') || 'TEST 1';
 
-        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  async function translateText(text, targetLang) {
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    } catch (e) {
+      return text;
+    }
+  }
 
-        onValue(ref(db, 'branding'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('brand-title').innerText = data.title || '';
-                document.getElementById('main-header').style.backgroundColor = data.headerColor || '#1f2937';
-                document.getElementById('main-footer').innerText = data.footer || '';
-            }
-        });
+  function renderTasks() {
+    const lang = document.getElementById('langSelect').value;
+    onValue(ref(db, 'tasks'), async (snapshot) => {
+      const data = snapshot.val() || {};
+      const container = document.getElementById('tasksContainer');
+      container.innerHTML = '';
 
-        // Live Translation Utility
-        async function translateText(text, targetLang) {
-            if (targetLang === 'en' || !text) return text;
-            try {
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`);
-                const data = await res.json();
-                return data.responseData.translatedText || text;
-            } catch (err) {
-                return text;
-            }
+      let hasTasks = false;
+
+      for (const key of Object.keys(data)) {
+        const task = data[key];
+        if (task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
+          hasTasks = true;
+          const translatedDetails = await translateText(task.details, lang);
+
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="task-title">Task #${key.slice(-4)} (${task.status})</div>
+            <div class="task-desc">${translatedDetails}</div>
+            ${task.returnNote ? `<div style="color: var(--danger); margin-bottom: 15px;"><strong>Return Note:</strong> ${task.returnNote}</div>` : ''}
+            <form onsubmit="submitTask(event, '${key}')">
+              <div class="form-group">
+                <label>Photo Evidence</label>
+                <input type="file" id="photo_${key}" accept="image/*" capture="environment">
+              </div>
+              <div class="form-group">
+                <label>Comments / Notes</label>
+                <textarea id="comment_${key}" rows="3"></textarea>
+              </div>
+              <button type="submit">Submit Task</button>
+            </form>
+          `;
+          container.appendChild(card);
         }
+      }
 
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const name = document.getElementById('login-name').value.trim();
-            if(!name) return;
+      if (!hasTasks) {
+        container.innerHTML = `<div class="empty-state">No active tasks assigned.</div>`;
+      }
+    });
+  }
 
-            currentOpKey = sanitizeKey(name);
-            const snapshot = await get(ref(db, 'operatives/' + currentOpKey));
+  document.getElementById('langSelect').addEventListener('change', renderTasks);
+  renderTasks();
 
-            if (snapshot.exists()) {
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('tasks-section').classList.remove('hidden');
-                listenForTasks();
-            } else {
-                alert("Operative name not found. Please ask your DLM to register you.");
-            }
-        });
+  window.submitTask = async (e, key) => {
+    e.preventDefault();
+    const comment = document.getElementById(`comment_${key}`).value.trim();
+    const fileInput = document.getElementById(`photo_${key}`);
 
-        document.getElementById('lang-select').addEventListener('change', () => {
-            renderTasks();
-        });
+    let photoData = null;
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      photoData = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
 
-        function listenForTasks() {
-            onValue(ref(db, `tasks/${currentOpKey}`), (snapshot) => {
-                activeTasksCache = [];
-                snapshot.forEach((child) => {
-                    const task = child.val();
-                    if (task.status === 'pending' || task.status === 'rejected') {
-                        activeTasksCache.push({ id: child.key, ...task });
-                    }
-                });
-
-                // Sort chronologically (Oldest tasks first)
-                activeTasksCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                renderTasks();
-            });
-        }
-
-        async function renderTasks() {
-            const targetLang = document.getElementById('lang-select').value;
-            const container = document.getElementById('task-container');
-            container.innerHTML = '<p class="text-center text-gray-400">Translating tasks...</p>';
-
-            if (activeTasksCache.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400">No active tasks assigned.</p>';
-                return;
-            }
-
-            container.innerHTML = '';
-
-            for (const task of activeTasksCache) {
-                const translatedDesc = await translateText(task.description, targetLang);
-                let translatedReturnNote = "";
-                
-                if(task.rejectionComment) {
-                    translatedReturnNote = await translateText(task.rejectionComment, targetLang);
-                }
-
-                const card = document.createElement('div');
-                card.className = "bg-gray-800 p-5 sm:p-6 rounded-lg shadow-md border border-gray-700 flex flex-col gap-3";
-
-                card.innerHTML = `
-                    <div class="flex justify-between items-center text-xs text-gray-400">
-                        <span>${new Date(task.timestamp).toLocaleString()}</span>
-                        ${task.status === 'rejected' ? '<span class="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">RETURNED FOR CORRECTION</span>' : ''}
-                    </div>
-
-                    ${task.rejectionComment ? `
-                        <div class="bg-red-950/50 border border-red-700 p-3 rounded">
-                            <p class="text-xs text-red-300 font-bold">DLM Feedback:</p>
-                            <p class="text-sm text-red-100">${translatedReturnNote}</p>
-                        </div>
-                    ` : ''}
-
-                    <p class="text-base sm:text-lg leading-relaxed text-gray-100 font-medium">${translatedDesc}</p>
-                    
-                    <div class="flex flex-col gap-2 mt-2">
-                        <label class="text-xs text-gray-400">Upload Photo Proof</label>
-                        <input type="file" id="file-${task.id}" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white cursor-pointer">
-                    </div>
-
-                    <textarea id="comment-${task.id}" placeholder="Your comments / notes..." class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-16 text-sm"></textarea>
-                    
-                    <button id="submit-btn-${task.id}" class="bg-green-600 p-3 rounded font-medium hover:bg-green-500 w-full transition text-sm sm:text-base">Complete Task</button>
-                `;
-                container.appendChild(card);
-
-                document.getElementById(`submit-btn-${task.id}`).addEventListener('click', () => {
-                    submitTask(task.id);
-                });
-            }
-        }
-
-        async function submitTask(taskId) {
-            const fileInput = document.getElementById(`file-${taskId}`);
-            const comment = document.getElementById(`comment-${taskId}`).value;
-            const lang = document.getElementById('lang-select').value;
-            
-            let photoData = "";
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                photoData = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            update(ref(db, `tasks/${currentOpKey}/${taskId}`), {
-                status: 'submitted',
-                photo: photoData,
-                originalComment: comment,
-                sourceLang: lang
-            });
-        }
-    </script>
+    update(ref(db, `tasks/${key}`), {
+      status: 'Submitted',
+      comment: comment,
+      photo: photoData,
+      submittedAt: new Date().toISOString()
+    }).then(() => {
+      alert('Task submitted successfully!');
+    });
+  };
+</script>
 </body>
 </html>
