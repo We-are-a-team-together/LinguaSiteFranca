@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - Task Platform</title>
+    <title>LinguaSiteFranca - Operative Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -26,37 +26,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        let currentUser = null;
         let currentAuthUser = null;
         let currentTaskId = null;
         const appDiv = document.getElementById('app');
-
-        const translations = {
-            'en': { 
-                taskTitle: 'Your Task', 
-                submitBtn: 'Submit Task', 
-                logout: 'Sign Out',
-                commentsLabel: 'Comments',
-                photosLabel: 'Photos (1-3)',
-                noTask: 'No active task assigned.',
-                statusPending: 'Pending',
-                statusRevision: 'Needs Revision',
-                statusApproved: 'Approved',
-                feedbackTitle: 'Manager Feedback'
-            },
-            'ro': { 
-                taskTitle: 'Sarcina Ta', 
-                submitBtn: 'Trimite Sarcina', 
-                logout: 'Deconectare',
-                commentsLabel: 'Comentarii',
-                photosLabel: 'Fotografii (1-3)',
-                noTask: 'Nicio sarcină activă atribuită.',
-                statusPending: 'În așteptare',
-                statusRevision: 'Necesită Revizuire',
-                statusApproved: 'Aprobat',
-                feedbackTitle: 'Feedback Manager'
-            }
-        };
 
         function showLogin() {
             appDiv.innerHTML = `
@@ -88,54 +60,50 @@
             });
         }
 
-        function showTaskInterface(lang = 'en') {
-            const t = translations[lang] || translations['en'];
-
+        function showTaskInterface() {
             appDiv.innerHTML = `
                 <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
                     <div class="max-w-lg mx-auto flex justify-between items-center">
                         <h1 class="text-lg font-bold">LinguaSiteFranca</h1>
-                        <button id="logoutBtn" class="text-sm text-red-600">${t.logout}</button>
+                        <button id="logoutBtn" class="text-sm text-red-600">Sign Out</button>
                     </div>
                 </nav>
-
                 <div class="max-w-lg mx-auto px-6 py-8 space-y-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
-                        <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">${t.taskTitle}</h2>
-                        <p id="taskDescription" class="text-lg font-semibold text-gray-800">${t.noTask}</p>
-                        <div id="taskStatusContainer" class="mt-2">
+                        <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">Your Task</h2>
+                        <p id="taskDescription" class="text-lg font-semibold text-gray-800">Loading task...</p>
+                        <div class="mt-2">
                             <span id="taskStatus" class="inline-block px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Checking...</span>
                         </div>
                     </div>
 
                     <div id="feedbackCard" class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500 hidden">
-                        <h2 class="text-xs font-bold text-indigo-500 uppercase mb-2">${t.feedbackTitle}</h2>
+                        <h2 class="text-xs font-bold text-indigo-500 uppercase mb-2">Manager Feedback</h2>
                         <p id="feedbackText" class="text-gray-700"></p>
                     </div>
 
                     <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-6 space-y-4">
-                        <h2 class="text-lg font-bold">${t.submitBtn}</h2>
+                        <h2 class="text-lg font-bold">Submit Task</h2>
                         <div>
-                            <label class="block text-sm font-medium mb-1">${t.photosLabel}</label>
-                            <input type="file" id="photoInput" accept="image/*" multiple class="w-full p-3 border rounded-lg">
+                            <label class="block text-sm font-medium mb-1">Photos (1-3)</label>
+                            <input type="file" id="photoInput" accept="image/*" multiple class="w-full p-3 border rounded-lg" required>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">${t.commentsLabel}</label>
+                            <label class="block text-sm font-medium mb-1">Comments</label>
                             <textarea id="operativeComment" rows="3" class="w-full p-3 border rounded-lg"></textarea>
                         </div>
-                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">${t.submitBtn}</button>
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">Submit Task</button>
                     </form>
                 </div>
             `;
 
             document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
             document.getElementById('submitTaskForm').addEventListener('submit', handleSubmitTask);
-            loadTask(lang);
+            loadTask();
         }
 
         async function handleSubmitTask(e) {
             e.preventDefault();
-            
             if (!currentTaskId) {
                 alert('No active task');
                 return;
@@ -143,11 +111,6 @@
 
             const photoInput = document.getElementById('photoInput');
             const comment = document.getElementById('operativeComment').value;
-
-            if (photoInput.files.length === 0) {
-                alert('Please attach at least 1 photo');
-                return;
-            }
 
             try {
                 const photos = [];
@@ -161,104 +124,72 @@
                 }
 
                 const taskRef = ref(db, `tasks/${currentTaskId}`);
-                const taskSnapshot = await get(taskRef);
-                const taskData = taskSnapshot.val();
+                const snap = await get(taskRef);
+                const data = snap.val();
 
                 await set(taskRef, {
-                    ...taskData,
+                    ...data,
                     status: 'submitted',
                     operative_comment_native: comment,
-                    photos: photos,
+                    photos,
                     submittedAt: new Date().toISOString()
                 });
 
                 alert('✅ Task submitted!');
-                location.reload();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
             }
         }
 
-        function loadTask(lang = 'en') {
-            const t = translations[lang] || translations['en'];
+        function loadTask() {
             if (!currentAuthUser) return;
-
             const q = query(ref(db, 'tasks'), orderByChild('operativeId'), equalTo(currentAuthUser.uid));
-            
             onValue(q, (snapshot) => {
-                let foundTask = false;
-                snapshot.forEach((child) => {
+                let found = false;
+                snapshot.forEach(child => {
                     const task = child.val();
                     currentTaskId = child.key;
-                    foundTask = true;
+                    found = true;
 
-                    document.getElementById('taskDescription').textContent = task.description_en || t.noTask;
-                    
+                    document.getElementById('taskDescription').textContent = task.description_en || 'No description';
                     const statusEl = document.getElementById('taskStatus');
                     const feedbackCard = document.getElementById('feedbackCard');
                     const feedbackText = document.getElementById('feedbackText');
-                    
-                    if (task.status === 'assigned') {
-                        statusEl.textContent = t.statusPending;
-                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 font-medium';
+
+                    statusEl.textContent = task.status;
+                    if (task.status === 'rejected' && task.dlm_feedback_en) {
+                        feedbackText.textContent = task.dlm_feedback_en;
+                        feedbackCard.classList.remove('hidden');
+                    } else {
                         feedbackCard.classList.add('hidden');
-                    } else if (task.status === 'rejected') {
-                        statusEl.textContent = t.statusRevision;
-                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-red-100 text-red-800 font-medium';
-                        if (task.dlm_feedback_en) {
-                            feedbackText.textContent = task.dlm_feedback_en;
-                            feedbackCard.classList.remove('hidden');
-                        }
-                    } else if (task.status === 'submitted') {
-                        statusEl.textContent = 'Submitted - Under Review';
-                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium';
-                        feedbackCard.classList.add('hidden');
-                    } else if (task.status === 'approved') {
-                        statusEl.textContent = t.statusApproved;
-                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium';
-                        if (task.dlm_feedback_en) {
-                            feedbackText.textContent = task.dlm_feedback_en;
-                            feedbackCard.classList.remove('hidden');
-                        }
                     }
                 });
 
-                if (!foundTask) {
-                    document.getElementById('taskDescription').textContent = t.noTask;
-                    document.getElementById('taskStatus').textContent = 'No Task';
-                    document.getElementById('taskStatus').className = 'inline-block px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600';
+                if (!found) {
+                    document.getElementById('taskDescription').textContent = 'No active task assigned.';
+                    document.getElementById('taskStatus').textContent = 'Idle';
                 }
             });
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentAuthUser = user;
-                console.log('🟢 Auth state changed: Operative signed in:', user.uid);
+                console.log('🟢 Operative Auth: User signed in:', user.uid);
                 try {
-                    const userSnapshot = await get(ref(db, `users/${user.uid}`));
-                    if (userSnapshot.exists()) {
-                        currentUser = userSnapshot.val();
-                        if (currentUser.role === 'operative') {
-                            const lang = currentUser.nativeLanguage || 'en';
-                            showTaskInterface(lang);
-                        } else {
-                            console.warn('⚠️ Access denied: User is not an operative. Role found:', currentUser.role);
-                            alert('Access denied: Operative account required');
-                            signOut(auth);
-                        }
+                    const snap = await get(ref(db, `users/${user.uid}`));
+                    if (snap.exists() && snap.val().role === 'operative') {
+                        currentAuthUser = user;
+                        showTaskInterface();
                     } else {
-                        console.warn('⚠️ User authenticated, but record missing in database users node for UID:', user.uid);
-                        alert('User profile not found');
+                        console.warn('⚠️ Access denied: Not Operative role.');
+                        alert('Access denied: Operative account required');
                         signOut(auth);
                     }
-                } catch (error) {
-                    console.error('❌ Database read error during auth check:', error);
+                } catch (err) {
+                    console.error('❌ DB error:', err);
                 }
             } else {
-                currentAuthUser = null;
-                currentUser = null;
-                console.log('ℹ️ Auth state changed: Operative signed out.');
+                console.log('ℹ️ Operative Auth: Signed out.');
                 showLogin();
             }
         });
