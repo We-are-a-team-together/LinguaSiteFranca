@@ -64,7 +64,7 @@
                             <input type="password" id="opPassword" placeholder="Min 6 chars" required minlength="6" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base">
                         </div>
                         <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                            <p class="text-xs text-blue-700">ℹ️ The operative will select their preferred language on first login</p>
+                            <p class="text-xs text-blue-700">️ The operative will select their preferred language on first login</p>
                         </div>
                         <button type="submit" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2 sm:py-3 rounded-lg transition text-sm sm:text-base">Create Operative Account</button>
                     </form>
@@ -136,7 +136,6 @@
         const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
 
         let currentDlmId = null;
-        let authInProgress = false;
 
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
@@ -155,11 +154,9 @@
             }
         });
 
+        // BULLETPROOF AUTH CHECK
         auth.onAuthStateChanged(async (user) => {
-            if (authInProgress) return;
-            
             if (user) {
-                authInProgress = true;
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     
@@ -170,23 +167,17 @@
                         loadOperatives();
                         loadTasks();
                     } else {
-                        // FIX: Do not sign out automatically. Just show an error.
-                        document.getElementById('loginError').innerText = "Access denied. This account is not a DLM.";
-                        document.getElementById('loginError').classList.remove('hidden');
-                        document.getElementById('loginScreen').classList.remove('hidden');
-                        document.getElementById('dlmDashboard').classList.add('hidden');
+                        // FORCE LOGOUT if not a DLM or doc missing
+                        console.log("Not a DLM. Forcing logout.");
+                        await auth.signOut();
                     }
                 } catch (error) {
-                    console.error("Auth check failed:", error);
-                    document.getElementById('loginScreen').classList.remove('hidden');
-                    document.getElementById('dlmDashboard').classList.add('hidden');
-                } finally {
-                    authInProgress = false;
+                    console.error("DB Error:", error);
+                    await auth.signOut(); // FORCE LOGOUT on error
                 }
             } else {
                 document.getElementById('loginScreen').classList.remove('hidden');
                 document.getElementById('dlmDashboard').classList.add('hidden');
-                authInProgress = false;
             }
         });
 
@@ -223,7 +214,7 @@
                 });
 
                 await secondaryApp.auth().signOut();
-                alert('✅ Operative created successfully!\n\nThey will select their language on first login.');
+                alert('✅ Operative created successfully!');
                 e.target.reset();
                 loadOperatives();
             } catch (error) {
