@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Office Management Dashboard - DLM Platform</title>
+  <title>Office Platform - Management Dashboard</title>
+  <!-- Chart.js CDN for visual graphics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -17,44 +19,74 @@
       --danger: #ef4444;
       --warning: #f59e0b;
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding: 20px; }
     .container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
+
     header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
     h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-    .export-btns { display: flex; gap: 10px; }
-    .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-primary:hover { background: var(--accent-hover); }
-    .btn-success { background: var(--success); color: white; }
-    .btn-success:hover { opacity: 0.9; }
-    .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; }
+
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
     .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
     .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
-    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-    input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
-    input:focus, select:focus { outline: none; border-color: var(--accent); }
+    input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+    .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; width: 100%; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-success { background: var(--success); color: white; width: auto; }
+    .btn-success:hover { opacity: 0.9; }
+    .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; border: none; width: auto; }
+
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+
     .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
     .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .badge-returned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+
+    .thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
+    .thumb-img:hover { transform: scale(1.05); }
+
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .stat-card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .stat-card h3 { font-size: 1rem; color: var(--text-muted); margin-bottom: 15px; width: 100%; text-align: left; }
+    .chart-box { position: relative; width: 220px; height: 220px; }
+
     .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+
+    @media print {
+      body { background: #fff; color: #000; }
+      .card, .stat-card { border: 1px solid #ccc; background: #fff; color: #000; }
+      button, form, .header-actions { display: none !important; }
+    }
   </style>
 </head>
 <body>
+
 <div class="container">
   <header>
-    <h1><span class="brand-name">We are a team together Ltd</span> — Office Management Dashboard</h1>
-    <div class="export-btns">
-      <button class="btn btn-success" id="exportCsvBtn">Export CSV Report</button>
-      <button class="btn btn-primary" id="exportPdfBtn">Export PDF / Print Report</button>
+    <h1><span class="brand-name">LinguaSiteFranca</span> — Office Management Dashboard</h1>
+    <div class="header-actions">
+      <button class="btn btn-success" onclick="exportCSV()">Export CSV Report</button>
+      <button class="btn btn-primary" onclick="window.print()">Export PDF / Print Report</button>
     </div>
   </header>
 
+  <!-- Site Management & DLM Account Creation -->
   <div class="grid-2">
     <div class="card">
       <div class="card-title">Register New Site</div>
@@ -73,20 +105,21 @@
 
     <div class="card">
       <div class="card-title">Create DLM Account / Assign Manager</div>
-      <form id="assignManagerForm">
+      <form id="assignDlmForm">
         <div class="form-group">
           <label>Select Site</label>
-          <select id="managerSiteSelect" required></select>
+          <select id="dlmSiteSelect" required></select>
         </div>
         <div class="form-group">
           <label>DLM Manager Name</label>
-          <input type="text" id="dlmManagerName" placeholder="e.g. James" required>
+          <input type="text" id="dlmName" placeholder="e.g. James" required>
         </div>
         <button type="submit" class="btn btn-primary">Create DLM Account</button>
       </form>
     </div>
   </div>
 
+  <!-- Active Sites & Assigned Managers Directory -->
   <div class="card">
     <div class="card-title">Active Sites & Assigned Managers Directory</div>
     <div style="overflow-x: auto;">
@@ -104,6 +137,23 @@
     </div>
   </div>
 
+  <!-- Analytics & Status Breakdowns (Visual Graphics) -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <h3>Task Status Breakdown</h3>
+      <div class="chart-box">
+        <canvas id="taskStatusChart"></canvas>
+      </div>
+    </div>
+    <div class="stat-card">
+      <h3>Operatives Compliance Status</h3>
+      <div class="chart-box">
+        <canvas id="complianceChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Master Operative & Qualifications Directory -->
   <div class="card">
     <div class="card-title">Master Operative & Qualifications Directory</div>
     <div style="overflow-x: auto;">
@@ -113,17 +163,57 @@
             <th>Operative Name</th>
             <th>Employer</th>
             <th>Assigned Site</th>
-            <th>Qualification</th>
+            <th>Qualification / Card</th>
             <th>Expiry Date</th>
-            <th>Status</th>
+            <th>Compliance Status</th>
           </tr>
         </thead>
-        <tbody id="masterOperativesTableBody"></tbody>
+        <tbody id="masterOpTableBody"></tbody>
       </table>
     </div>
   </div>
 
+  <!-- Master Task Log & Submissions -->
+  <div class="card">
+    <div class="card-title">Master Task Log & Submissions</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>Operative</th>
+            <th>Task Details</th>
+            <th>Status</th>
+            <th>Photo / Evidence</th>
+            <th>Comments (English)</th>
+          </tr>
+        </thead>
+        <tbody id="masterTaskTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Global Branding Configuration -->
+  <div class="card">
+    <div class="card-title">Global Branding Configuration (Applies to all platforms)</div>
+    <form id="brandingForm">
+      <div class="form-group">
+        <label>System Business Name</label>
+        <input type="text" id="brandBusinessName" required>
+      </div>
+      <div class="form-group">
+        <label>Global Footer Text</label>
+        <input type="text" id="brandFooterText" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Apply Branding Universally</button>
+    </form>
+  </div>
+
   <div class="dynamic-footer"></div>
+</div>
+
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="Zoom">
 </div>
 
 <script type="module">
@@ -143,8 +233,13 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
+  let taskChartInstance = null;
+  let complianceChartInstance = null;
+  let globalTasksData = {};
+
+  // Translation helper to convert comments into English
   async function translateToEnglish(text) {
-    if (!text) return 'None';
+    if (!text) return '—';
     try {
       const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
       const data = await res.json();
@@ -154,24 +249,38 @@
     }
   }
 
+  // Global Branding Listener & Form Handler
   onValue(ref(db, 'branding'), (snapshot) => {
     const data = snapshot.val();
     if (data) {
       if (data.businessName) {
         document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-        document.title = `${data.businessName} - Office Dashboard`;
+        document.title = `${data.businessName} - Office Management Dashboard`;
+        document.getElementById('brandBusinessName').value = data.businessName;
       }
       if (data.footerText) {
         document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+        document.getElementById('brandFooterText').value = data.footerText;
       }
     }
   });
 
-  // Register Site Handler
+  document.getElementById('brandingForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const businessName = document.getElementById('brandBusinessName').value.trim();
+    const footerText = document.getElementById('brandFooterText').value.trim();
+
+    set(ref(db, 'branding'), { businessName, footerText }).then(() => {
+      alert('Global branding updated successfully!');
+    });
+  });
+
+  // Register Site
   document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('siteName').value.trim();
     const location = document.getElementById('siteLocation').value.trim();
+
     const newRef = push(ref(db, 'sites'));
     set(newRef, { name, location }).then(() => {
       document.getElementById('registerSiteForm').reset();
@@ -179,68 +288,73 @@
     });
   });
 
-  // Assign Manager Handler
-  document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const site = document.getElementById('managerSiteSelect').value;
-    const manager = document.getElementById('dlmManagerName').value.trim();
-    const newRef = push(ref(db, 'managers'));
-    set(newRef, { site, manager }).then(() => {
-      document.getElementById('assignManagerForm').reset();
-      alert('DLM Manager account linked successfully!');
-    });
-  });
-
-  // Load Sites & Managers
+  // Load Sites & Populate DLM dropdown
   onValue(ref(db, 'sites'), (snapshot) => {
     const data = snapshot.val() || {};
-    const select = document.getElementById('managerSiteSelect');
+    const tbody = document.getElementById('sitesTableBody');
+    const select = document.getElementById('dlmSiteSelect');
+    tbody.innerHTML = '';
     select.innerHTML = '<option value="">-- Select Site --</option>';
+
     Object.keys(data).forEach(key => {
       const site = data[key];
+
       const opt = document.createElement('option');
       opt.value = site.name;
       opt.textContent = site.name;
       select.appendChild(opt);
-    });
-  });
 
-  onValue(ref(db, 'managers'), (snapshot) => {
-    const managersData = snapshot.val() || {};
-    onValue(ref(db, 'sites'), (siteSnapshot) => {
-      const sitesData = siteSnapshot.val() || {};
-      const tbody = document.getElementById('sitesTableBody');
-      tbody.innerHTML = '';
-      Object.keys(sitesData).forEach(siteKey => {
-        const site = sitesData[siteKey];
-        const managerEntry = Object.values(managersData).find(m => m.site === site.name);
-        tbody.innerHTML += `
-          <tr>
-            <td><strong>${site.name}</strong></td>
-            <td>${site.location}</td>
-            <td>${managerEntry ? managerEntry.manager : 'Unassigned'}</td>
-            <td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
-          </tr>
-        `;
-      });
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${site.name}</strong></td>
+          <td>${site.location}</td>
+          <td>${site.manager || 'Unassigned'}</td>
+          <td><button class="btn-danger" onclick="deleteSite('${key}')">Remove</button></td>
+        </tr>
+      `;
     });
   });
 
   window.deleteSite = (key) => {
-    if (confirm('Remove this site?')) {
+    if (confirm('Are you sure you want to remove this site?')) {
       remove(ref(db, `sites/${key}`));
     }
   };
 
-  // Load Master Operatives Directory
+  // Assign DLM Manager
+  document.getElementById('assignDlmForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const siteName = document.getElementById('dlmSiteSelect').value;
+    const dlmName = document.getElementById('dlmName').value.trim();
+
+    onValue(ref(db, 'sites'), (snapshot) => {
+      const data = snapshot.val() || {};
+      Object.keys(data).forEach(key => {
+        if (data[key].name === siteName) {
+          set(ref(db, `sites/${key}/manager`), dlmName).then(() => {
+            document.getElementById('assignDlmForm').reset();
+            alert('DLM Account assigned successfully!');
+          });
+        }
+      });
+    }, { onlyOnce: true });
+  });
+
+  // Load Master Operatives Directory & Render Compliance Chart
   onValue(ref(db, 'operatives'), (snapshot) => {
     const data = snapshot.val() || {};
-    const tbody = document.getElementById('masterOperativesTableBody');
+    const tbody = document.getElementById('masterOpTableBody');
     tbody.innerHTML = '';
+
     const today = new Date().toISOString().split('T')[0];
+    let validCount = 0;
+    let expiredCount = 0;
+
     Object.keys(data).forEach(key => {
       const op = data[key];
       const isExpired = op.expiry && op.expiry < today;
+      if (isExpired) expiredCount++; else validCount++;
+
       tbody.innerHTML += `
         <tr>
           <td><strong>${op.name}</strong></td>
@@ -252,97 +366,104 @@
         </tr>
       `;
     });
+
+    // Render Compliance Donut Chart
+    const ctx = document.getElementById('complianceChart').getContext('2d');
+    if (complianceChartInstance) complianceChartInstance.destroy();
+    complianceChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Valid', 'Expired'],
+        datasets: [{
+          data: [validCount, expiredCount],
+          backgroundColor: ['#10b981', '#ef4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { size: 12 } } } }
+      }
+    });
   });
 
-  // Export CSV Report with Mandatory English Translation for Comments
-  document.getElementById('exportCsvBtn').addEventListener('click', async () => {
-    const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
+  // Load Master Task Log & Submissions with English Translated Comments & Render Task Status Chart
+  onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
-    
-    let csvContent = "data:text/csv;charset=utf-8,Site,Operative,Task Details,Status,Comments\n";
-    
+    globalTasksData = data;
+    const tbody = document.getElementById('masterTaskTableBody');
+    tbody.innerHTML = '';
+
+    let assigned = 0, submitted = 0, accepted = 0, returned = 0;
+
     for (const key of Object.keys(data)) {
       const task = data[key];
-      const translatedComment = await translateToEnglish(task.comment || '');
-      const row = [
-        `"${(task.site || '').replace(/"/g, '""')}"`,
-        `"${(task.operative || '').replace(/"/g, '""')}"`,
-        `"${(task.details || '').replace(/"/g, '""')}"`,
-        `"${(task.status || '').replace(/"/g, '""')}"`,
-        `"${translatedComment.replace(/"/g, '""')}"`
-      ];
-      csvContent += row.join(",") + "\n";
-    }
+      if (task.status === 'Assigned') assigned++;
+      if (task.status === 'Submitted') submitted++;
+      if (task.status === 'Accepted') accepted++;
+      if (task.status === 'Returned') returned++;
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "master_task_report_english.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+      const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '—';
+      const translatedComment = await translateToEnglish(task.comment);
 
-  // Export PDF / Print Report with Mandatory English Translation for Comments
-  document.getElementById('exportPdfBtn').addEventListener('click', async () => {
-    const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
-    const data = snapshot.val() || {};
-
-    let rowsHtml = '';
-    for (const key of Object.keys(data)) {
-      const task = data[key];
-      const translatedComment = await translateToEnglish(task.comment || '');
-      rowsHtml += `
+      tbody.innerHTML += `
         <tr>
-          <td>${task.site || ''}</td>
-          <td>${task.operative || ''}</td>
-          <td>${task.details || ''}</td>
-          <td>${task.status || ''}</td>
+          <td>${task.site}</td>
+          <td><strong>${task.operative}</strong></td>
+          <td>${task.details}</td>
+          <td><span class="badge badge-valid">${task.status}</span></td>
+          <td>${photoHtml}</td>
           <td>${translatedComment}</td>
         </tr>
       `;
     }
 
-    const printWindow = window.open('', '', 'height=700,width=900');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Master Task Report (English)</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-            h2 { color: #1e293b; margin-bottom: 5px; }
-            p { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-            th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; }
-            th { background-color: #f1f5f9; color: #334155; }
-          </style>
-        </head>
-        <body>
-          <h2>Master Task Report - Office Management Dashboard</h2>
-          <p>All comments and descriptions rendered in English.</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Site</th>
-                <th>Operative</th>
-                <th>Task Details</th>
-                <th>Status</th>
-                <th>Comments (English)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+    // Render Task Status Donut Chart
+    const ctx = document.getElementById('taskStatusChart').getContext('2d');
+    if (taskChartInstance) taskChartInstance.destroy();
+    taskChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Assigned', 'Submitted', 'Accepted', 'Returned'],
+        datasets: [{
+          data: [assigned, submitted, accepted, returned],
+          backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { color: '#f8fafc', font: { size: 11 } } } }
+      }
+    });
   });
+
+  // CSV Export function
+  window.exportCSV = () => {
+    let csv = 'Site,Operative,Task Details,Status,Comments\n';
+    Object.keys(globalTasksData).forEach(key => {
+      const t = globalTasksData[key];
+      const cleanDetails = (t.details || '').replace(/,/g, ' ');
+      const cleanComment = (t.comment || '').replace(/,/g, ' ');
+      csv += `"${t.site}","${t.operative}","${cleanDetails}","${t.status}","${cleanComment}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.setAttribute('download', 'master_task_report.csv');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  window.openModal = (src) => {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imgModal').style.display = 'flex';
+  };
 </script>
 </body>
 </html>
