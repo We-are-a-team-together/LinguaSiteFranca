@@ -49,7 +49,6 @@
       <form id="createOpForm">
         <div class="form-group"><label>Operative Full Name</label><input type="text" id="opName" required></div>
         <div class="form-group"><label>Assigned Site</label><select id="opSiteSelect" required></select></div>
-        <div class="form-group"><label>Employer / Company</label><input type="text" id="opEmployer" required placeholder="e.g. Acme Subcontractors Ltd"></div>
         <div class="form-group"><label>Qualification / Card (e.g., CSCS, CPCS)</label><input type="text" id="opQual" required></div>
         <div class="form-group"><label>Expiry Date</label><input type="date" id="opExpiry" required></div>
         <button type="submit">Register Operative</button>
@@ -69,12 +68,10 @@
 
   <div class="card">
     <div class="card-title">Task Review & Sign-Off Management</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead><tr><th>Site</th><th>Operative</th><th>Task Details</th><th>Status</th><th>Photo</th><th>Operative Comment</th><th>Actions</th></tr></thead>
-        <tbody id="dlmTasksBody"></tbody>
-      </table>
-    </div>
+    <table>
+      <thead><tr><th>Site</th><th>Operative</th><th>Task Details</th><th>Status</th><th>Photo</th><th>Operative Comment</th><th>Actions</th></tr></thead>
+      <tbody id="dlmTasksBody"></tbody>
+    </table>
   </div>
 
   <div class="dynamic-footer"></div>
@@ -144,7 +141,7 @@
     select.innerHTML = '';
     Object.keys(data).forEach(key => {
       const op = data[key];
-      select.innerHTML += `<option value="${op.name}">${op.name} (${op.employer || 'Direct'}) — ${op.assignedSite}</option>`;
+      select.innerHTML += `<option value="${op.name}">${op.name} — ${op.assignedSite}</option>`;
     });
   });
 
@@ -177,7 +174,6 @@
     push(ref(db, 'operatives'), {
       name: document.getElementById('opName').value.trim(),
       assignedSite: document.getElementById('opSiteSelect').value,
-      employer: document.getElementById('opEmployer').value.trim(),
       qualification: document.getElementById('opQual').value.trim(),
       expiry: document.getElementById('opExpiry').value
     }).then(() => { alert("Operative registered successfully!"); e.target.reset(); });
