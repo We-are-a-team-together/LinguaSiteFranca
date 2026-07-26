@@ -170,7 +170,9 @@
                         loadOperatives();
                         loadTasks();
                     } else {
-                        await auth.signOut();
+                        // FIX: Do not sign out automatically. Just show an error.
+                        document.getElementById('loginError').innerText = "Access denied. This account is not a DLM.";
+                        document.getElementById('loginError').classList.remove('hidden');
                         document.getElementById('loginScreen').classList.remove('hidden');
                         document.getElementById('dlmDashboard').classList.add('hidden');
                     }
