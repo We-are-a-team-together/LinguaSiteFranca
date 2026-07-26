@@ -213,7 +213,9 @@
                             loadTask();
                         }
                     } else {
-                        await auth.signOut();
+                        // FIX: Do not sign out automatically. Just show an error.
+                        document.getElementById('loginError').innerText = "Access denied. This account is not an Operative.";
+                        document.getElementById('loginError').classList.remove('hidden');
                         showLogin();
                     }
                 } catch (error) {
