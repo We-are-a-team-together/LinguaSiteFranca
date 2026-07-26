@@ -27,6 +27,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         let currentDlmId = null;
+        let currentAuthUser = null;
         const appDiv = document.getElementById('app');
 
         function showLogin() {
@@ -271,6 +272,8 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentAuthUser = user;
+                console.log('🟢 Auth state changed: User signed in:', user.uid);
                 try {
                     const userSnapshot = await get(ref(db, `users/${user.uid}`));
                     if (userSnapshot.exists()) {
@@ -279,18 +282,22 @@
                             currentDlmId = user.uid;
                             showDashboard();
                         } else {
+                            console.warn('⚠️ Access denied: User is not a DLM. Role found:', userData.role);
                             alert('Access denied: DLM account required');
                             signOut(auth);
                         }
                     } else {
+                        console.warn('⚠️ User authenticated, but record missing in database users node for UID:', user.uid);
                         alert('User profile not found');
                         signOut(auth);
                     }
                 } catch (error) {
-                    console.error('Error:', error);
-                    showLogin();
+                    console.error('❌ Database read error during auth check:', error);
                 }
             } else {
+                currentAuthUser = null;
+                currentDlmId = null;
+                console.log('ℹ️ Auth state changed: User is signed out.');
                 showLogin();
             }
         });
