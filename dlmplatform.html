@@ -1,272 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DLM Platform — Site Manager</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
-    
-    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
-        <h1 class="text-xl sm:text-2xl font-bold" id="brand-title"></h1>
-        <span id="dlm-welcome" class="text-xs sm:text-sm text-gray-300"></span>
-    </header>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DLM Platform - Site Operations</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
 
-    <!-- Login Section -->
-    <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
-        <div class="bg-gray-800 p-6 sm:p-8 rounded-lg w-full max-w-md text-center shadow-lg border border-gray-700">
-            <h2 class="text-xl font-bold mb-4">DLM Portal Sign In</h2>
-            <input type="text" id="login-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">Access Project</button>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; }
+    .container { width: 96%; max-width: 1800px; margin: 0 auto; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
+    h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+    .dlm-info { font-size: 0.9rem; color: var(--text-muted); background: var(--card-bg); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--border); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+    .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--accent); }
+
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+
+    button { width: 100%; padding: 11px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    button:hover { background: var(--accent-hover); }
+    button.btn-success { background: var(--success); }
+    button.btn-danger { background: var(--danger); }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: rgba(0,0,0,0.2); color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+    .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); transition: transform 0.2s; }
+    .thumb-img:hover { transform: scale(1.05); }
+
+    /* Lightbox Modal */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>DLM Platform — Site Operations</h1>
+    <div class="dlm-info" id="dlmHeaderInfo">DLM: Loading...</div>
+  </header>
+
+  <div class="grid">
+    <!-- Register Operative Card -->
+    <div class="card">
+      <div class="card-title">Register Operative</div>
+      <form id="regForm">
+        <div class="form-group">
+          <label>Operative Full Name</label>
+          <input type="text" id="opName" required>
         </div>
+        <div class="form-group">
+          <label>Qualification / Card Type</label>
+          <input type="text" id="opQual">
+        </div>
+        <div class="form-group">
+          <label>Qualification Expiry Date</label>
+          <input type="date" id="opExpiry">
+        </div>
+        <button type="submit">Register Operative</button>
+      </form>
     </div>
 
-    <!-- Main Dashboard -->
-    <main id="dashboard-section" class="hidden flex-grow p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-8">
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Register Operative -->
-            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Register Operative</h2>
-                <div class="flex flex-col gap-3">
-                    <label class="text-xs text-gray-400">Operative Full Name</label>
-                    <input type="text" id="op-name" placeholder="e.g. Dumitru Catana" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
-                    <button id="btn-create-op" class="bg-blue-600 p-3 rounded hover:bg-blue-500 font-medium transition mt-2">Register Operative</button>
-                </div>
-            </section>
-
-            <!-- Assign Task -->
-            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Assign Task</h2>
-                <div class="flex flex-col gap-3">
-                    <label class="text-xs text-gray-400">Select Operative</label>
-                    <select id="task-op" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
-                    <label class="text-xs text-gray-400">Task Details (English)</label>
-                    <textarea id="task-desc" placeholder="e.g. Install SFS studs leveling correct with north elevation" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-20 text-sm"></textarea>
-                    <button id="btn-assign-task" class="bg-green-600 p-3 rounded hover:bg-green-500 font-medium transition mt-2">Dispatch Task</button>
-                </div>
-            </section>
+    <!-- Assign Task Card -->
+    <div class="card">
+      <div class="card-title">Assign Task</div>
+      <form id="taskForm">
+        <div class="form-group">
+          <label>Select Operative</label>
+          <select id="taskOpSelect" required></select>
         </div>
+        <div class="form-group">
+          <label>Task Details (English)</label>
+          <textarea id="taskDetails" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn-success">Dispatch Task</button>
+      </form>
+    </div>
+  </div>
 
-        <!-- Registered Operatives List -->
-        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Registered Operatives Directory</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300 min-w-[500px]">
-                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
-                        <tr>
-                            <th class="p-3">Operative Name</th>
-                            <th class="p-3">Assigned Site</th>
-                        </tr>
-                    </thead>
-                    <tbody id="operatives-table-body"></tbody>
-                </table>
-            </div>
-        </section>
+  <!-- Operatives Directory -->
+  <div class="card" style="margin-bottom: 25px;">
+    <div class="card-title">Registered Operatives Directory</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operative Name</th>
+          <th>Assigned Site</th>
+          <th>Qualification</th>
+          <th>Expiry Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="opsTableBody"></tbody>
+    </table>
+  </div>
 
-        <!-- Tasks Oversight & Review Table -->
-        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Task Tracking & Live Submissions</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300 min-w-[750px]">
-                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
-                        <tr>
-                            <th class="p-3">Operative</th>
-                            <th class="p-3">Task Details</th>
-                            <th class="p-3">Status</th>
-                            <th class="p-3">Submission & Translated Comment</th>
-                            <th class="p-3">Action / Return Note</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tasks-table-body"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+  <!-- Task Submissions -->
+  <div class="card">
+    <div class="card-title">Task Tracking & Live Submissions</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operative</th>
+          <th>Task Details</th>
+          <th>Status</th>
+          <th>Submission Photo & Comment</th>
+          <th>Action / Return Note</th>
+        </tr>
+      </thead>
+      <tbody id="tasksTableBody"></tbody>
+    </table>
+  </div>
+</div>
 
-    <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
+<!-- Modal Preview for Full-Size Images -->
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="Submission Zoom">
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, get, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue, set, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-            authDomain: "lingua-site-franca.firebaseapp.com",
-            databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "lingua-site-franca",
-            storageBucket: "lingua-site-franca.firebasestorage.app",
-            messagingSenderId: "737514168886",
-            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-        };
+  const firebaseConfig = {
+    databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentDLM = urlParams.get('dlm') || 'test 01';
+  const currentSite = urlParams.get('site') || 'The monument court';
+
+  document.getElementById('dlmHeaderInfo').innerText = `DLM: ${currentDLM} | Site: ${currentSite}`;
+
+  // Load Operatives
+  onValue(ref(db, 'operatives'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const select = document.getElementById('taskOpSelect');
+    const tbody = document.getElementById('opsTableBody');
+    select.innerHTML = '';
+    tbody.innerHTML = '';
+
+    const today = new Date().toISOString().split('T')[0];
+
+    Object.keys(data).forEach(key => {
+      const op = data[key];
+      if (op.assignedSite === currentSite) {
+        // Select dropdown option
+        const opt = document.createElement('option');
+        opt.value = op.name;
+        opt.textContent = op.name;
+        select.appendChild(opt);
+
+        // Table row
+        const isExpired = op.expiry && op.expiry < today;
+        const badgeClass = isExpired ? 'badge-expired' : 'badge-valid';
+        const badgeText = op.expiry ? (isExpired ? 'EXPIRED' : 'VALID') : 'N/A';
+
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${op.name}</strong></td>
+            <td>${op.assignedSite}</td>
+            <td>${op.qualification || 'N/A'}</td>
+            <td>${op.expiry || 'N/A'}</td>
+            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+          </tr>
+        `;
+      }
+    });
+  });
+
+  // Load Tasks
+  onValue(ref(db, 'tasks'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('tasksTableBody');
+    tbody.innerHTML = '';
+
+    Object.keys(data).forEach(key => {
+      const task = data[key];
+      if (task.site === currentSite) {
+        const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '';
+        const commentHtml = task.comment ? `<p style="font-size:0.85rem; margin-top:5px; color:#cbd5e1;">"${task.comment}"</p>` : '';
         
-        let currentDlmProject = null;
-        let dlmName = "";
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${task.operative}</strong></td>
+            <td>${task.details}</td>
+            <td><span class="badge badge-valid">${task.status}</span></td>
+            <td>${photoHtml}${commentHtml}</td>
+            <td>
+              ${task.status === 'Submitted' ? `
+                <button class="btn-success" onclick="updateTaskStatus('${key}', 'Accepted')" style="margin-bottom:5px;">Accept</button>
+                <input type="text" id="returnNote_${key}" style="margin-bottom:5px;">
+                <button class="btn-danger" onclick="returnTask('${key}')">Return Task</button>
+              ` : '—'}
+            </td>
+          </tr>
+        `;
+      }
+    });
+  });
 
-        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+  // Form Submit: Register Operative
+  document.getElementById('regForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('opName').value.trim();
+    const qualification = document.getElementById('opQual').value.trim();
+    const expiry = document.getElementById('opExpiry').value;
 
-        // Translate incoming comments back to English for DLM
-        async function translateToEnglish(text, sourceLang) {
-            if (!text || sourceLang === 'en') return text;
-            try {
-                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|en`);
-                const data = await res.json();
-                return data.responseData.translatedText || text;
-            } catch (err) {
-                return text;
-            }
-        }
+    const newRef = push(ref(db, 'operatives'));
+    set(newRef, {
+      name,
+      qualification,
+      expiry,
+      assignedSite: currentSite
+    }).then(() => {
+      document.getElementById('regForm').reset();
+    });
+  });
 
-        onValue(ref(db, 'branding'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('brand-title').innerText = data.title || '';
-                document.getElementById('main-header').style.backgroundColor = data.headerColor || '#1f2937';
-                document.getElementById('main-footer').innerText = data.footer || '';
-            }
-        });
+  // Form Submit: Assign Task
+  document.getElementById('taskForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const operative = document.getElementById('taskOpSelect').value;
+    const details = document.getElementById('taskDetails').value.trim();
 
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            dlmName = document.getElementById('login-name').value.trim();
-            if(!dlmName) return;
+    const newRef = push(ref(db, 'tasks'));
+    set(newRef, {
+      operative,
+      details,
+      site: currentSite,
+      status: 'Assigned',
+      timestamp: new Date().toISOString()
+    }).then(() => {
+      document.getElementById('taskForm').reset();
+    });
+  });
 
-            const key = sanitizeKey(dlmName);
-            const snapshot = await get(ref(db, 'dlms/' + key));
+  window.updateTaskStatus = (key, status) => {
+    update(ref(db, `tasks/${key}`), { status });
+  };
 
-            if (snapshot.exists()) {
-                currentDlmProject = snapshot.val().projectName;
-                document.getElementById('dlm-welcome').innerText = `DLM: ${dlmName} | Site: ${currentDlmProject}`;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('dashboard-section').classList.remove('hidden');
-                loadOperatives();
-                loadTasksTable();
-            } else {
-                alert("DLM name not found. Please contact Head Office.");
-            }
-        });
+  window.returnTask = (key) => {
+    const note = document.getElementById(`returnNote_${key}`).value.trim();
+    update(ref(db, `tasks/${key}`), { status: 'Returned', returnNote: note });
+  };
 
-        function loadOperatives() {
-            onValue(ref(db, 'operatives'), (snapshot) => {
-                const select = document.getElementById('task-op');
-                const tableBody = document.getElementById('operatives-table-body');
-                select.innerHTML = '';
-                tableBody.innerHTML = '';
-
-                snapshot.forEach((child) => {
-                    const op = child.val();
-                    if(op.projectName === currentDlmProject) {
-                        const opt = document.createElement('option');
-                        opt.value = child.key;
-                        opt.text = op.name;
-                        select.appendChild(opt);
-
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-700 hover:bg-gray-750";
-                        tr.innerHTML = `<td class="p-3 font-medium text-white">${op.name}</td><td class="p-3">${op.projectName}</td>`;
-                        tableBody.appendChild(tr);
-                    }
-                });
-            });
-        }
-
-        document.getElementById('btn-create-op').addEventListener('click', () => {
-            const name = document.getElementById('op-name').value.trim();
-            if (name) {
-                const key = sanitizeKey(name);
-                set(ref(db, 'operatives/' + key), { name, projectName: currentDlmProject });
-                document.getElementById('op-name').value = '';
-            }
-        });
-
-        document.getElementById('btn-assign-task').addEventListener('click', () => {
-            const opKey = document.getElementById('task-op').value;
-            const desc = document.getElementById('task-desc').value.trim();
-            if (opKey && desc) {
-                push(ref(db, `tasks/${opKey}`), { 
-                    description: desc, 
-                    projectName: currentDlmProject,
-                    dlmName: dlmName,
-                    status: 'pending',
-                    timestamp: Date.now() 
-                });
-                document.getElementById('task-desc').value = '';
-            }
-        });
-
-        function loadTasksTable() {
-            onValue(ref(db, 'tasks'), (snapshot) => {
-                const tbody = document.getElementById('tasks-table-body');
-                tbody.innerHTML = '';
-
-                snapshot.forEach((opTasks) => {
-                    const opKey = opTasks.key;
-                    opTasks.forEach((taskSnap) => {
-                        const task = taskSnap.val();
-                        const taskId = taskSnap.key;
-
-                        if (task.projectName === currentDlmProject) {
-                            const tr = document.createElement('tr');
-                            tr.className = "border-b border-gray-700";
-
-                            let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
-                            if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
-                            if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
-                            if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Returned</span>`;
-
-                            tr.innerHTML = `
-                                <td class="p-3 font-medium text-white">${opKey.replace(/_/g, ' ').toUpperCase()}</td>
-                                <td class="p-3 max-w-xs">${task.description}</td>
-                                <td class="p-3">${statusBadge}</td>
-                                <td class="p-3" id="comment-cell-${taskId}">
-                                    ${task.photo ? `<img src="${task.photo}" class="w-20 h-20 object-cover rounded border border-gray-600 mb-2">` : '<p class="text-xs text-gray-500">No Photo</p>'}
-                                    <p class="text-xs text-gray-300 italic" id="translated-text-${taskId}">Translating comment...</p>
-                                </td>
-                                <td class="p-3">
-                                    ${task.status === 'submitted' ? `
-                                        <button onclick="acceptTask('${opKey}', '${taskId}')" class="bg-green-600 px-3 py-1.5 text-xs rounded hover:bg-green-500 mr-1 font-medium mb-2 w-full sm:w-auto">Accept</button>
-                                        <div class="flex flex-col gap-1 mt-1">
-                                            <input type="text" id="return-note-${taskId}" placeholder="Return reason (English)..." class="p-1 text-xs rounded bg-gray-700 text-white border border-gray-600">
-                                            <button onclick="rejectTask('${opKey}', '${taskId}')" class="bg-red-600 px-2 py-1 text-xs rounded hover:bg-red-500 font-medium">Return Task</button>
-                                        </div>
-                                    ` : (task.rejectionComment ? `<p class="text-xs text-red-400">Return Note: "${task.rejectionComment}"</p>` : '-')}
-                                </td>
-                            `;
-                            tbody.appendChild(tr);
-
-                            // Trigger dynamic back-translation to English
-                            if (task.originalComment) {
-                                translateToEnglish(task.originalComment, task.sourceLang || 'en').then(translated => {
-                                    const el = document.getElementById(`translated-text-${taskId}`);
-                                    if(el) el.innerText = `"${translated}" (Orig: ${task.originalComment})`;
-                                });
-                            } else {
-                                const el = document.getElementById(`translated-text-${taskId}`);
-                                if(el) el.innerText = "No operative comment.";
-                            }
-                        }
-                    });
-                });
-            });
-        }
-
-        window.acceptTask = (opKey, taskId) => {
-            update(ref(db, `tasks/${opKey}/${taskId}`), { 
-                status: 'accepted',
-                completedTimestamp: Date.now()
-            });
-        };
-
-        window.rejectTask = (opKey, taskId) => {
-            const note = document.getElementById(`return-note-${taskId}`).value.trim();
-            update(ref(db, `tasks/${opKey}/${taskId}`), { 
-                status: 'rejected',
-                rejectionComment: note || "Task requires correction."
-            });
-        };
-    </script>
+  window.openModal = (src) => {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imgModal').style.display = 'flex';
+  };
+</script>
 </body>
 </html>
