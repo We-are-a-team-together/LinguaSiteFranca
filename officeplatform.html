@@ -11,7 +11,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, remove, push, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { getDatabase, ref, set, onValue, remove, push, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -26,20 +26,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-
         const appDiv = document.getElementById('app');
-
-        async function checkIfHeadOfficeExists() {
-            try {
-                const usersRef = ref(db, 'users');
-                const q = query(usersRef, orderByChild('role'), equalTo('head_office'));
-                const snapshot = await get(q);
-                return snapshot.exists();
-            } catch (error) {
-                console.error('Error checking head office:', error);
-                return false;
-            }
-        }
 
         function showCreateFirstAccount() {
             appDiv.innerHTML = `
@@ -73,9 +60,15 @@
                             </button>
                         </form>
                         <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+                        <div class="text-center mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-sm text-gray-600">Already have an account?</p>
+                            <button id="showLoginBtn" class="text-blue-600 hover:text-blue-800 font-medium text-sm mt-1">Sign In Instead</button>
+                        </div>
                     </div>
                 </div>
             `;
+
+            document.getElementById('showLoginBtn').addEventListener('click', showLogin);
 
             document.getElementById('createFirstAccountForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -84,7 +77,7 @@
                 const password = document.getElementById('adminPassword').value;
                 const errorMsg = document.getElementById('errorMsg');
                 const submitBtn = e.target.querySelector('button');
-                
+
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Creating...';
 
@@ -99,16 +92,22 @@
                         createdAt: new Date().toISOString()
                     });
 
-                    // FIX: Sign out and show login screen immediately
+                    // Sign out and show login
                     await signOut(auth);
                     alert('✅ Administrator account created successfully! Please log in.');
                     showLogin();
-                    
+
                 } catch (error) {
-                    errorMsg.textContent = error.message;
-                    errorMsg.classList.remove('hidden');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Administrator Account';
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorMsg.textContent = 'This email is already registered. Please sign in.';
+                        errorMsg.classList.remove('hidden');
+                        setTimeout(showLogin, 2000);
+                    } else {
+                        errorMsg.textContent = error.message;
+                        errorMsg.classList.remove('hidden');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create Administrator Account';
+                    }
                 }
             });
         }
@@ -130,9 +129,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                                 <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
-                                Sign In
-                            </button>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Sign In</button>
                         </form>
                         <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
                     </div>
@@ -169,7 +166,7 @@
                 <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
                     <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white"> Direct Line Managers</h2>
+                            <h2 class="text-lg font-bold text-white">👥 Direct Line Managers</h2>
                             <p class="text-green-100 text-sm mt-1">Create and manage DLM accounts</p>
                         </div>
                         <div class="p-6">
@@ -305,7 +302,7 @@
                 dlms.forEach(dlm => {
                     const div = document.createElement('div');
                     div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
-                    div.innerHTML = `<div><p class="font-bold text-gray-800">${dlm.name || 'No name'}</p><p class="text-sm text-gray-500">${dlm.email}</p><p class="text-xs text-gray-400">📍 ${dlm.assignedProject || 'Not assigned'}</p></div><button class="delete-dlm text-red-600 hover:text-red-800 text-sm font-medium" data-uid="${dlm.id}">Delete</button>`;
+                    div.innerHTML = `<div><p class="font-bold text-gray-800">${dlm.name || 'No name'}</p><p class="text-sm text-gray-500">${dlm.email}</p><p class="text-xs text-gray-400"> ${dlm.assignedProject || 'Not assigned'}</p></div><button class="delete-dlm text-red-600 hover:text-red-800 text-sm font-medium" data-uid="${dlm.id}">Delete</button>`;
                     list.appendChild(div);
                 });
                 document.querySelectorAll('.delete-dlm').forEach(btn => {
@@ -378,13 +375,7 @@
                     showLogin();
                 }
             } else {
-                // Only show create account if database is truly empty
-                const exists = await checkIfHeadOfficeExists();
-                if (!exists) {
-                    showCreateFirstAccount();
-                } else {
-                    showLogin();
-                }
+                showCreateFirstAccount();
             }
         });
     </script>
