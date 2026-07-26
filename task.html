@@ -172,7 +172,6 @@
 
         let currentUser = null;
         let currentTaskId = null;
-        let authInProgress = false;
 
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
@@ -191,11 +190,9 @@
             }
         });
 
+        // BULLETPROOF AUTH CHECK
         auth.onAuthStateChanged(async (user) => {
-            if (authInProgress) return;
-            
             if (user) {
-                authInProgress = true;
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     
@@ -213,28 +210,20 @@
                             loadTask();
                         }
                     } else {
-                        // FIX: Do not sign out automatically. Just show an error.
-                        document.getElementById('loginError').innerText = "Access denied. This account is not an Operative.";
-                        document.getElementById('loginError').classList.remove('hidden');
-                        showLogin();
+                        // FORCE LOGOUT if not an operative or doc missing
+                        console.log("Not an operative. Forcing logout.");
+                        await auth.signOut();
                     }
                 } catch (error) {
-                    console.error("Auth check failed:", error);
-                    showLogin();
-                } finally {
-                    authInProgress = false;
+                    console.error("DB Error:", error);
+                    await auth.signOut(); // FORCE LOGOUT on error
                 }
             } else {
-                showLogin();
-                authInProgress = false;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('languageScreen').classList.add('hidden');
+                document.getElementById('taskInterface').classList.add('hidden');
             }
         });
-
-        function showLogin() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('languageScreen').classList.add('hidden');
-            document.getElementById('taskInterface').classList.add('hidden');
-        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
