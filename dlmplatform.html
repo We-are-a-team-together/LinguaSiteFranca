@@ -8,50 +8,80 @@
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
     
-    <header class="p-4 shadow-md transition-colors duration-300" id="main-header">
+    <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
         <h1 class="text-xl font-bold" id="brand-title"></h1>
+        <span id="dlm-welcome" class="text-sm text-gray-300"></span>
     </header>
 
     <!-- Login Section -->
-    <div id="login-section" class="flex flex-col items-center justify-center flex-grow">
-        <div class="bg-gray-800 p-8 rounded-lg w-96 text-center">
-            <h2 class="text-xl mb-4">DLM Login</h2>
-            <input type="email" id="login-email" class="w-full p-2 mb-4 rounded bg-gray-700 text-white focus:outline-none" value="">
-            <button id="btn-login" class="w-full bg-blue-600 p-2 rounded hover:bg-blue-500">Access Portal</button>
+    <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
+        <div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center shadow-lg">
+            <h2 class="text-xl font-bold mb-4">DLM Portal Sign In</h2>
+            <input type="text" id="login-name" placeholder="Enter Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">Access Project</button>
         </div>
     </div>
 
-    <!-- Dashboard Section (Hidden by default) -->
-    <main id="dashboard-section" class="hidden flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Main Dashboard -->
+    <main id="dashboard-section" class="hidden flex-grow p-6 flex flex-col gap-8">
         
-        <!-- Operative Creation -->
-        <section class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-lg font-semibold mb-4">Register Operative</h2>
-            <div class="flex flex-col gap-3">
-                <label>Operative Name</label>
-                <input type="text" id="op-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <label>Operative Email</label>
-                <input type="email" id="op-email" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <button id="btn-create-op" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Register</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Register Operative -->
+            <section class="bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Register Operative</h2>
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm text-gray-300">Operative Full Name</label>
+                    <input type="text" id="op-name" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
+                    <button id="btn-create-op" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Register Operative</button>
+                </div>
+            </section>
+
+            <!-- Assign Task -->
+            <section class="bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Assign Task</h2>
+                <div class="flex flex-col gap-3">
+                    <label class="text-sm text-gray-300">Select Operative</label>
+                    <select id="task-op" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
+                    <label class="text-sm text-gray-300">Task Details (English)</label>
+                    <textarea id="task-desc" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-20"></textarea>
+                    <button id="btn-assign-task" class="bg-green-600 p-2 rounded hover:bg-green-500 mt-2 font-medium">Dispatch Task</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Registered Operatives List -->
+        <section class="bg-gray-800 p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Registered Operatives Directory</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700 text-gray-200">
+                        <tr>
+                            <th class="p-3">Operative Name</th>
+                            <th class="p-3">Assigned Project</th>
+                        </tr>
+                    </thead>
+                    <tbody id="operatives-table-body"></tbody>
+                </table>
             </div>
         </section>
 
-        <!-- Task Assignment -->
-        <section class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-lg font-semibold mb-4">Assign Task</h2>
-            <div class="flex flex-col gap-3">
-                <label>Select Operative</label>
-                <select id="task-op" class="p-2 rounded bg-gray-700 text-white focus:outline-none"></select>
-                <label>Task Details</label>
-                <textarea id="task-desc" class="p-2 rounded bg-gray-700 text-white focus:outline-none h-24" value=""></textarea>
-                <button id="btn-assign-task" class="bg-green-600 p-2 rounded hover:bg-green-500 mt-2">Dispatch Task</button>
+        <!-- Tasks Oversight Table -->
+        <section class="bg-gray-800 p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Task Tracking & Submissions</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-700 text-gray-200">
+                        <tr>
+                            <th class="p-3">Operative</th>
+                            <th class="p-3">Task Details</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Submission / Photo</th>
+                            <th class="p-3">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tasks-table-body"></tbody>
+                </table>
             </div>
-        </section>
-        
-        <!-- Task Review (Spans full width) -->
-        <section class="bg-gray-800 p-6 rounded-lg md:col-span-2">
-            <h2 class="text-lg font-semibold mb-4">Review Submissions</h2>
-            <div id="submissions-list" class="flex flex-col gap-4"></div>
         </section>
     </main>
 
@@ -73,9 +103,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        
         let currentDlmProject = null;
+        let dlmName = "";
 
-        // Branding Sync
+        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
         onValue(ref(db, 'branding'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -85,49 +118,63 @@
             }
         });
 
-        // Login Logic
         document.getElementById('btn-login').addEventListener('click', async () => {
-            const email = document.getElementById('login-email').value.replace(/\./g, ',');
-            const snapshot = await get(ref(db, 'dlms/' + email));
+            dlmName = document.getElementById('login-name').value.trim();
+            if(!dlmName) return;
+
+            const key = sanitizeKey(dlmName);
+            const snapshot = await get(ref(db, 'dlms/' + key));
+
             if (snapshot.exists()) {
-                currentDlmProject = snapshot.val().projectId;
+                currentDlmProject = snapshot.val().projectName;
+                document.getElementById('dlm-welcome').innerText = `DLM: ${dlmName} | Project: ${currentDlmProject}`;
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 loadOperatives();
-                loadSubmissions();
+                loadTasksTable();
+            } else {
+                alert("DLM name not found. Please contact Head Office.");
             }
         });
 
         function loadOperatives() {
             onValue(ref(db, 'operatives'), (snapshot) => {
                 const select = document.getElementById('task-op');
+                const tableBody = document.getElementById('operatives-table-body');
                 select.innerHTML = '';
+                tableBody.innerHTML = '';
+
                 snapshot.forEach((child) => {
-                    if(child.val().projectId === currentDlmProject) {
+                    const op = child.val();
+                    if(op.projectName === currentDlmProject) {
                         const opt = document.createElement('option');
                         opt.value = child.key;
-                        opt.text = child.val().name;
+                        opt.text = op.name;
                         select.appendChild(opt);
+
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-700 hover:bg-gray-750";
+                        tr.innerHTML = `<td class="p-3 font-medium">${op.name}</td><td class="p-3">${op.projectName}</td>`;
+                        tableBody.appendChild(tr);
                     }
                 });
             });
         }
 
         document.getElementById('btn-create-op').addEventListener('click', () => {
-            const name = document.getElementById('op-name').value;
-            const email = document.getElementById('op-email').value;
-            if (name && email) {
-                set(ref(db, 'operatives/' + email.replace(/\./g, ',')), { name, email, projectId: currentDlmProject });
+            const name = document.getElementById('op-name').value.trim();
+            if (name) {
+                const key = sanitizeKey(name);
+                set(ref(db, 'operatives/' + key), { name, projectName: currentDlmProject });
                 document.getElementById('op-name').value = '';
-                document.getElementById('op-email').value = '';
             }
         });
 
         document.getElementById('btn-assign-task').addEventListener('click', () => {
-            const opId = document.getElementById('task-op').value;
-            const desc = document.getElementById('task-desc').value;
-            if (opId && desc) {
-                push(ref(db, `tasks/${opId}`), { 
+            const opKey = document.getElementById('task-op').value;
+            const desc = document.getElementById('task-desc').value.trim();
+            if (opKey && desc) {
+                push(ref(db, `tasks/${opKey}`), { 
                     description: desc, 
                     status: 'pending',
                     timestamp: Date.now() 
@@ -136,10 +183,49 @@
             }
         });
 
-        function loadSubmissions() {
-             // Logic to read from tasks node and generate review cards with accept/reject buttons
-             // Translations from operatives will appear here.
+        function loadTasksTable() {
+            onValue(ref(db, 'tasks'), (snapshot) => {
+                const tbody = document.getElementById('tasks-table-body');
+                tbody.innerHTML = '';
+
+                snapshot.forEach((opTasks) => {
+                    const opKey = opTasks.key;
+                    opTasks.forEach((taskSnap) => {
+                        const task = taskSnap.val();
+                        const taskId = taskSnap.key;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "border-b border-gray-700";
+
+                        let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
+                        if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
+                        if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
+                        if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Rejected</span>`;
+
+                        tr.innerHTML = `
+                            <td class="p-3 font-medium">${opKey.replace(/_/g, ' ').toUpperCase()}</td>
+                            <td class="p-3 max-w-xs">${task.description}</td>
+                            <td class="p-3">${statusBadge}</td>
+                            <td class="p-3">
+                                ${task.originalComment ? `<p class="italic text-xs mb-1">"${task.originalComment}"</p>` : ''}
+                                ${task.photo ? `<img src="${task.photo}" class="w-20 h-20 object-cover rounded border border-gray-600">` : 'No Photo'}
+                            </td>
+                            <td class="p-3">
+                                ${task.status === 'submitted' ? `
+                                    <button onclick="updateStatus('${opKey}', '${taskId}', 'accepted')" class="bg-green-600 px-2 py-1 text-xs rounded hover:bg-green-500 mr-1">Accept</button>
+                                    <button onclick="updateStatus('${opKey}', '${taskId}', 'rejected')" class="bg-red-600 px-2 py-1 text-xs rounded hover:bg-red-500">Reject</button>
+                                ` : '-'}
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+            });
         }
+
+        window.updateStatus = (opKey, taskId, newStatus) => {
+            update(ref(db, `tasks/${opKey}/${taskId}`), { status: newStatus });
+        };
     </script>
 </body>
 </html>
