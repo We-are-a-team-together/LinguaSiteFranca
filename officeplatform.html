@@ -225,7 +225,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, onValue, set, push, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
@@ -278,6 +278,7 @@
       const s = data[key];
       const opt = document.createElement('option');
       opt.value = s.name;
+      opt.setAttribute('data-key', key); // Save Firebase key to update DLM later
       opt.textContent = s.name;
       select.appendChild(opt);
 
@@ -373,10 +374,16 @@
   document.getElementById('createDlmForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const dlmName = document.getElementById('dlmName').value.trim();
-    const site = document.getElementById('dlmSiteSelect').value;
+    const select = document.getElementById('dlmSiteSelect');
+    const siteName = select.value;
+    const siteKey = select.options[select.selectedIndex].getAttribute('data-key');
 
     const newRef = push(ref(db, 'dlms'));
-    set(newRef, { name: dlmName, site }).then(() => {
+    set(newRef, { name: dlmName, site: siteName }).then(() => {
+      // Update the site directory directly to assign the manager's name
+      if (siteKey) {
+        update(ref(db, `sites/${siteKey}`), { dlm: dlmName });
+      }
       document.getElementById('createDlmForm').reset();
     });
   });
