@@ -3,35 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workspace</title>
+    <title>Workspace — Operative Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
     
-    <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
-        <h1 class="text-xl font-bold" id="brand-title"></h1>
+    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300 flex-wrap gap-2" id="main-header">
+        <h1 class="text-lg sm:text-2xl font-bold" id="brand-title"></h1>
         
-        <!-- Extended Language Menu -->
-        <select id="lang-select" class="bg-gray-800 text-white p-2 rounded border border-gray-700 focus:outline-none text-sm">
+        <!-- 35+ Languages Menu -->
+        <select id="lang-select" class="bg-gray-800 text-white p-2 rounded border border-gray-700 focus:outline-none text-xs sm:text-sm">
             <option value="en">English</option>
-            <option value="ro">Română (Romanian)</option>
+            <option value="ro" selected>Română (Romanian)</option>
             <option value="es">Español (Spanish)</option>
             <option value="pl">Polski (Polish)</option>
+            <option value="uk">Українська (Ukrainian)</option>
+            <option value="bg">Български (Bulgarian)</option>
             <option value="fr">Français (French)</option>
             <option value="de">Deutsch (German)</option>
             <option value="it">Italiano (Italian)</option>
             <option value="pt">Português (Portuguese)</option>
-            <option value="uk">Українська (Ukrainian)</option>
-            <option value="bg">Български (Bulgarian)</option>
+            <option value="hu">Magyar (Hungarian)</option>
+            <option value="cs">Čeština (Czech)</option>
+            <option value="sk">Slovenčina (Slovak)</option>
+            <option value="el">Ελληνικά (Greek)</option>
+            <option value="tr">Türkçe (Turkish)</option>
+            <option value="nl">Nederlands (Dutch)</option>
+            <option value="sv">Svenska (Swedish)</option>
+            <option value="no">Norsk (Norwegian)</option>
+            <option value="da">Dansk (Danish)</option>
+            <option value="fi">Suomi (Finnish)</option>
+            <option value="lt">Lietuvių (Lithuanian)</option>
+            <option value="lv">Latviešu (Latvian)</option>
+            <option value="et">Eesti (Estonian)</option>
             <option value="hi">हिन्दी (Hindi)</option>
+            <option value="ur">اردو (Urdu)</option>
+            <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
             <option value="ar">العربية (Arabic)</option>
             <option value="zh">中文 (Chinese)</option>
+            <option value="ja">日本語 (Japanese)</option>
+            <option value="vi">Tiếng Việt (Vietnamese)</option>
+            <option value="tl">Tagalog (Filipino)</option>
+            <option value="th">ไทย (Thai)</option>
+            <option value="id">Bahasa Indonesia</option>
+            <option value="sw">Kiswahili (Swahili)</option>
         </select>
     </header>
 
     <!-- Login Section -->
     <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
-        <div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center shadow-lg">
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-lg w-full max-w-md text-center shadow-lg border border-gray-700">
             <h2 class="text-xl font-bold mb-4">Operative Access</h2>
             <input type="text" id="login-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">View Tasks</button>
@@ -39,7 +61,7 @@
     </div>
 
     <!-- Task List Section -->
-    <main id="tasks-section" class="hidden flex-grow p-6">
+    <main id="tasks-section" class="hidden flex-grow p-4 sm:p-6">
         <div id="task-container" class="flex flex-col gap-6 max-w-2xl mx-auto"></div>
     </main>
 
@@ -76,7 +98,7 @@
             }
         });
 
-        // On-the-Fly Dynamic Translation
+        // Live Translation Utility
         async function translateText(text, targetLang) {
             if (targetLang === 'en' || !text) return text;
             try {
@@ -118,7 +140,7 @@
                     }
                 });
 
-                // Chronological Sorting (Oldest tasks first)
+                // Sort chronologically (Oldest tasks first)
                 activeTasksCache.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 renderTasks();
             });
@@ -127,10 +149,10 @@
         async function renderTasks() {
             const targetLang = document.getElementById('lang-select').value;
             const container = document.getElementById('task-container');
-            container.innerHTML = '<p class="text-center text-gray-400">Loading & Translating Tasks...</p>';
+            container.innerHTML = '<p class="text-center text-gray-400">Translating tasks...</p>';
 
             if (activeTasksCache.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-400">No active tasks currently assigned.</p>';
+                container.innerHTML = '<p class="text-center text-gray-400">No active tasks assigned.</p>';
                 return;
             }
 
@@ -138,16 +160,38 @@
 
             for (const task of activeTasksCache) {
                 const translatedDesc = await translateText(task.description, targetLang);
+                let translatedReturnNote = "";
+                
+                if(task.rejectionComment) {
+                    translatedReturnNote = await translateText(task.rejectionComment, targetLang);
+                }
 
                 const card = document.createElement('div');
-                card.className = "bg-gray-800 p-6 rounded-lg shadow-md border border-gray-700 flex flex-col gap-3";
+                card.className = "bg-gray-800 p-5 sm:p-6 rounded-lg shadow-md border border-gray-700 flex flex-col gap-3";
 
                 card.innerHTML = `
-                    <div class="text-xs text-gray-400">${new Date(task.timestamp).toLocaleString()}</div>
-                    <p class="text-lg leading-relaxed text-gray-100">${translatedDesc}</p>
-                    <input type="file" id="file-${task.id}" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white">
-                    <textarea id="comment-${task.id}" placeholder="Comments..." class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-16 text-sm"></textarea>
-                    <button id="submit-btn-${task.id}" class="bg-green-600 p-3 rounded font-medium hover:bg-green-500 w-full transition">Submit Completion</button>
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span>${new Date(task.timestamp).toLocaleString()}</span>
+                        ${task.status === 'rejected' ? '<span class="bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">RETURNED FOR CORRECTION</span>' : ''}
+                    </div>
+
+                    ${task.rejectionComment ? `
+                        <div class="bg-red-950/50 border border-red-700 p-3 rounded">
+                            <p class="text-xs text-red-300 font-bold">DLM Feedback:</p>
+                            <p class="text-sm text-red-100">${translatedReturnNote}</p>
+                        </div>
+                    ` : ''}
+
+                    <p class="text-base sm:text-lg leading-relaxed text-gray-100 font-medium">${translatedDesc}</p>
+                    
+                    <div class="flex flex-col gap-2 mt-2">
+                        <label class="text-xs text-gray-400">Upload Photo Proof</label>
+                        <input type="file" id="file-${task.id}" accept="image/*" class="text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white cursor-pointer">
+                    </div>
+
+                    <textarea id="comment-${task.id}" placeholder="Your comments / notes..." class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-16 text-sm"></textarea>
+                    
+                    <button id="submit-btn-${task.id}" class="bg-green-600 p-3 rounded font-medium hover:bg-green-500 w-full transition text-sm sm:text-base">Complete Task</button>
                 `;
                 container.appendChild(card);
 
