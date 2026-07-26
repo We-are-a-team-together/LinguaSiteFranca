@@ -172,7 +172,7 @@
 
         let currentUser = null;
         let currentTaskId = null;
-        let authHandled = false;
+        let authInProgress = false;
 
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
@@ -192,53 +192,39 @@
         });
 
         auth.onAuthStateChanged(async (user) => {
-            if (authHandled) return;
+            if (authInProgress) return;
             
             if (user) {
+                authInProgress = true;
                 try {
-                    authHandled = true;
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     
-                    if (!userDoc.exists) {
-                        console.error('User document not found');
-                        await auth.signOut();
-                        showLogin();
-                        authHandled = false;
-                        return;
-                    }
-                    
-                    const userData = userDoc.data();
-                    
-                    if (userData.role !== 'operative') {
-                        console.error('User is not an operative');
-                        await auth.signOut();
-                        showLogin();
-                        authHandled = false;
-                        return;
-                    }
-                    
-                    currentUser = { uid: user.uid, ...userData };
-                    
-                    if (!userData.languageSelected || !userData.nativeLanguage) {
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('taskInterface').classList.add('hidden');
-                        document.getElementById('languageScreen').classList.remove('hidden');
+                    if (userDoc.exists && userDoc.data().role === 'operative') {
+                        currentUser = { uid: user.uid, ...userDoc.data() };
+                        
+                        if (!currentUser.languageSelected) {
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            document.getElementById('taskInterface').classList.add('hidden');
+                            document.getElementById('languageScreen').classList.remove('hidden');
+                        } else {
+                            document.getElementById('loginScreen').classList.add('hidden');
+                            document.getElementById('languageScreen').classList.add('hidden');
+                            document.getElementById('taskInterface').classList.remove('hidden');
+                            loadTask();
+                        }
                     } else {
-                        document.getElementById('loginScreen').classList.add('hidden');
-                        document.getElementById('languageScreen').classList.add('hidden');
-                        document.getElementById('taskInterface').classList.remove('hidden');
-                        loadTask();
+                        await auth.signOut();
+                        showLogin();
                     }
-                    
-                    authHandled = false;
-                    
                 } catch (error) {
-                    console.error('Auth error:', error);
-                    authHandled = false;
+                    console.error("Auth check failed:", error);
+                    showLogin();
+                } finally {
+                    authInProgress = false;
                 }
             } else {
                 showLogin();
-                authHandled = false;
+                authInProgress = false;
             }
         });
 
@@ -419,7 +405,7 @@
                 window.location.reload();
 
             } catch (error) {
-                alert(" Error: " + error.message);
+                alert("❌ Error: " + error.message);
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Submit Task";
             }
