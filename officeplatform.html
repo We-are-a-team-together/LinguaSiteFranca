@@ -228,7 +228,7 @@
   import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
-    databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
+    databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app"
   };
 
   const app = initializeApp(firebaseConfig);
@@ -239,6 +239,18 @@
   let taskChartInstance = null;
   let complianceChartInstance = null;
   let masterTasks = [];
+
+  // Automatic Translation Helper (Translates operative comments to English)
+  async function translateToEnglish(text) {
+    if (!text) return '';
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    } catch (e) {
+      return text;
+    }
+  }
 
   // Branding Listener
   onValue(ref(db, 'branding'), (snapshot) => {
@@ -278,7 +290,7 @@
       const s = data[key];
       const opt = document.createElement('option');
       opt.value = s.name;
-      opt.setAttribute('data-key', key); // Save Firebase key to update DLM later
+      opt.setAttribute('data-key', key);
       opt.textContent = s.name;
       select.appendChild(opt);
 
@@ -327,8 +339,8 @@
     renderComplianceChart(validCount, expiredCount);
   });
 
-  // Load Tasks
-  onValue(ref(db, 'tasks'), (snapshot) => {
+  // Load Tasks with Auto-Translation for Comments
+  onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('officeTasksBody');
     tbody.innerHTML = '';
@@ -336,12 +348,19 @@
 
     const counts = { Assigned: 0, Submitted: 0, Accepted: 0, Returned: 0 };
 
-    Object.keys(data).forEach(key => {
+    for (const key of Object.keys(data)) {
       const task = data[key];
       masterTasks.push(task);
       if (counts[task.status] !== undefined) counts[task.status]++;
 
       const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '—';
+
+      let commentHtml = '—';
+      const rawComment = task.comment || task.returnNote;
+      if (rawComment) {
+        const translatedComment = await translateToEnglish(rawComment);
+        commentHtml = `<p style="font-size:0.85rem; color:#cbd5e1;">Original: "${rawComment}"</p><p style="font-size:0.9rem; margin-top:3px; color:#38bdf8; font-weight:500;">English: "${translatedComment}"</p>`;
+      }
 
       tbody.innerHTML += `
         <tr>
@@ -350,10 +369,10 @@
           <td>${task.details}</td>
           <td><span class="badge badge-valid">${task.status}</span></td>
           <td>${photoHtml}</td>
-          <td>${task.comment || task.returnNote || '—'}</td>
+          <td>${commentHtml}</td>
         </tr>
       `;
-    });
+    }
 
     renderTaskChart(counts);
   });
@@ -380,7 +399,6 @@
 
     const newRef = push(ref(db, 'dlms'));
     set(newRef, { name: dlmName, site: siteName }).then(() => {
-      // Update the site directory directly to assign the manager's name
       if (siteKey) {
         update(ref(db, `sites/${siteKey}`), { dlm: dlmName });
       }
