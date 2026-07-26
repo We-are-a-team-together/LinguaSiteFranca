@@ -46,7 +46,7 @@
 
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8letter-spacing: 0.5px; }
+    th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
 
     .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
@@ -175,7 +175,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // Parse URL Parameters for DLM session (e.g. ?dlm=James&site=The+Monument+Court)
   const urlParams = new URLSearchParams(window.location.search);
   const currentDlm = urlParams.get('dlm') || 'James';
   const currentSite = urlParams.get('site') || 'The Monument Court';
@@ -229,17 +228,14 @@
 
     Object.keys(data).forEach(key => {
       const op = data[key];
-      // Filter operatives for this specific site
       if (op.assignedSite === currentSite) {
         const isExpired = op.expiry && op.expiry < today;
 
-        // Populate dropdown for task assignment
         const opt = document.createElement('option');
         opt.value = op.name;
         opt.textContent = op.name;
         select.appendChild(opt);
 
-        // Populate directory table with Employer field and Delete button
         tbody.innerHTML += `
           <tr>
             <td><strong>${op.name}</strong></td>
@@ -255,7 +251,6 @@
     });
   });
 
-  // Delete Operative function
   window.deleteOperative = (key) => {
     if (confirm('Are you sure you want to delete this operative?')) {
       remove(ref(db, `operatives/${key}`));
@@ -301,8 +296,13 @@
         let actionHtml = '';
         if (task.status === 'Submitted') {
           actionHtml = `
-            <button class="btn-success" onclick="acceptTask('${key}')" style="margin-bottom: 5px;">Accept</button>
-            <button class="btn-warning" onclick="returnTask('${key}')">Return</button>
+            <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
+              <input type="text" id="returnNote_${key}" placeholder="Enter return note..." style="padding: 6px; font-size: 0.85rem;">
+              <div style="display: flex; gap: 5px;">
+                <button class="btn-success" onclick="acceptTask('${key}')" style="flex: 1; padding: 6px;">Accept</button>
+                <button class="btn-warning" onclick="returnTask('${key}')" style="flex: 1; padding: 6px;">Return</button>
+              </div>
+            </div>
           `;
         } else if (task.status === 'Accepted') {
           actionHtml = `<span class="badge badge-valid">Completed</span>`;
@@ -330,13 +330,16 @@
   };
 
   window.returnTask = (key) => {
-    const note = prompt('Enter return note / feedback for the operative (in English):');
-    if (note !== null) {
-      update(ref(db, `tasks/${key}`), {
-        status: 'Returned',
-        returnNote: note
-      });
+    const noteInput = document.getElementById(`returnNote_${key}`);
+    const note = noteInput ? noteInput.value.trim() : '';
+    if (!note) {
+      alert('Please enter a return note before returning the task.');
+      return;
     }
+    update(ref(db, `tasks/${key}`), {
+      status: 'Returned',
+      returnNote: note
+    });
   };
 
   window.openModal = (src) => {
