@@ -66,18 +66,22 @@
             </div>
         </section>
 
-        <!-- PROJECTS MANAGEMENT -->
+        <!-- PROJECTS MANAGEMENT (UPDATED WITH LOCATION) -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-4 sm:px-6 py-4">
-                <h2 class="text-base sm:text-lg font-bold text-white">📍 Projects & Locations</h2>
+                <h2 class="text-base sm:text-lg font-bold text-white"> Projects & Locations</h2>
                 <p class="text-purple-100 text-xs sm:text-sm mt-1">Manage all project sites and locations</p>
             </div>
             <div class="p-4 sm:p-6">
                 <form id="createProjectForm" class="space-y-4 mb-6 p-3 sm:p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <h3 class="font-bold text-gray-800 mb-3">Create New Project/Location</h3>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Project/Location Name</label>
-                        <input type="text" id="projectName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="Enter project name">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
+                        <input type="text" id="projectName" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="e.g., HQ Renovation">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Physical Location / Address</label>
+                        <input type="text" id="projectLocation" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm sm:text-base" placeholder="e.g., 123 Main St, London">
                     </div>
                     <button type="submit" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 text-sm sm:text-base">📍 Create Project</button>
                 </form>
@@ -102,7 +106,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
                         <div class="flex-1 w-full">
                             <input type="file" id="logoInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
-                            <p class="text-xs text-red-500 mt-1 font-bold">️ Must be small (under 100KB)</p>
+                            <p class="text-xs text-red-500 mt-1 font-bold">⚠️ Must be small (under 100KB)</p>
                         </div>
                         <div id="logoPreview" class="hidden">
                             <img src="" alt="Logo Preview" class="h-16 w-auto rounded-lg border border-gray-200 shadow-sm">
@@ -117,7 +121,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Footer Text</label>
                     <input type="text" id="footerText" required class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base" placeholder="e.g., © 2026 Your Company Name">
                 </div>
-                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md text-sm sm:text-base"> Save Branding Configuration</button>
+                <button type="submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 sm:py-3 rounded-lg transition duration-200 shadow-md text-sm sm:text-base">💾 Save Branding Configuration</button>
             </form>
         </section>
 
@@ -147,10 +151,7 @@
             await loadBranding();
             await loadDLMs();
             await loadProjects();
-            
-            db.collection('settings').doc('branding').onSnapshot((doc) => {
-                if (doc.exists) applyBranding(doc.data());
-            });
+            db.collection('settings').doc('branding').onSnapshot((doc) => { if (doc.exists) applyBranding(doc.data()); });
         });
 
         async function loadBranding() {
@@ -183,21 +184,15 @@
             const footerText = document.getElementById('footerText').value;
             const logoInput = document.getElementById('logoInput');
             const submitBtn = e.target.querySelector('button[type="submit"]');
-            
             submitBtn.disabled = true;
             submitBtn.innerText = '⏳ Saving...';
-            
             try {
                 let logoUrl = '';
                 const existingDoc = await db.collection('settings').doc('branding').get();
                 if (existingDoc.exists) logoUrl = existingDoc.data().logoUrl || '';
-                
                 if (logoInput.files && logoInput.files[0]) {
                     const file = logoInput.files[0];
-                    if (file.size > 100000) {
-                        throw new Error('Logo is too large! Please use an image under 100KB.');
-                    }
-                    
+                    if (file.size > 100000) throw new Error('Logo is too large! Please use an image under 100KB.');
                     logoUrl = await new Promise((resolve, reject) => {
                         const reader = new FileReader();
                         reader.onload = () => resolve(reader.result);
@@ -205,16 +200,9 @@
                         reader.readAsDataURL(file);
                     });
                 }
-                
-                await db.collection('settings').doc('branding').set({
-                    businessName, footerText, logoUrl,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                
+                await db.collection('settings').doc('branding').set({ businessName, footerText, logoUrl, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
                 alert('✅ Branding saved successfully!');
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            } finally {
+            } catch (error) { alert('❌ Error: ' + error.message); } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerText = '💾 Save Branding Configuration';
             }
@@ -228,16 +216,11 @@
             const project = document.getElementById('dlmProject').value;
             try {
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection('users').doc(userCredential.user.uid).set({
-                    name, email, role: 'dlm', assignedProject: project,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                await db.collection('users').doc(userCredential.user.uid).set({ name, email, role: 'dlm', assignedProject: project, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 alert('✅ DLM created successfully!');
                 e.target.reset();
                 loadDLMs();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
-            }
+            } catch (error) { alert(' Error: ' + error.message); }
         });
 
         async function loadDLMs() {
@@ -252,17 +235,15 @@
         }
 
         async function deleteDLM(uid) {
-            if(confirm('Delete this DLM?')) {
-                await db.collection('users').doc(uid).delete();
-                loadDLMs();
-            }
+            if(confirm('Delete this DLM?')) { await db.collection('users').doc(uid).delete(); loadDLMs(); }
         }
 
         document.getElementById('createProjectForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('projectName').value;
+            const location = document.getElementById('projectLocation').value;
             try {
-                await db.collection('projects').add({ name, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                await db.collection('projects').add({ name, location, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
                 alert('✅ Project created!');
                 e.target.reset();
                 loadProjects();
@@ -276,7 +257,7 @@
             if (snapshot.empty) { list.innerHTML = '<div class="text-center text-gray-500 py-4">No projects yet</div>'; return; }
             snapshot.forEach(doc => {
                 const p = doc.data();
-                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border"><p class="font-bold text-base sm:text-lg">${p.name}</p></div>`;
+                list.innerHTML += `<div class="bg-gray-50 p-3 sm:p-4 rounded-lg border"><p class="font-bold text-base sm:text-lg">${p.name}</p><p class="text-sm text-gray-600">📍 ${p.location || 'No location specified'}</p></div>`;
             });
         }
     </script>
