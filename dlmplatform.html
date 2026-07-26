@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaSiteFranca - DLM Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="root"></div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getDatabase, ref, set, onValue, remove, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+            authDomain: "lingua-site-franca.firebaseapp.com",
+            projectId: "lingua-site-franca",
+            storageBucket: "lingua-site-franca.firebasestorage.app",
+            messagingSenderId: "737514168886",
+            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let currentDlmId = null;
+
+        const root = document.getElementById('root');
+
+        function renderUI() {
+            root.innerHTML = `
+                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+                    <div class="max-w-7xl mx-auto flex justify-between items-center">
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
+                            <p class="text-xs text-gray-500">Site Manager Dashboard</p>
+                        </div>
+                        <button id="logoutBtn" class="text-sm text-red-600 hover:text-red-800">Sign Out</button>
+                    </div>
+                </nav>
+
+                <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+                    <!-- Operatives -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">👷 Manage Operatives</h2>
+                        <form id="createOperativeForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <input type="text" id="opName" placeholder="Operative Name" required class="w-full p-3 border rounded-lg">
+                            <input type="email" id="opEmail" placeholder="Operative Email" required class="w-full p-3 border rounded-lg">
+                            <input type="password" id="opPassword" placeholder="Password (min 6)" required minlength="6" class="w-full p-3 border rounded-lg">
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Create Operative</button>
+                        </form>
+                        <div id="operativeList" class="space-y-3"></div>
+                    </section>
+
+                    <!-- Tasks -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">📋 Assign Task</h2>
+                        <form id="assignTaskForm" class="space-y-4">
+                            <select id="taskOperative" required class="w-full p-3 border rounded-lg">
+                                <option value="">Select Operative...</option>
+                            </select>
+                            <textarea id="taskDescription" rows="3" placeholder="Task Description (English)" required class="w-full p-3 border rounded-lg"></textarea>
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Assign Task</button>
+                        </form>
+                    </section>
+
+                    <!-- Submissions -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">✅ Review Submissions</h2>
+                        <div id="taskReviewList" class="space-y-4"></div>
+                    </section>
+                </div>
+            `;
+
+            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+            document.getElementById('createOperativeForm').addEventListener('submit', handleCreateOperative);
+            document.getElementById('assignTaskForm').addEventListener('submit', handleAssignTask);
+
+            loadOperatives();
+            loadTasks();
+        }
+
+        async function handleCreateOperative(e) {
+            e.preventDefault();
+            const name = document.getElementById('opName').value;
+            const email = document.getElementById('opEmail').value;
+            const password = document.getElementById('opPassword').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+                
+                await set(ref(db, `users/${uid}`), {
+                    name,
+                    email,
+                    role: 'operative',
+                    assignedDlm: currentDlmId,
+                    languageSelected: false,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('✅ Operative created!');
+                e.target.reset();
+                loadOperatives();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function handleAssignTask(e) {
+            e.preventDefault();
+            const operativeId = document.getElementById('taskOperative').value;
+            const description = document.getElementById('taskDescription').value;
+
+            try {
+                await push(ref(db, 'tasks'), {
+                    dlmId: currentDlmId,
+                    operativeId,
+                    description_en: description,
+                    status: 'assigned',
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('✅ Task assigned!');
+                e.target.reset();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function loadOperatives() {
+            const q = query(ref(db, 'users'), orderByChild('assignedDlm'), equalTo(currentDlmId));
+            
+            onValue(q, (snapshot) => {
+                const list = document.getElementById('operativeList');
+                const select = document.getElementById('taskOperative');
+                
+                if (!list || !select) return;
+                
+                list.innerHTML = '';
+                select.innerHTML = '<option value="">Select Operative...</option>';
+                
+                const operatives = [];
+                
+                snapshot.forEach((child) => {
+                    operatives.push({ id: child.key, ...child.val() });
+                });
+
+                if (operatives.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No operatives yet</p>';
+                    return;
+                }
+
+                operatives.forEach(op => {
+                    list.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-lg border">
+                            <p class="font-bold">${op.name}</p>
+                            <p class="text-sm text-gray-500">${op.email}</p>
+                        </div>
+                    `;
+                    
+                    const option = document.createElement('option');
+                    option.value = op.id;
+                    option.textContent = `${op.name} (${op.email})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function loadTasks() {
+            const q = query(ref(db, 'tasks'), orderByChild('dlmId'), equalTo(currentDlmId));
+            
+            onValue(q, (snapshot) => {
+                const list = document.getElementById('taskReviewList');
+                if (!list) return;
+                
+                list.innerHTML = '';
+                let hasTasks = false;
+                
+                snapshot.forEach((child) => {
+                    const task = child.val();
+                    if (task.status === 'submitted') {
+                        hasTasks = true;
+                        
+                        list.innerHTML += `
+                            <div class="border rounded-xl p-6 bg-gray-50">
+                                <h3 class="font-bold mb-4">Task Submission</h3>
+                                <div class="bg-white p-4 rounded-lg mb-4">
+                                    <p class="text-xs text-gray-500 uppercase">Operative Comment</p>
+                                    <p class="text-gray-800">${task.operative_comment_native || 'No comment'}</p>
+                                </div>
+                                <div class="space-y-3">
+                                    <textarea id="feedback_${child.key}" rows="2" placeholder="Your feedback..." class="w-full p-3 border rounded-lg"></textarea>
+                                    <div class="flex gap-2">
+                                        <button onclick="window.reviewTask('${child.key}', 'approved')" class="flex-1 bg-green-600 text-white py-2 rounded-lg">Approve</button>
+                                        <button onclick="window.reviewTask('${child.key}', 'rejected')" class="flex-1 bg-red-600 text-white py-2 rounded-lg">Reject</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                if (!hasTasks) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No submissions yet</p>';
+                }
+            });
+        }
+
+        window.reviewTask = async (taskId, decision) => {
+            const feedback = document.getElementById(`feedback_${taskId}`).value;
+            
+            try {
+                await set(ref(db, `tasks/${taskId}`), {
+                    ...snapshot.val(),
+                    status: decision,
+                    dlm_feedback_en: feedback,
+                    reviewedAt: new Date().toISOString()
+                });
+                
+                alert(`✅ Task ${decision}!`);
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userSnapshot = await get(ref(db, `users/${user.uid}`));
+                if (userSnapshot.exists() && userSnapshot.val().role === 'dlm') {
+                    currentDlmId = user.uid;
+                    renderUI();
+                } else {
+                    alert('Access denied');
+                    signOut(auth);
+                }
+            } else {
+                // Show login
+                root.innerHTML = `
+                    <div class="min-h-screen flex items-center justify-center p-4">
+                        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+                            <h1 class="text-2xl font-bold text-center mb-6">DLM Portal</h1>
+                            <form id="loginForm" class="space-y-4">
+                                <input type="email" id="loginEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
+                                <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border rounded-lg">
+                                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Sign In</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    } catch (error) {
+                        alert('❌ Error: ' + error.message);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
