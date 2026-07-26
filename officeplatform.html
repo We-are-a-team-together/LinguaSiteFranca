@@ -11,7 +11,7 @@
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, remove, push, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { getDatabase, ref, set, onValue, remove, push, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -29,13 +29,16 @@
 
         const appDiv = document.getElementById('app');
 
-        // Check if we can access the users collection
-        async function canCheckHeadOffice() {
+        // Check if head_office user exists (with error handling)
+        async function checkIfHeadOfficeExists() {
             try {
-                // Try to read our own user data (will fail if not logged in)
-                await get(ref(db, 'users'));
-                return true;
+                const usersRef = ref(db, 'users');
+                const q = query(usersRef, orderByChild('role'), equalTo('head_office'));
+                const snapshot = await get(q);
+                return snapshot.exists();
             } catch (error) {
+                console.error('Permission error checking head office:', error);
+                // If permission denied, assume no head office exists
                 return false;
             }
         }
@@ -84,6 +87,14 @@
                 const errorMsg = document.getElementById('errorMsg');
 
                 try {
+                    // Double-check no head_office exists
+                    const exists = await checkIfHeadOfficeExists();
+                    if (exists) {
+                        errorMsg.textContent = 'Administrator account already exists. Please login instead.';
+                        errorMsg.classList.remove('hidden');
+                        return;
+                    }
+
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const uid = userCredential.user.uid;
 
@@ -412,7 +423,7 @@
                                 await remove(ref(db, `projects/${projectId}`));
                                 alert('✅ Project deleted');
                             } catch (error) {
-                                alert(' Error: ' + error.message);
+                                alert('❌ Error: ' + error.message);
                             }
                         }
                     });
@@ -436,12 +447,15 @@
         // Initialize App
         async function init() {
             try {
-                // Check if we can access the database
-                await get(ref(db, 'settings/branding'));
-                showLogin();
+                const headOfficeExists = await checkIfHeadOfficeExists();
+                if (!headOfficeExists) {
+                    showCreateFirstAccount();
+                } else {
+                    showLogin();
+                }
             } catch (error) {
-                // If we can't access, show create account screen
-                showCreateFirstAccount();
+                console.error('Error initializing app:', error);
+                showLogin();
             }
         }
 
@@ -467,7 +481,18 @@
                     showLogin();
                 }
             } else {
-                init();
+                // Re-check if head_office exists when logged out
+                try {
+                    const headOfficeExists = await checkIfHeadOfficeExists();
+                    if (!headOfficeExists) {
+                        showCreateFirstAccount();
+                    } else {
+                        showLogin();
+                    }
+                } catch (error) {
+                    console.error('Error checking head office:', error);
+                    showLogin();
+                }
             }
         });
 
