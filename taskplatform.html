@@ -36,7 +36,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getDatabase, ref, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -50,7 +49,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        const storage = getStorage(app);
         let currentUserEmail = null;
 
         // Branding Sync
@@ -65,10 +63,10 @@
 
         // Basic Client-Side Dictionary for UI elements
         const dict = {
-            en: { loginBtn: "Access Tasks", uploadMsg: "Upload Photo", submit: "Complete Task" },
-            ro: { loginBtn: "Accesați Sarcinile", uploadMsg: "Încărcați Fotografia", submit: "Finalizați Sarcina" },
-            es: { loginBtn: "Acceder a Tareas", uploadMsg: "Subir Foto", submit: "Completar Tarea" },
-            pl: { loginBtn: "Dostęp do Zadań", uploadMsg: "Prześlij Zdjęcie", submit: "Zakończ Zadanie" }
+            en: { loginBtn: "Access Tasks", submit: "Complete Task" },
+            ro: { loginBtn: "Accesați Sarcinile", submit: "Finalizați Sarcina" },
+            es: { loginBtn: "Acceder a Tareas", submit: "Completar Tarea" },
+            pl: { loginBtn: "Dostęp do Zadań", submit: "Zakończ Zadanie" }
         };
 
         function updateUI() {
@@ -101,36 +99,41 @@
                         const card = document.createElement('div');
                         card.className = "bg-gray-800 p-4 rounded-lg";
                         
-                        // Note: External translation API integration point for task.description goes here.
-                        
                         card.innerHTML = `
                             <p class="mb-4">${task.description}</p>
-                            <input type="file" id="file-${child.key}" class="mb-2 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white">
+                            <input type="file" id="file-${child.key}" accept="image/*" class="mb-2 block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-gray-700 file:text-white">
                             <textarea id="comment-${child.key}" class="w-full p-2 mb-2 rounded bg-gray-700 text-white focus:outline-none h-16" value=""></textarea>
-                            <button onclick="submitTask('${child.key}')" class="bg-green-600 p-2 rounded hover:bg-green-500 w-full">${dict[document.getElementById('lang-select').value].submit}</button>
+                            <button id="submit-btn-${child.key}" class="bg-green-600 p-2 rounded hover:bg-green-500 w-full">${dict[document.getElementById('lang-select').value].submit}</button>
                         `;
                         container.appendChild(card);
+
+                        // Attach event listener directly to the dynamically created button
+                        document.getElementById(`submit-btn-${child.key}`).addEventListener('click', () => {
+                            submitTask(child.key);
+                        });
                     }
                 });
             });
         }
 
-        window.submitTask = async (taskId) => {
+        async function submitTask(taskId) {
             const fileInput = document.getElementById(`file-${taskId}`);
             const comment = document.getElementById(`comment-${taskId}`).value;
             const lang = document.getElementById('lang-select').value;
             
-            let photoUrl = "";
+            let photoData = "";
             if (fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                const storageRef = sRef(storage, `uploads/${Date.now()}_${file.name}`);
-                await uploadBytes(storageRef, file);
-                photoUrl = await getDownloadURL(storageRef);
+                photoData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
             }
 
             update(ref(db, `tasks/${currentUserEmail}/${taskId}`), {
                 status: 'submitted',
-                photo: photoUrl,
+                photo: photoData,
                 originalComment: comment,
                 sourceLang: lang
             });
