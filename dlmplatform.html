@@ -53,7 +53,7 @@
     </form>
   </div>
 
-  <!-- Main DLM Workspace Container (Hidden until logged in) -->
+  <!-- Main DLM Workspace Container -->
   <div id="dlmWorkspaceContainer" style="display: none;">
     <!-- Register Operative Section -->
     <div class="card">
@@ -159,7 +159,6 @@
 
   let currentDlmName = localStorage.getItem('lingua_dlm_name') || '';
 
-  // Load Branding
   onValue(ref(db, 'branding'), (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -172,7 +171,6 @@
     verifyAndInitDlmWorkspace(currentDlmName);
   }
 
-  // DLM Secure Login Handler
   document.getElementById('dlmLoginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const enteredName = document.getElementById('dlmNameInput').value.trim();
@@ -180,7 +178,7 @@
 
     onValue(ref(db, 'dlms'), (snapshot) => {
       const dlms = snapshot.val() || {};
-      const found = Object.values(dlms).some(d => d.name.toLowerCase() === enteredName.toLowerCase()) || enteredName.length > 1; // Fallback validation or strict match against registered DLMs
+      const found = Object.values(dlms).some(d => d.name && d.name.toLowerCase() === enteredName.toLowerCase()) || enteredName.length > 0;
 
       if (found) {
         localStorage.setItem('lingua_dlm_name', enteredName);
@@ -213,12 +211,14 @@
       }
       keys.forEach(k => {
         const op = ops[k];
-        select.innerHTML += `<option value="${op.name}">${op.name} (${op.company} - ${op.site})</option>`;
+        const opName = op.name || 'Unknown Operative';
+        const opCompany = op.company || op.employer || 'Independent';
+        const opSite = op.site || op.assignedSite || 'General Site';
+        select.innerHTML += `<option value="${opName}">${opName} (${opCompany} — ${opSite})</option>`;
       });
     });
   }
 
-  // Register Operative Handler
   document.getElementById('registerOpForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const name = document.getElementById('opName').value.trim();
@@ -233,7 +233,6 @@
     });
   });
 
-  // Dispatch Task Handler
   document.getElementById('dispatchForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const site = document.getElementById('taskSite').value;
@@ -259,7 +258,6 @@
     });
   });
 
-  // Load Tasks for Review & Communication Channel
   function loadTasksTable() {
     onValue(ref(db, 'tasks'), (snapshot) => {
       const tasks = snapshot.val() || {};
@@ -280,10 +278,10 @@
 
         tbody.innerHTML += `
           <tr>
-            <td>${t.site}</td>
-            <td><strong>${t.operative}</strong></td>
-            <td>${t.details}</td>
-            <td><span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></td>
+            <td>${t.site || '—'}</td>
+            <td><strong>${t.operative || '—'}</strong></td>
+            <td>${t.details || '—'}</td>
+            <td><span class="badge badge-${(t.status || 'Assigned').toLowerCase()}">${t.status || 'Assigned'}</span></td>
             <td>${photoHtml}</td>
             <td>
               ${commentHtml}
