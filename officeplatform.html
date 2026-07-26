@@ -6,65 +6,61 @@
     <title>Office Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans" id="app-body">
+<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
     
     <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
         <h1 class="text-xl font-bold" id="brand-title"></h1>
-        <div class="flex items-center gap-2">
-            <span class="text-green-400">● Live</span>
-        </div>
+        <span class="text-green-400">● Live</span>
     </header>
 
     <main class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Project Creation -->
-        <section class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-lg font-semibold mb-4">Create Project</h2>
+        <section class="bg-gray-800 p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Create Project</h2>
             <div class="flex flex-col gap-3">
-                <label>Project Name</label>
-                <input type="text" id="proj-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <label>Geographic Address</label>
-                <input type="text" id="proj-address" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <button id="btn-create-proj" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Add Project</button>
+                <label class="text-sm text-gray-300">Project Name</label>
+                <input type="text" id="proj-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="text-sm text-gray-300">Geographic Address</label>
+                <input type="text" id="proj-address" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button id="btn-create-proj" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Add Project</button>
             </div>
         </section>
 
         <!-- DLM Assignment -->
-        <section class="bg-gray-800 p-6 rounded-lg">
-            <h2 class="text-lg font-semibold mb-4">Assign DLM</h2>
+        <section class="bg-gray-800 p-6 rounded-lg shadow">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Assign DLM</h2>
             <div class="flex flex-col gap-3">
-                <label>DLM Name</label>
-                <input type="text" id="dlm-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <label>DLM Email</label>
-                <input type="email" id="dlm-email" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
-                <label>Assign to Project</label>
+                <label class="text-sm text-gray-300">DLM Full Name</label>
+                <input type="text" id="dlm-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="text-sm text-gray-300">Assign to Project</label>
                 <select id="dlm-project" class="p-2 rounded bg-gray-700 text-white focus:outline-none"></select>
-                <button id="btn-create-dlm" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Assign DLM</button>
+                <button id="btn-create-dlm" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Assign DLM</button>
             </div>
         </section>
     </main>
 
     <!-- Global Branding Panel -->
-    <section class="bg-gray-950 p-6 border-t border-gray-700 mt-auto">
+    <section class="bg-gray-950 p-6 border-t border-gray-700">
         <h2 class="text-lg font-semibold mb-4">Global Branding Panel</h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="flex flex-col">
-                <label>System Title</label>
-                <input type="text" id="brand-title-input" class="p-2 rounded bg-gray-800 text-white focus:outline-none" value="">
+                <label class="text-xs text-gray-400 mb-1">System Title</label>
+                <input type="text" id="brand-title-input" class="p-2 rounded bg-gray-800 text-white border border-gray-700">
             </div>
             <div class="flex flex-col">
-                <label>Header Color</label>
-                <input type="color" id="brand-header-color" class="p-1 rounded bg-gray-800 h-10 w-full" value="#1f2937">
+                <label class="text-xs text-gray-400 mb-1">Header Color</label>
+                <input type="color" id="brand-header-color" class="p-1 rounded bg-gray-800 h-10 w-full cursor-pointer">
             </div>
             <div class="flex flex-col">
-                <label>Footer Text</label>
-                <input type="text" id="brand-footer-input" class="p-2 rounded bg-gray-800 text-white focus:outline-none" value="">
+                <label class="text-xs text-gray-400 mb-1">Footer Text</label>
+                <input type="text" id="brand-footer-input" class="p-2 rounded bg-gray-800 text-white border border-gray-700">
             </div>
             <div class="flex flex-col justify-end">
-                <button id="btn-save-branding" class="bg-green-600 p-2 rounded hover:bg-green-500">Apply Globally</button>
+                <button id="btn-save-branding" class="bg-green-600 p-2 rounded hover:bg-green-500 font-medium">Apply Globally</button>
             </div>
         </div>
     </section>
-    
+
     <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
 
     <script type="module">
@@ -84,7 +80,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Branding Sync
+        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+
         onValue(ref(db, 'branding'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -102,10 +99,9 @@
             });
         });
 
-        // Create Project
         document.getElementById('btn-create-proj').addEventListener('click', () => {
-            const name = document.getElementById('proj-name').value;
-            const address = document.getElementById('proj-address').value;
+            const name = document.getElementById('proj-name').value.trim();
+            const address = document.getElementById('proj-address').value.trim();
             if (name && address) {
                 push(ref(db, 'projects'), { name, address });
                 document.getElementById('proj-name').value = '';
@@ -113,27 +109,24 @@
             }
         });
 
-        // Load Projects into DLM dropdown
         onValue(ref(db, 'projects'), (snapshot) => {
             const select = document.getElementById('dlm-project');
             select.innerHTML = '';
             snapshot.forEach((child) => {
                 const opt = document.createElement('option');
-                opt.value = child.key;
-                opt.text = child.val().name;
+                opt.value = child.val().name;
+                opt.text = `${child.val().name} (${child.val().address})`;
                 select.appendChild(opt);
             });
         });
 
-        // Create DLM
         document.getElementById('btn-create-dlm').addEventListener('click', () => {
-            const name = document.getElementById('dlm-name').value;
-            const email = document.getElementById('dlm-email').value;
-            const projectId = document.getElementById('dlm-project').value;
-            if (name && email && projectId) {
-                set(ref(db, 'dlms/' + email.replace(/\./g, ',')), { name, email, projectId });
+            const name = document.getElementById('dlm-name').value.trim();
+            const projectName = document.getElementById('dlm-project').value;
+            if (name && projectName) {
+                const key = sanitizeKey(name);
+                set(ref(db, 'dlms/' + key), { name, projectName });
                 document.getElementById('dlm-name').value = '';
-                document.getElementById('dlm-email').value = '';
             }
         });
     </script>
