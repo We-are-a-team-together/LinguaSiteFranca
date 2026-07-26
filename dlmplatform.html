@@ -242,7 +242,7 @@
     });
   });
 
-  // Load Operatives Directory & Populate Assign Task Dropdown
+  // Load Operatives Directory & Populate Assign Task Dropdown (Case-insensitive matching)
   onValue(ref(db, 'operatives'), (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('operativesTableBody');
@@ -254,7 +254,7 @@
 
     Object.keys(data).forEach(key => {
       const op = data[key];
-      if (op.assignedSite === currentSite) {
+      if (op.assignedSite && op.assignedSite.toLowerCase() === currentSite.toLowerCase()) {
         const isExpired = op.expiry && op.expiry < today;
 
         const opt = document.createElement('option');
@@ -308,7 +308,7 @@
     });
   });
 
-  // Load Tasks & Submissions with Translated Comments
+  // Load Tasks & Submissions with Translated Comments (Case-insensitive matching)
   onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('tasksTableBody');
@@ -316,7 +316,7 @@
 
     for (const key of Object.keys(data)) {
       const task = data[key];
-      if (task.site === currentSite) {
+      if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
         const translatedComment = await translateToEnglish(task.comment);
         const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : '—';
         
