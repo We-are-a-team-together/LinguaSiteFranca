@@ -214,12 +214,24 @@
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('mainContainer').style.display = 'flex';
         document.getElementById('dlmHeaderInfo').innerText = `DLM: ${currentDLM} | Site: ${currentSite}`;
-        initDLMPlatform(); // Load data specifically for this DLM's site
+        initDLMPlatform();
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
     });
   });
+
+  // Automatic Translation Helper (Translates operative comments to English)
+  async function translateToEnglish(text) {
+    if (!text) return '';
+    try {
+      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+      const data = await res.json();
+      return data[0][0][0];
+    } catch (e) {
+      return text;
+    }
+  }
 
   function initDLMPlatform() {
     // Load Operatives
@@ -257,24 +269,29 @@
       });
     });
 
-    // Load Tasks
-    onValue(ref(db, 'tasks'), (snapshot) => {
+    // Load Tasks & Translate Comments
+    onValue(ref(db, 'tasks'), async (snapshot) => {
       const data = snapshot.val() || {};
       const tbody = document.getElementById('tasksTableBody');
       tbody.innerHTML = '';
 
-      Object.keys(data).forEach(key => {
+      for (const key of Object.keys(data)) {
         const task = data[key];
         if (task.site === currentSite) {
           const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '';
-          const commentHtml = task.comment ? `<p style="font-size:0.85rem; margin-top:5px; color:#cbd5e1;">"${task.comment}"</p>` : '';
+          
+          let translatedCommentHtml = '';
+          if (task.comment) {
+            const translatedComment = await translateToEnglish(task.comment);
+            translatedCommentHtml = `<p style="font-size:0.85rem; margin-top:5px; color:#cbd5e1;">Original: "${task.comment}"</p><p style="font-size:0.9rem; margin-top:3px; color:#38bdf8; font-weight:500;">English: "${translatedComment}"</p>`;
+          }
           
           tbody.innerHTML += `
             <tr>
               <td><strong>${task.operative}</strong></td>
               <td>${task.details}</td>
               <td><span class="badge badge-valid">${task.status}</span></td>
-              <td>${photoHtml}${commentHtml}</td>
+              <td>${photoHtml}${translatedCommentHtml}</td>
               <td>
                 ${task.status === 'Submitted' ? `
                   <button class="btn-success" onclick="updateTaskStatus('${key}', 'Accepted')" style="margin-bottom:5px;">Accept</button>
@@ -285,7 +302,7 @@
             </tr>
           `;
         }
-      });
+      }
     });
   }
 
