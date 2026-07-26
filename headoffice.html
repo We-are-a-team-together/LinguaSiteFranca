@@ -136,7 +136,7 @@
         const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
 
         let currentDlmId = null;
-        let authHandled = false;
+        let authInProgress = false;
 
         db.collection('settings').doc('branding').onSnapshot((doc) => {
             if (doc.exists) {
@@ -156,52 +156,37 @@
         });
 
         auth.onAuthStateChanged(async (user) => {
-            if (authHandled) return;
+            if (authInProgress) return;
             
             if (user) {
+                authInProgress = true;
                 try {
-                    authHandled = true;
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     
-                    if (!userDoc.exists) {
-                        console.error('User document not found');
+                    if (userDoc.exists && userDoc.data().role === 'dlm') {
+                        currentDlmId = user.uid;
+                        document.getElementById('loginScreen').classList.add('hidden');
+                        document.getElementById('dlmDashboard').classList.remove('hidden');
+                        loadOperatives();
+                        loadTasks();
+                    } else {
                         await auth.signOut();
-                        showLogin();
-                        authHandled = false;
-                        return;
+                        document.getElementById('loginScreen').classList.remove('hidden');
+                        document.getElementById('dlmDashboard').classList.add('hidden');
                     }
-                    
-                    const userData = userDoc.data();
-                    
-                    if (userData.role !== 'dlm') {
-                        console.error('User is not a DLM');
-                        await auth.signOut();
-                        showLogin();
-                        authHandled = false;
-                        return;
-                    }
-                    
-                    currentDlmId = user.uid;
-                    document.getElementById('loginScreen').classList.add('hidden');
-                    document.getElementById('dlmDashboard').classList.remove('hidden');
-                    loadOperatives();
-                    loadTasks();
-                    authHandled = false;
-                    
                 } catch (error) {
-                    console.error('Auth error:', error);
-                    authHandled = false;
+                    console.error("Auth check failed:", error);
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('dlmDashboard').classList.add('hidden');
+                } finally {
+                    authInProgress = false;
                 }
             } else {
-                showLogin();
-                authHandled = false;
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('dlmDashboard').classList.add('hidden');
+                authInProgress = false;
             }
         });
-
-        function showLogin() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('dlmDashboard').classList.add('hidden');
-        }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -264,7 +249,7 @@
                     <div class="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
                         <p class="font-bold text-sm sm:text-base text-gray-800">${op.name}</p>
                         <p class="text-xs sm:text-sm text-gray-500">${op.email}</p>
-                        <p class="text-xs text-indigo-600 mt-1">🌐 Language: ${langDisplay}</p>
+                        <p class="text-xs text-indigo-600 mt-1"> Language: ${langDisplay}</p>
                     </div>
                 `;
                 
