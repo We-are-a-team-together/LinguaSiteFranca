@@ -189,7 +189,6 @@
                 let foundTask = false;
                 snapshot.forEach((child) => {
                     const task = child.val();
-                    // Show active tasks assigned, rejected (needs revision), or even submitted/approved for visibility
                     currentTaskId = child.key;
                     foundTask = true;
 
@@ -235,6 +234,7 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentAuthUser = user;
+                console.log('🟢 Auth state changed: Operative signed in:', user.uid);
                 try {
                     const userSnapshot = await get(ref(db, `users/${user.uid}`));
                     if (userSnapshot.exists()) {
@@ -243,20 +243,22 @@
                             const lang = currentUser.nativeLanguage || 'en';
                             showTaskInterface(lang);
                         } else {
+                            console.warn('⚠️ Access denied: User is not an operative. Role found:', currentUser.role);
                             alert('Access denied: Operative account required');
                             signOut(auth);
                         }
                     } else {
+                        console.warn('⚠️ User authenticated, but record missing in database users node for UID:', user.uid);
                         alert('User profile not found');
                         signOut(auth);
                     }
                 } catch (error) {
-                    console.error('Error:', error);
-                    showLogin();
+                    console.error('❌ Database read error during auth check:', error);
                 }
             } else {
                 currentAuthUser = null;
                 currentUser = null;
+                console.log('ℹ️ Auth state changed: Operative signed out.');
                 showLogin();
             }
         });
