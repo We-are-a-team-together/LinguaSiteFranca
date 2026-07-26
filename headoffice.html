@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
 
@@ -79,7 +79,7 @@
 
             <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 sm:px-6 py-4">
-                    <h2 class="text-base sm:text-lg font-bold text-white"> Assign New Task</h2>
+                    <h2 class="text-base sm:text-lg font-bold text-white">📋 Assign New Task</h2>
                     <p class="text-blue-100 text-xs sm:text-sm mt-1">Write in English. The system will translate it to the operative's language.</p>
                 </div>
                 <div class="p-4 sm:p-6">
@@ -132,14 +132,14 @@
 
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.database();
+        const db = firebase.firestore(); // USING FIRESTORE
 
         let currentDlmId = null;
         let authStateResolved = false;
 
-        db.ref('settings/branding').on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                const b = snapshot.val();
+        db.collection('settings').doc('branding').onSnapshot((doc) => {
+            if (doc.exists) {
+                const b = doc.data();
                 if (b.businessName) {
                     document.getElementById('navTitle').textContent = b.businessName;
                     document.getElementById('loginTitle').textContent = b.businessName;
@@ -160,9 +160,9 @@
             if (user) {
                 authStateResolved = true;
                 try {
-                    const userSnapshot = await db.ref(`users/${user.uid}`).get();
+                    const userDoc = await db.collection('users').doc(user.uid).get();
                     
-                    if (userSnapshot.exists() && userSnapshot.val().role === 'dlm') {
+                    if (userDoc.exists && userDoc.data().role === 'dlm') {
                         currentDlmId = user.uid;
                         document.getElementById('loginScreen').classList.add('hidden');
                         document.getElementById('dlmDashboard').classList.remove('hidden');
@@ -178,7 +178,7 @@
                     }
                 } catch (error) {
                     console.error("DB Error:", error);
-                    document.getElementById('loginError').innerText = "Database connection error. Please check Realtime Database Rules.";
+                    document.getElementById('loginError').innerText = "Database connection error. Please check Firestore Rules.";
                     document.getElementById('loginError').classList.remove('hidden');
                     document.getElementById('loginScreen').classList.remove('hidden');
                     document.getElementById('dlmDashboard').classList.add('hidden');
@@ -219,7 +219,7 @@
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const uid = userCredential.user.uid;
 
-                await db.ref(`users/${uid}`).set({
+                await db.collection('users').doc(uid).set({
                     name, email,
                     role: 'operative',
                     assignedDlm: currentDlmId,
@@ -237,45 +237,43 @@
         });
 
         async function loadOperatives() {
-            const snapshot = await db.ref('users').get();
+            const snapshot = await db.collection('users').where('assignedDlm', '==', currentDlmId).where('role', '==', 'operative').get();
             const list = document.getElementById('operativeList');
             const select = document.getElementById('taskOperative');
             
             list.innerHTML = '';
             select.innerHTML = '<option value="">Choose an operative...</option>';
 
-            if (!snapshot.exists()) {
+            if (snapshot.empty) {
                 list.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">No operatives assigned to you yet.</p>';
                 return;
             }
 
-            snapshot.forEach((childSnapshot) => {
-                const op = childSnapshot.val();
-                if (op.assignedDlm === currentDlmId && op.role === 'operative') {
-                    const langDisplay = op.languageSelected ? (op.languageDisplayName || op.nativeLanguage || 'Set') : 'Not set yet';
-                    list.innerHTML += `
-                        <div class="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 flex justify-between items-center">
-                            <div>
-                                <p class="font-bold text-sm sm:text-base text-gray-800">${op.name}</p>
-                                <p class="text-xs sm:text-sm text-gray-500">${op.email}</p>
-                                <p class="text-xs text-indigo-600 mt-1"> Language: ${langDisplay}</p>
-                            </div>
-                            <button onclick="deleteOperative('${childSnapshot.key}', '${op.name}')" class="text-red-600 text-xs sm:text-sm hover:text-red-800 font-medium ml-4">Delete</button>
+            snapshot.forEach(doc => {
+                const op = doc.data();
+                const langDisplay = op.languageSelected ? (op.languageDisplayName || op.nativeLanguage || 'Set') : 'Not set yet';
+                list.innerHTML += `
+                    <div class="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-sm sm:text-base text-gray-800">${op.name}</p>
+                            <p class="text-xs sm:text-sm text-gray-500">${op.email}</p>
+                            <p class="text-xs text-indigo-600 mt-1">🌐 Language: ${langDisplay}</p>
                         </div>
-                    `;
-                    
-                    const option = document.createElement('option');
-                    option.value = childSnapshot.key;
-                    option.textContent = `${op.name} (${langDisplay})`;
-                    select.appendChild(option);
-                }
+                        <button onclick="deleteOperative('${doc.id}', '${op.name}')" class="text-red-600 text-xs sm:text-sm hover:text-red-800 font-medium ml-4">Delete</button>
+                    </div>
+                `;
+                
+                const option = document.createElement('option');
+                option.value = doc.id;
+                option.textContent = `${op.name} (${langDisplay})`;
+                select.appendChild(option);
             });
         }
 
         async function deleteOperative(uid, name) {
             if(confirm(`Delete operative "${name}"?`)) {
                 try {
-                    await db.ref(`users/${uid}`).remove();
+                    await db.collection('users').doc(uid).delete();
                     alert('✅ Operative deleted from database.');
                     loadOperatives();
                 } catch (error) {
@@ -290,7 +288,7 @@
             const descriptionEn = document.getElementById('taskDescription').value;
 
             try {
-                await db.ref('tasks').push({
+                await db.collection('tasks').add({
                     dlmId: currentDlmId,
                     operativeId,
                     description_en: descriptionEn,
@@ -302,15 +300,15 @@
                 e.target.reset();
                 loadTasks();
             } catch (error) {
-                alert('❌ Error: ' + error.message);
+                alert(' Error: ' + error.message);
             }
         });
 
         async function loadTasks() {
-            const snapshot = await db.ref('tasks').get();
+            const snapshot = await db.collection('tasks').where('dlmId', '==', currentDlmId).where('status', '==', 'submitted').get();
             const list = document.getElementById('taskReviewList');
             
-            if (!snapshot.exists()) {
+            if (snapshot.empty) {
                 list.innerHTML = '<p class="text-gray-500 text-center py-4 text-sm">No pending submissions.</p>';
                 return;
             }
@@ -318,40 +316,38 @@
             list.innerHTML = '';
             let hasTasks = false;
             
-            snapshot.forEach((childSnapshot) => {
-                const task = childSnapshot.val();
-                if (task.dlmId === currentDlmId && task.status === 'submitted') {
-                    hasTasks = true;
-                    const photosHtml = task.photos ? task.photos.map(p => {
-                        const src = typeof p === 'string' ? p : p.data;
-                        return `<img src="${src}" class="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded border">`;
-                    }).join('') : 'No photos';
+            snapshot.forEach(doc => {
+                const task = doc.data();
+                hasTasks = true;
+                const photosHtml = task.photos ? task.photos.map(p => {
+                    const src = typeof p === 'string' ? p : p.data;
+                    return `<img src="${src}" class="h-20 w-20 sm:h-24 sm:w-24 object-cover rounded border">`;
+                }).join('') : 'No photos';
 
-                    list.innerHTML += `
-                        <div class="border border-gray-200 rounded-xl p-4 sm:p-6 bg-gray-50 relative">
-                            <button onclick="deleteTask('${childSnapshot.key}')" class="absolute top-4 right-4 text-red-600 hover:text-red-800 text-xs font-medium">🗑️ Delete Task</button>
-                            <div class="flex justify-between items-start mb-4">
-                                <h3 class="font-bold text-base sm:text-lg text-gray-800">Task Submission</h3>
-                                <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Pending Review</span>
-                            </div>
-                            <div class="bg-white p-3 sm:p-4 rounded-lg mb-4">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Operative's Comment (Translated to English)</p>
-                                <p class="text-sm sm:text-base text-gray-800 mt-1 italic">${task.operative_comment_en || 'Waiting for translation...'}</p>
-                            </div>
-                            <div class="bg-white p-3 sm:p-4 rounded-lg mb-4">
-                                <p class="text-xs text-gray-500 font-bold uppercase">Photos</p>
-                                <div class="flex gap-2 mt-2 flex-wrap">${photosHtml}</div>
-                            </div>
-                            <div class="space-y-3">
-                                <textarea id="feedback_${childSnapshot.key}" rows="2" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg text-sm sm:text-base" placeholder="Your feedback in English (will be auto-translated to operative)..."></textarea>
-                                <div class="flex gap-2">
-                                    <button onclick="reviewTask('${childSnapshot.key}', 'approved')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg text-sm sm:text-base">Approve</button>
-                                    <button onclick="reviewTask('${childSnapshot.key}', 'rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg text-sm sm:text-base">Reject</button>
-                                </div>
+                list.innerHTML += `
+                    <div class="border border-gray-200 rounded-xl p-4 sm:p-6 bg-gray-50 relative">
+                        <button onclick="deleteTask('${doc.id}')" class="absolute top-4 right-4 text-red-600 hover:text-red-800 text-xs font-medium">🗑️ Delete Task</button>
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-bold text-base sm:text-lg text-gray-800">Task Submission</h3>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Pending Review</span>
+                        </div>
+                        <div class="bg-white p-3 sm:p-4 rounded-lg mb-4">
+                            <p class="text-xs text-gray-500 font-bold uppercase">Operative's Comment (Translated to English)</p>
+                            <p class="text-sm sm:text-base text-gray-800 mt-1 italic">${task.operative_comment_en || 'Waiting for translation...'}</p>
+                        </div>
+                        <div class="bg-white p-3 sm:p-4 rounded-lg mb-4">
+                            <p class="text-xs text-gray-500 font-bold uppercase">Photos</p>
+                            <div class="flex gap-2 mt-2 flex-wrap">${photosHtml}</div>
+                        </div>
+                        <div class="space-y-3">
+                            <textarea id="feedback_${doc.id}" rows="2" class="w-full p-2 sm:p-3 border border-gray-300 rounded-lg text-sm sm:text-base" placeholder="Your feedback in English (will be auto-translated to operative)..."></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="reviewTask('${doc.id}', 'approved')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg text-sm sm:text-base">Approve</button>
+                                <button onclick="reviewTask('${doc.id}', 'rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg text-sm sm:text-base">Reject</button>
                             </div>
                         </div>
-                    `;
-                }
+                    </div>
+                `;
             });
             
             if (!hasTasks) {
@@ -362,11 +358,11 @@
         async function deleteTask(taskId) {
             if(confirm('Delete this task? This cannot be undone.')) {
                 try {
-                    await db.ref(`tasks/${taskId}`).remove();
+                    await db.collection('tasks').doc(taskId).delete();
                     alert('✅ Task deleted!');
                     loadTasks();
                 } catch (error) {
-                    alert('❌ Error deleting task: ' + error.message);
+                    alert(' Error deleting task: ' + error.message);
                 }
             }
         }
@@ -374,7 +370,7 @@
         window.reviewTask = async (taskId, decision) => {
             const feedback = document.getElementById(`feedback_${taskId}`).value;
             try {
-                await db.ref(`tasks/${taskId}`).update({
+                await db.collection('tasks').doc(taskId).update({
                     status: decision,
                     dlm_feedback_en: feedback,
                     dlm_feedback_translated: '',
