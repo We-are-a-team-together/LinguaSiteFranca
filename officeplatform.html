@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LinguaSiteFranca - Head Office</title>
-    <script src="h<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - Head Office</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -46,26 +40,35 @@
                             </div>
                             <h1 class="text-2xl font-bold text-gray-800">Initial Setup</h1>
                             <p class="text-gray-500 text-sm mt-2">Create your Head Office Administrator account</p>
+                            <p class="text-xs text-blue-600 mt-2">This can only be done once</p>
                         </div>
                         <form id="createFirstAccountForm" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input type="text" id="adminName" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Your Name">
+                                <input type="text" id="adminName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Your Name">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                <input type="email" id="adminEmail" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="admin@company.com">
+                                <input type="email" id="adminEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="admin@company.com">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Password (min 6 characters)</label>
-                                <input type="password" id="adminPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg">
+                                <input type="password" id="adminPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">Create Administrator Account</button>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
+                                Create Administrator Account
+                            </button>
                         </form>
                         <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
+                        <div class="text-center mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-sm text-gray-600">Already have an account?</p>
+                            <button id="showLoginBtn" class="text-blue-600 hover:text-blue-800 font-medium text-sm mt-1">Sign In Instead</button>
+                        </div>
                     </div>
                 </div>
             `;
+
+            document.getElementById('showLoginBtn').addEventListener('click', showLogin);
 
             document.getElementById('createFirstAccountForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -73,6 +76,10 @@
                 const email = document.getElementById('adminEmail').value;
                 const password = document.getElementById('adminPassword').value;
                 const errorMsg = document.getElementById('errorMsg');
+                const submitBtn = e.target.querySelector('button');
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating...';
 
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -86,16 +93,19 @@
                     });
 
                     await signOut(auth);
-                    alert('✅ Administrator account created! Please log in.');
+                    alert('✅ Administrator account created successfully! Please log in.');
                     showLogin();
+
                 } catch (error) {
                     if (error.code === 'auth/email-already-in-use') {
-                        errorMsg.textContent = 'Email already exists. Redirecting to login...';
+                        errorMsg.textContent = 'This email is already registered. Please sign in.';
                         errorMsg.classList.remove('hidden');
                         setTimeout(showLogin, 2000);
                     } else {
                         errorMsg.textContent = error.message;
                         errorMsg.classList.remove('hidden');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Create Administrator Account';
                     }
                 }
             });
@@ -112,13 +122,13 @@
                         <form id="loginForm" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg">
+                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg">
+                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
                             </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">Sign In</button>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Sign In</button>
                         </form>
                         <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
                     </div>
@@ -187,7 +197,7 @@
 
                     <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white"> Projects & Locations</h2>
+                            <h2 class="text-lg font-bold text-white">📍 Projects & Locations</h2>
                             <p class="text-purple-100 text-sm mt-1">Manage project sites</p>
                         </div>
                         <div class="p-6">
@@ -361,382 +371,6 @@
                 } catch (error) {
                     console.error('Error:', error);
                     alert('Error loading user profile');
-                }
-            } else {
-                showCreateFirstAccount();
-            }
-        });
-    </script>
-</body>
-</html>ttps://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div id="app"></div>
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, remove, push, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-            authDomain: "lingua-site-franca.firebaseapp.com",
-            databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "lingua-site-franca",
-            storageBucket: "lingua-site-franca.firebasestorage.app",
-            messagingSenderId: "737514168886",
-            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const appDiv = document.getElementById('app');
-
-        function showCreateFirstAccount() {
-            appDiv.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-                    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-                        <div class="text-center mb-6">
-                            <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
-                                <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                </svg>
-                            </div>
-                            <h1 class="text-2xl font-bold text-gray-800">Initial Setup</h1>
-                            <p class="text-gray-500 text-sm mt-2">Create your Head Office Administrator account</p>
-                            <p class="text-xs text-blue-600 mt-2">This can only be done once</p>
-                        </div>
-                        <form id="createFirstAccountForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input type="text" id="adminName" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Your Name">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                                <input type="email" id="adminEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="admin@company.com">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Password (min 6 characters)</label>
-                                <input type="password" id="adminPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">
-                                Create Administrator Account
-                            </button>
-                        </form>
-                        <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
-                        <div class="text-center mt-4 pt-4 border-t border-gray-200">
-                            <p class="text-sm text-gray-600">Already have an account?</p>
-                            <button id="showLoginBtn" class="text-blue-600 hover:text-blue-800 font-medium text-sm mt-1">Sign In Instead</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('showLoginBtn').addEventListener('click', showLogin);
-
-            document.getElementById('createFirstAccountForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('adminName').value;
-                const email = document.getElementById('adminEmail').value;
-                const password = document.getElementById('adminPassword').value;
-                const errorMsg = document.getElementById('errorMsg');
-                const submitBtn = e.target.querySelector('button');
-
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating...';
-
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const uid = userCredential.user.uid;
-
-                    await set(ref(db, `users/${uid}`), {
-                        name,
-                        email,
-                        role: 'head_office',
-                        createdAt: new Date().toISOString()
-                    });
-
-                    // Sign out and show login
-                    await signOut(auth);
-                    alert('✅ Administrator account created successfully! Please log in.');
-                    showLogin();
-
-                } catch (error) {
-                    if (error.code === 'auth/email-already-in-use') {
-                        errorMsg.textContent = 'This email is already registered. Please sign in.';
-                        errorMsg.classList.remove('hidden');
-                        setTimeout(showLogin, 2000);
-                    } else {
-                        errorMsg.textContent = error.message;
-                        errorMsg.classList.remove('hidden');
-                        submitBtn.disabled = false;
-                        submitBtn.textContent = 'Create Administrator Account';
-                    }
-                }
-            });
-        }
-
-        function showLogin() {
-            appDiv.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-                    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-                        <div class="text-center mb-6">
-                            <h1 class="text-2xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                            <p class="text-gray-500 text-sm mt-2">Head Office Portal</p>
-                        </div>
-                        <form id="loginForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Sign In</button>
-                        </form>
-                        <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const errorMsg = document.getElementById('errorMsg');
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } catch (error) {
-                    errorMsg.textContent = error.message;
-                    errorMsg.classList.remove('hidden');
-                }
-            });
-        }
-
-        function showDashboard() {
-            appDiv.innerHTML = `
-                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-50">
-                    <div class="max-w-7xl mx-auto flex justify-between items-center">
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                            <p class="text-xs text-gray-500">Head Office Control Panel</p>
-                        </div>
-                        <button id="logoutBtn" class="text-sm text-red-600 hover:text-red-800 font-medium">Sign Out</button>
-                    </div>
-                </nav>
-
-                <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">👥 Direct Line Managers</h2>
-                            <p class="text-green-100 text-sm mt-1">Create and manage DLM accounts</p>
-                        </div>
-                        <div class="p-6">
-                            <form id="createDlmForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 class="font-bold text-gray-800 mb-3">Create New DLM Account</h3>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                    <input type="text" id="dlmName" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="John Smith">
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                        <input type="email" id="dlmEmail" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="manager@company.com">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Password (min 6 chars)</label>
-                                        <input type="password" id="dlmPassword" required minlength="6" class="w-full p-3 border border-gray-300 rounded-lg">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Assigned Project</label>
-                                    <input type="text" id="dlmProject" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Project Alpha">
-                                </div>
-                                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition">Create DLM Account</button>
-                            </form>
-                            <div id="dlmList" class="space-y-3"><p class="text-gray-500 text-center py-4">Loading DLMs...</p></div>
-                        </div>
-                    </section>
-
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">📍 Projects & Locations</h2>
-                            <p class="text-purple-100 text-sm mt-1">Manage project sites</p>
-                        </div>
-                        <div class="p-6">
-                            <form id="createProjectForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <h3 class="font-bold text-gray-800 mb-3">Create New Project</h3>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Project Name</label>
-                                    <input type="text" id="projectName" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="HQ Renovation">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Location/Address</label>
-                                    <input type="text" id="projectLocation" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="123 Main St, London">
-                                </div>
-                                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition">Create Project</button>
-                            </form>
-                            <div id="projectList" class="space-y-3"><p class="text-gray-500 text-center py-4">Loading projects...</p></div>
-                        </div>
-                    </section>
-
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">🎨 Branding</h2>
-                            <p class="text-blue-100 text-sm mt-1">Customize your organization</p>
-                        </div>
-                        <div class="p-6">
-                            <form id="brandingForm" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
-                                    <input type="text" id="businessName" class="w-full p-3 border border-gray-300 rounded-lg">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Footer Text</label>
-                                    <input type="text" id="footerText" class="w-full p-3 border border-gray-300 rounded-lg">
-                                </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Save Branding</button>
-                            </form>
-                        </div>
-                    </section>
-                </div>
-            `;
-
-            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-            document.getElementById('createDlmForm').addEventListener('submit', handleCreateDLM);
-            document.getElementById('createProjectForm').addEventListener('submit', handleCreateProject);
-            document.getElementById('brandingForm').addEventListener('submit', handleSaveBranding);
-
-            loadDLMs();
-            loadProjects();
-            loadBranding();
-        }
-
-        async function handleCreateDLM(e) {
-            e.preventDefault();
-            const name = document.getElementById('dlmName').value;
-            const email = document.getElementById('dlmEmail').value;
-            const password = document.getElementById('dlmPassword').value;
-            const project = document.getElementById('dlmProject').value;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const uid = userCredential.user.uid;
-                await set(ref(db, `users/${uid}`), { name, email, role: 'dlm', assignedProject: project, createdAt: new Date().toISOString() });
-                alert('✅ DLM created successfully!');
-                e.target.reset();
-            } catch (error) { alert('❌ Error: ' + error.message); }
-        }
-
-        async function handleCreateProject(e) {
-            e.preventDefault();
-            const name = document.getElementById('projectName').value;
-            const location = document.getElementById('projectLocation').value;
-            try {
-                const newRef = push(ref(db, 'projects'));
-                await set(newRef, { name, location, createdAt: new Date().toISOString() });
-                alert('✅ Project created!');
-                e.target.reset();
-            } catch (error) { alert('❌ Error: ' + error.message); }
-        }
-
-        async function handleSaveBranding(e) {
-            e.preventDefault();
-            const businessName = document.getElementById('businessName').value;
-            const footerText = document.getElementById('footerText').value;
-            try {
-                await set(ref(db, 'settings/branding'), { businessName, footerText, updatedAt: new Date().toISOString() });
-                alert('✅ Branding saved!');
-            } catch (error) { alert('❌ Error: ' + error.message); }
-        }
-
-        function loadDLMs() {
-            onValue(ref(db, 'users'), (snapshot) => {
-                const list = document.getElementById('dlmList');
-                if (!list) return;
-                list.innerHTML = '';
-                const dlms = [];
-                snapshot.forEach((child) => {
-                    const user = child.val();
-                    if (user.role === 'dlm') dlms.push({ id: child.key, ...user });
-                });
-                if (dlms.length === 0) { list.innerHTML = '<p class="text-gray-500 text-center py-4">No DLMs created yet</p>'; return; }
-                dlms.forEach(dlm => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
-                    div.innerHTML = `<div><p class="font-bold text-gray-800">${dlm.name || 'No name'}</p><p class="text-sm text-gray-500">${dlm.email}</p><p class="text-xs text-gray-400"> ${dlm.assignedProject || 'Not assigned'}</p></div><button class="delete-dlm text-red-600 hover:text-red-800 text-sm font-medium" data-uid="${dlm.id}">Delete</button>`;
-                    list.appendChild(div);
-                });
-                document.querySelectorAll('.delete-dlm').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const uid = e.target.dataset.uid;
-                        if (confirm('Delete this DLM?')) {
-                            try { await remove(ref(db, `users/${uid}`)); alert('✅ DLM deleted'); } catch (error) { alert('❌ Error: ' + error.message); }
-                        }
-                    });
-                });
-            });
-        }
-
-        function loadProjects() {
-            onValue(ref(db, 'projects'), (snapshot) => {
-                const list = document.getElementById('projectList');
-                if (!list) return;
-                list.innerHTML = '';
-                const projects = [];
-                snapshot.forEach((child) => { projects.push({ id: child.key, ...child.val() }); });
-                if (projects.length === 0) { list.innerHTML = '<p class="text-gray-500 text-center py-4">No projects created yet</p>'; return; }
-                projects.forEach(p => {
-                    const div = document.createElement('div');
-                    div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
-                    div.innerHTML = `<div><p class="font-bold text-gray-800">${p.name}</p><p class="text-sm text-gray-500">📍 ${p.location || 'No location'}</p></div><button class="delete-project text-red-600 hover:text-red-800 text-sm font-medium" data-id="${p.id}">Delete</button>`;
-                    list.appendChild(div);
-                });
-                document.querySelectorAll('.delete-project').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const projectId = e.target.dataset.id;
-                        if (confirm('Delete this project?')) {
-                            try { await remove(ref(db, `projects/${projectId}`)); alert('✅ Project deleted'); } catch (error) { alert(' Error: ' + error.message); }
-                        }
-                    });
-                });
-            });
-        }
-
-        function loadBranding() {
-            onValue(ref(db, 'settings/branding'), (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    const businessInput = document.getElementById('businessName');
-                    const footerInput = document.getElementById('footerText');
-                    if (businessInput) businessInput.value = data.businessName || '';
-                    if (footerInput) footerInput.value = data.footerText || '';
-                }
-            });
-        }
-
-        // Auth State Listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const userSnapshot = await get(ref(db, `users/${user.uid}`));
-                    if (userSnapshot.exists()) {
-                        const userData = userSnapshot.val();
-                        if (userData.role === 'head_office') {
-                            showDashboard();
-                        } else {
-                            alert('Access denied: Head Office account required');
-                            signOut(auth);
-                        }
-                    } else {
-                        alert('User profile not found');
-                        signOut(auth);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    showLogin();
                 }
             } else {
                 showCreateFirstAccount();
