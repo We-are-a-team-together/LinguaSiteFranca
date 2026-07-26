@@ -1,322 +1,239 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Office Platform — Head Office Analytics</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Office Platform - Management & Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --accent: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; }
+    .container { width: 96%; max-width: 1800px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
     
-    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
-        <h1 class="text-lg sm:text-2xl font-bold" id="brand-title"></h1>
-        <span class="text-xs sm:text-sm bg-green-900 text-green-300 px-3 py-1 rounded-full border border-green-500">● Live Operations</span>
-    </header>
+    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; }
 
-    <main class="flex-grow p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-8">
-        
-        <!-- Top Management Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Project Creation -->
-            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Create New Site Project</h2>
-                <div class="flex flex-col gap-3">
-                    <div>
-                        <label class="text-xs text-gray-400">Project Name</label>
-                        <input type="text" id="proj-name" placeholder="e.g. The Monument Court" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400">Geographic Address</label>
-                        <input type="text" id="proj-address" placeholder="e.g. 12 High Street, Exeter" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <button id="btn-create-proj" class="bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition mt-2">Add Project</button>
-                </div>
-            </section>
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
 
-            <!-- DLM Assignment -->
-            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Assign DLM to Project</h2>
-                <div class="flex flex-col gap-3">
-                    <div>
-                        <label class="text-xs text-gray-400">DLM Full Name</label>
-                        <input type="text" id="dlm-name" placeholder="e.g. John Smith" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400">Select Project</label>
-                        <select id="dlm-project" class="w-full p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
-                    </div>
-                    <button id="btn-create-dlm" class="bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition mt-2">Assign DLM</button>
-                </div>
-            </section>
-        </div>
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; }
 
-        <!-- Table 1: Projects & Assigned DLMs Overview -->
-        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Active Site Projects Directory</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300 min-w-[600px]">
-                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
-                        <tr>
-                            <th class="p-3">Project Name</th>
-                            <th class="p-3">Location Address</th>
-                            <th class="p-3">Assigned DLM</th>
-                        </tr>
-                    </thead>
-                    <tbody id="projects-table-body"></tbody>
-                </table>
-            </div>
-        </section>
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
 
-        <!-- Table 2: Task Performance & Duration Metrics -->
-        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 border-b border-gray-700 pb-3">
-                <div>
-                    <h2 class="text-lg font-semibold">Task Duration & Performance Metrics</h2>
-                    <p class="text-xs text-gray-400">Real-time tracking of task creation, submission speed, and duration.</p>
-                </div>
-                <!-- Export Buttons -->
-                <div class="flex gap-2 w-full sm:w-auto">
-                    <button id="btn-export-csv" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded text-xs font-semibold flex-1 sm:flex-none">Extract CSV</button>
-                    <button id="btn-export-pdf" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-2 rounded text-xs font-semibold flex-1 sm:flex-none">Extract PDF Report</button>
-                </div>
-            </div>
+    .btn-print { padding: 10px 20px; background: var(--accent); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
 
-            <div class="overflow-x-auto">
-                <table id="performance-table" class="w-full text-left text-sm text-gray-300 min-w-[700px]">
-                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
-                        <tr>
-                            <th class="p-3">Project</th>
-                            <th class="p-3">Operative</th>
-                            <th class="p-3">Task Details</th>
-                            <th class="p-3">Status</th>
-                            <th class="p-3">Assigned</th>
-                            <th class="p-3">Completed</th>
-                            <th class="p-3">Duration</th>
-                        </tr>
-                    </thead>
-                    <tbody id="performance-table-body"></tbody>
-                </table>
-            </div>
-        </section>
-    </main>
+    .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
 
-    <!-- Global Branding Panel -->
-    <section class="bg-gray-950 p-6 border-t border-gray-800">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-lg font-semibold mb-4 text-gray-200">Global Branding Panel</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">System Title</label>
-                    <input type="text" id="brand-title-input" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">Header Color</label>
-                    <input type="color" id="brand-header-color" class="w-full p-1 rounded bg-gray-800 h-10 cursor-pointer">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">Footer Text</label>
-                    <input type="text" id="brand-footer-input" class="w-full p-2 rounded bg-gray-800 text-white border border-gray-700">
-                </div>
-                <div class="flex items-end">
-                    <button id="btn-save-branding" class="w-full bg-green-600 p-2 rounded hover:bg-green-500 font-medium transition">Apply Branding</button>
-                </div>
-            </div>
-        </div>
-    </section>
+    /* Modal */
+    .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; }
 
-    <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
+    /* Print Styles */
+    @media print {
+      body { background: #fff; color: #000; }
+      .no-print { display: none; }
+      .card { border: none; background: transparent; padding: 0; }
+      table { border: 1px solid #ccc; }
+      th, td { border: 1px solid #ccc; color: #000; }
+    }
+  </style>
+</head>
+<body>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+<div class="container">
+  <header class="no-print">
+    <h1>Office Platform — Analytics & Operative Directory</h1>
+    <button class="btn-print" onclick="window.print()">Export Report (PDF)</button>
+  </header>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-            authDomain: "lingua-site-franca.firebaseapp.com",
-            databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "lingua-site-franca",
-            storageBucket: "lingua-site-franca.firebasestorage.app",
-            messagingSenderId: "737514168886",
-            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-        };
+  <!-- Analytics Section -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title">Task Status Breakdown</div>
+      <div class="chart-container">
+        <canvas id="taskChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Operatives Compliance Status</div>
+      <div class="chart-container">
+        <canvas id="complianceChart"></canvas>
+      </div>
+    </div>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+  <!-- Operatives & Qualifications Directory -->
+  <div class="card">
+    <div class="card-title">Master Operative & Qualifications Directory</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Operative Name</th>
+          <th>Assigned Site</th>
+          <th>Qualification</th>
+          <th>Expiry Date</th>
+          <th>Compliance Status</th>
+        </tr>
+      </thead>
+      <tbody id="officeOpsBody"></tbody>
+    </table>
+  </div>
 
-        let performanceReportData = [];
+  <!-- Master Task Log -->
+  <div class="card">
+    <div class="card-title">Master Task Log & Submissions</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Site</th>
+          <th>Operative</th>
+          <th>Task Details</th>
+          <th>Status</th>
+          <th>Photo / Evidence</th>
+          <th>Comments</th>
+        </tr>
+      </thead>
+      <tbody id="officeTasksBody"></tbody>
+    </table>
+  </div>
+</div>
 
-        const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="Submission Zoom">
+</div>
 
-        onValue(ref(db, 'branding'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                document.getElementById('brand-title').innerText = data.title || '';
-                document.getElementById('main-header').style.backgroundColor = data.headerColor || '#1f2937';
-                document.getElementById('main-footer').innerText = data.footer || '';
-            }
-        });
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        document.getElementById('btn-save-branding').addEventListener('click', () => {
-            set(ref(db, 'branding'), {
-                title: document.getElementById('brand-title-input').value,
-                headerColor: document.getElementById('brand-header-color').value,
-                footer: document.getElementById('brand-footer-input').value
-            });
-        });
+  const firebaseConfig = {
+    databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
+  };
 
-        document.getElementById('btn-create-proj').addEventListener('click', () => {
-            const name = document.getElementById('proj-name').value.trim();
-            const address = document.getElementById('proj-address').value.trim();
-            if (name && address) {
-                push(ref(db, 'projects'), { name, address });
-                document.getElementById('proj-name').value = '';
-                document.getElementById('proj-address').value = '';
-            }
-        });
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-        // Load Projects and Populate Dropdown & Project Table
-        onValue(ref(db, 'projects'), (snapshot) => {
-            const select = document.getElementById('dlm-project');
-            const tbody = document.getElementById('projects-table-body');
-            select.innerHTML = '';
-            tbody.innerHTML = '';
+  let taskChartInstance = null;
+  let complianceChartInstance = null;
 
-            const projectsMap = {};
+  // Load Operatives
+  onValue(ref(db, 'operatives'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('officeOpsBody');
+    tbody.innerHTML = '';
 
-            snapshot.forEach((child) => {
-                const proj = child.val();
-                projectsMap[proj.name] = { address: proj.address, dlm: 'Unassigned' };
+    const today = new Date().toISOString().split('T')[0];
+    let validCount = 0;
+    let expiredCount = 0;
 
-                const opt = document.createElement('option');
-                opt.value = proj.name;
-                opt.text = `${proj.name} (${proj.address})`;
-                select.appendChild(opt);
-            });
+    Object.keys(data).forEach(key => {
+      const op = data[key];
+      const isExpired = op.expiry && op.expiry < today;
 
-            // Match DLMs to Projects
-            onValue(ref(db, 'dlms'), (dlmSnapshot) => {
-                dlmSnapshot.forEach((d) => {
-                    const dlm = d.val();
-                    if(projectsMap[dlm.projectName]) {
-                        projectsMap[dlm.projectName].dlm = dlm.name;
-                    }
-                });
+      if (isExpired) expiredCount++; else validCount++;
 
-                tbody.innerHTML = '';
-                Object.keys(projectsMap).forEach((projName) => {
-                    const p = projectsMap[projName];
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-gray-700 hover:bg-gray-750";
-                    tr.innerHTML = `
-                        <td class="p-3 font-semibold text-white">${projName}</td>
-                        <td class="p-3">${p.address}</td>
-                        <td class="p-3 text-blue-400 font-medium">${p.dlm}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-        });
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${op.name}</strong></td>
+          <td>${op.assignedSite}</td>
+          <td>${op.qualification || 'N/A'}</td>
+          <td>${op.expiry || 'N/A'}</td>
+          <td>
+            <span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">
+              ${op.expiry ? (isExpired ? 'EXPIRED' : 'VALID') : 'N/A'}
+            </span>
+          </td>
+        </tr>
+      `;
+    });
 
-        document.getElementById('btn-create-dlm').addEventListener('click', () => {
-            const name = document.getElementById('dlm-name').value.trim();
-            const projectName = document.getElementById('dlm-project').value;
-            if (name && projectName) {
-                const key = sanitizeKey(name);
-                set(ref(db, 'dlms/' + key), { name, projectName });
-                document.getElementById('dlm-name').value = '';
-            }
-        });
+    renderComplianceChart(validCount, expiredCount);
+  });
 
-        // Load Task Performance Metrics Table
-        onValue(ref(db, 'tasks'), (snapshot) => {
-            const tbody = document.getElementById('performance-table-body');
-            tbody.innerHTML = '';
-            performanceReportData = [];
+  // Load Tasks
+  onValue(ref(db, 'tasks'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('officeTasksBody');
+    tbody.innerHTML = '';
 
-            snapshot.forEach((opTasks) => {
-                const opKey = opTasks.key;
-                opTasks.forEach((taskSnap) => {
-                    const task = taskSnap.val();
-                    const assignedTime = task.timestamp ? new Date(task.timestamp) : null;
-                    const completedTime = task.completedTimestamp ? new Date(task.completedTimestamp) : null;
-                    
-                    let durationStr = "In Progress";
-                    let durationMins = "";
-                    if (assignedTime && completedTime) {
-                        const diffMs = completedTime - assignedTime;
-                        const diffMins = Math.round(diffMs / 60000);
-                        durationStr = `${diffMins} Mins`;
-                        durationMins = diffMins;
-                    }
+    const statusCounts = { Assigned: 0, Submitted: 0, Accepted: 0, Returned: 0 };
 
-                    const record = {
-                        project: task.projectName || "General Site",
-                        operative: opKey.replace(/_/g, ' ').toUpperCase(),
-                        description: task.description,
-                        status: task.status,
-                        assigned: assignedTime ? assignedTime.toLocaleString() : "N/A",
-                        completed: completedTime ? completedTime.toLocaleString() : "N/A",
-                        duration: durationStr,
-                        durationMins: durationMins
-                    };
+    Object.keys(data).forEach(key => {
+      const task = data[key];
+      if (statusCounts[task.status] !== undefined) statusCounts[task.status]++;
 
-                    performanceReportData.push(record);
+      const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '—';
 
-                    let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
-                    if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
-                    if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
-                    if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Returned</span>`;
+      tbody.innerHTML += `
+        <tr>
+          <td>${task.site}</td>
+          <td><strong>${task.operative}</strong></td>
+          <td>${task.details}</td>
+          <td><span class="badge badge-valid">${task.status}</span></td>
+          <td>${photoHtml}</td>
+          <td>${task.comment || '—'}</td>
+        </tr>
+      `;
+    });
 
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-gray-700";
-                    tr.innerHTML = `
-                        <td class="p-3 font-semibold">${record.project}</td>
-                        <td class="p-3">${record.operative}</td>
-                        <td class="p-3 max-w-xs">${record.description}</td>
-                        <td class="p-3">${statusBadge}</td>
-                        <td class="p-3 text-xs text-gray-400">${record.assigned}</td>
-                        <td class="p-3 text-xs text-gray-400">${record.completed}</td>
-                        <td class="p-3 font-bold text-amber-400">${record.duration}</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            });
-        });
+    renderTaskChart(statusCounts);
+  });
 
-        // CSV Export
-        document.getElementById('btn-export-csv').addEventListener('click', () => {
-            if(performanceReportData.length === 0) {
-                alert("No data available to export.");
-                return;
-            }
+  function renderTaskChart(counts) {
+    const ctx = document.getElementById('taskChart').getContext('2d');
+    if (taskChartInstance) taskChartInstance.destroy();
 
-            let csvContent = "data:text/csv;charset=utf-8,Project,Operative,Task Description,Status,Assigned Time,Completed Time,Duration\n";
-            performanceReportData.forEach(r => {
-                csvContent += `"${r.project}","${r.operative}","${r.description.replace(/"/g, '""')}","${r.status}","${r.assigned}","${r.completed}","${r.duration}"\n`;
-            });
+    taskChartInstance = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Assigned', 'Submitted', 'Accepted', 'Returned'],
+        datasets: [{
+          data: [counts.Assigned, counts.Submitted, counts.Accepted, counts.Returned],
+          backgroundColor: ['#3b82f6', '#f59e0b', '#10b981', '#ef4444']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Task_Performance_Report_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
+  function renderComplianceChart(valid, expired) {
+    const ctx = document.getElementById('complianceChart').getContext('2d');
+    if (complianceChartInstance) complianceChartInstance.destroy();
 
-        // PDF Print/Export
-        document.getElementById('btn-export-pdf').addEventListener('click', () => {
-            const printWindow = window.open('', '', 'height=700,width=900');
-            printWindow.document.write('<html><head><title>Task Performance Analytics</title>');
-            printWindow.document.write('<style>body{font-family:Arial,sans-serif;padding:20px;color:#000} h1{font-size:20px;} table{width:100%;border-collapse:collapse;margin-top:15px;} th,td{border:1px solid #ccc;padding:8px;text-align:left;font-size:11px;} th{background:#e2e8f0;}</style>');
-            printWindow.document.write('</head><body>');
-            printWindow.document.write('<h1>Lingua Site Franca — Task Performance Analytics Report</h1>');
-            printWindow.document.write(`<p>Generated: ${new Date().toLocaleString()}</p>`);
-            printWindow.document.write(document.getElementById('performance-table').outerHTML);
-            printWindow.document.write('</body></html>');
-            printWindow.document.close();
-            printWindow.print();
-        });
-    </script>
+    complianceChartInstance = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: ['Valid Qualifications', 'Expired / Action Needed'],
+        datasets: [{
+          data: [valid, expired],
+          backgroundColor: ['#10b981', '#ef4444']
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  }
+
+  window.openModal = (src) => {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imgModal').style.display = 'flex';
+  };
+</script>
 </body>
 </html>
