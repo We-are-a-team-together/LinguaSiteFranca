@@ -3,15 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - Head Office</title>
+    <title>Office Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div id="app"></div>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans" id="app-body">
+    
+    <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
+        <h1 class="text-xl font-bold" id="brand-title"></h1>
+        <div class="flex items-center gap-2">
+            <span class="text-green-400">● Live</span>
+        </div>
+    </header>
+
+    <main class="flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Project Creation -->
+        <section class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-lg font-semibold mb-4">Create Project</h2>
+            <div class="flex flex-col gap-3">
+                <label>Project Name</label>
+                <input type="text" id="proj-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <label>Geographic Address</label>
+                <input type="text" id="proj-address" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <button id="btn-create-proj" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Add Project</button>
+            </div>
+        </section>
+
+        <!-- DLM Assignment -->
+        <section class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-lg font-semibold mb-4">Assign DLM</h2>
+            <div class="flex flex-col gap-3">
+                <label>DLM Name</label>
+                <input type="text" id="dlm-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <label>DLM Email</label>
+                <input type="email" id="dlm-email" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <label>Assign to Project</label>
+                <select id="dlm-project" class="p-2 rounded bg-gray-700 text-white focus:outline-none"></select>
+                <button id="btn-create-dlm" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Assign DLM</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Global Branding Panel -->
+    <section class="bg-gray-950 p-6 border-t border-gray-700 mt-auto">
+        <h2 class="text-lg font-semibold mb-4">Global Branding Panel</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="flex flex-col">
+                <label>System Title</label>
+                <input type="text" id="brand-title-input" class="p-2 rounded bg-gray-800 text-white focus:outline-none" value="">
+            </div>
+            <div class="flex flex-col">
+                <label>Header Color</label>
+                <input type="color" id="brand-header-color" class="p-1 rounded bg-gray-800 h-10 w-full" value="#1f2937">
+            </div>
+            <div class="flex flex-col">
+                <label>Footer Text</label>
+                <input type="text" id="brand-footer-input" class="p-2 rounded bg-gray-800 text-white focus:outline-none" value="">
+            </div>
+            <div class="flex flex-col justify-end">
+                <button id="btn-save-branding" class="bg-green-600 p-2 rounded hover:bg-green-500">Apply Globally</button>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
+
     <script type="module">
-        import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, push, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -24,151 +82,58 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getDatabase(app);
-        const appDiv = document.getElementById('app');
 
-        function showLogin() {
-            appDiv.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-                        <h1 class="text-2xl font-bold text-center mb-6">Head Office Portal</h1>
-                        <form id="loginForm" class="space-y-4">
-                            <input type="email" id="loginEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
-                            <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border rounded-lg">
-                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Sign In</button>
-                        </form>
-                        <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const errorMsg = document.getElementById('errorMsg');
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } catch (error) {
-                    errorMsg.textContent = error.message;
-                    errorMsg.classList.remove('hidden');
-                }
-            });
-        }
-
-        function showOfficeDashboard() {
-            appDiv.innerHTML = `
-                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-                    <div class="max-w-4xl mx-auto flex justify-between items-center">
-                        <h1 class="text-lg font-bold">LinguaSiteFranca - Head Office</h1>
-                        <button id="logoutBtn" class="text-sm text-red-600 font-medium">Sign Out</button>
-                    </div>
-                </nav>
-                <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h2 class="text-xl font-bold mb-4">Register User (DLM or Operative)</h2>
-                        <form id="registerForm" class="space-y-4">
-                            <input type="email" id="regEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
-                            <input type="password" id="regPassword" placeholder="Password (min 6 chars)" required class="w-full p-3 border rounded-lg">
-                            <input type="text" id="regName" placeholder="Full Name" required class="w-full p-3 border rounded-lg">
-                            <select id="regRole" class="w-full p-3 border rounded-lg">
-                                <option value="dlm">Direct Line Manager (DLM)</option>
-                                <option value="operative">Operative</option>
-                            </select>
-                            <div id="dlmSelectContainer" class="hidden">
-                                <label class="block text-sm font-medium mb-1">Assign to DLM</label>
-                                <select id="regAssignedDlm" class="w-full p-3 border rounded-lg"></select>
-                            </div>
-                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg">Create User</button>
-                        </form>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-            document.getElementById('regRole').addEventListener('change', (e) => {
-                const container = document.getElementById('dlmSelectContainer');
-                if (e.target.value === 'operative') {
-                    container.classList.remove('hidden');
-                    loadDlmsIntoSelect();
-                } else {
-                    container.classList.add('hidden');
-                }
-            });
-
-            document.getElementById('registerForm').addEventListener('submit', handleRegisterUser);
-        }
-
-        async function loadDlmsIntoSelect() {
-            const usersSnapshot = await get(ref(db, 'users'));
-            const select = document.getElementById('regAssignedDlm');
-            select.innerHTML = '';
-            usersSnapshot.forEach(child => {
-                const u = child.val();
-                if (u.role === 'dlm') {
-                    const opt = document.createElement('option');
-                    opt.value = child.key;
-                    opt.textContent = u.name || u.email;
-                    select.appendChild(opt);
-                }
-            });
-        }
-
-        async function handleRegisterUser(e) {
-            e.preventDefault();
-            const email = document.getElementById('regEmail').value;
-            const password = document.getElementById('regPassword').value;
-            const name = document.getElementById('regName').value;
-            const role = document.getElementById('regRole').value;
-            const assignedDlm = role === 'operative' ? document.getElementById('regAssignedDlm').value : null;
-
-            try {
-                const secondaryAppName = "SecondaryApp_" + Date.now();
-                const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
-                const secondaryAuth = getAuth(secondaryApp);
-                const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
-                
-                await set(ref(db, `users/${cred.user.uid}`), {
-                    name, email, role, assignedDlm: assignedDlm || '', nativeLanguage: 'en'
-                });
-
-                alert('✅ User registered successfully!');
-                e.target.reset();
-            } catch (err) {
-                alert('❌ Error: ' + err.message);
+        // Branding Sync
+        onValue(ref(db, 'branding'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('brand-title').innerText = data.title || '';
+                document.getElementById('main-header').style.backgroundColor = data.headerColor || '#1f2937';
+                document.getElementById('main-footer').innerText = data.footer || '';
             }
-        }
+        });
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log('🟢 Office Auth: User signed in:', user.uid);
-                try {
-                    const snap = await get(ref(db, `users/${user.uid}`));
-                    if (snap.exists()) {
-                        const userData = snap.val();
-                        // Accepts head_office, admin, or missing role during initial bootstrap setup
-                        const role = userData.role || '';
-                        if (role === 'head_office' || role === 'admin' || !role) {
-                            showOfficeDashboard();
-                            return;
-                        }
-                    }
-                    // If no user node exists yet (first time bootstrap setup), allow dashboard access
-                    if (!snap.exists()) {
-                        showOfficeDashboard();
-                        return;
-                    }
+        document.getElementById('btn-save-branding').addEventListener('click', () => {
+            set(ref(db, 'branding'), {
+                title: document.getElementById('brand-title-input').value,
+                headerColor: document.getElementById('brand-header-color').value,
+                footer: document.getElementById('brand-footer-input').value
+            });
+        });
 
-                    console.warn('⚠️ Access denied: Account lacks Head Office privileges.');
-                    showLogin();
-                } catch (err) {
-                    console.error('❌ DB error during auth check:', err);
-                }
-            } else {
-                console.log('ℹ️ Office Auth: Signed out.');
-                showLogin();
+        // Create Project
+        document.getElementById('btn-create-proj').addEventListener('click', () => {
+            const name = document.getElementById('proj-name').value;
+            const address = document.getElementById('proj-address').value;
+            if (name && address) {
+                push(ref(db, 'projects'), { name, address });
+                document.getElementById('proj-name').value = '';
+                document.getElementById('proj-address').value = '';
+            }
+        });
+
+        // Load Projects into DLM dropdown
+        onValue(ref(db, 'projects'), (snapshot) => {
+            const select = document.getElementById('dlm-project');
+            select.innerHTML = '';
+            snapshot.forEach((child) => {
+                const opt = document.createElement('option');
+                opt.value = child.key;
+                opt.text = child.val().name;
+                select.appendChild(opt);
+            });
+        });
+
+        // Create DLM
+        document.getElementById('btn-create-dlm').addEventListener('click', () => {
+            const name = document.getElementById('dlm-name').value;
+            const email = document.getElementById('dlm-email').value;
+            const projectId = document.getElementById('dlm-project').value;
+            if (name && email && projectId) {
+                set(ref(db, 'dlms/' + email.replace(/\./g, ',')), { name, email, projectId });
+                document.getElementById('dlm-name').value = '';
+                document.getElementById('dlm-email').value = '';
             }
         });
     </script>
