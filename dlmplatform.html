@@ -20,7 +20,10 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding: 20px; }
-    .container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
+    
+    .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+    
+    .container { width: 96%; max-width: 1800px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
     
     header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--border); margin-bottom: 25px; }
     h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
@@ -31,7 +34,7 @@
     .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--accent); }
 
     .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left; }
     input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 
@@ -60,7 +63,21 @@
 </head>
 <body>
 
-<div class="container">
+<!-- Login Overlay -->
+<div id="loginOverlay" class="login-overlay">
+  <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+    <h2 style="margin-bottom: 20px; color: var(--accent);">DLM Portal Login</h2>
+    <form id="dlmLoginForm">
+      <div class="form-group">
+        <input type="text" id="dlmLoginName" placeholder="Enter your full DLM Name" required>
+      </div>
+      <button type="submit">Access Platform</button>
+    </form>
+    <p id="loginError" style="color: var(--danger); margin-top: 15px; display: none; font-size: 0.9rem;">Manager not found. Ensure you are registered in the Office.</p>
+  </div>
+</div>
+
+<div class="container" id="mainContainer">
   <header>
     <h1><span class="brand-name">LinguaSiteFranca</span> — DLM Platform</h1>
     <div class="dlm-info" id="dlmHeaderInfo">DLM: Loading...</div>
@@ -148,7 +165,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, onValue, set, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, onValue, set, push, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     databaseURL: "https://linguasitefranca-default-rtdb.europe-west1.firebasedatabase.app"
@@ -157,11 +174,8 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const currentDLM = urlParams.get('dlm') || 'test 01';
-  const currentSite = urlParams.get('site') || 'The monument court';
-
-  document.getElementById('dlmHeaderInfo').innerText = `DLM: ${currentDLM} | Site: ${currentSite}`;
+  let currentDLM = "";
+  let currentSite = "";
 
   // Global Branding Listener
   onValue(ref(db, 'branding'), (snapshot) => {
@@ -177,73 +191,103 @@
     }
   });
 
-  // Load Operatives
-  onValue(ref(db, 'operatives'), (snapshot) => {
-    const data = snapshot.val() || {};
-    const select = document.getElementById('taskOpSelect');
-    const tbody = document.getElementById('opsTableBody');
-    select.innerHTML = '';
-    tbody.innerHTML = '';
+  // Login System
+  document.getElementById('dlmLoginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const nameInput = document.getElementById('dlmLoginName').value.trim();
+    
+    get(ref(db, 'dlms')).then((snapshot) => {
+      const data = snapshot.val();
+      let found = false;
+      if (data) {
+        for (let key in data) {
+          if (data[key].name.toLowerCase() === nameInput.toLowerCase()) {
+            currentDLM = data[key].name;
+            currentSite = data[key].site;
+            found = true;
+            break;
+          }
+        }
+      }
 
-    const today = new Date().toISOString().split('T')[0];
-
-    Object.keys(data).forEach(key => {
-      const op = data[key];
-      if (op.assignedSite === currentSite) {
-        // Select dropdown option
-        const opt = document.createElement('option');
-        opt.value = op.name;
-        opt.textContent = op.name;
-        select.appendChild(opt);
-
-        // Table row
-        const isExpired = op.expiry && op.expiry < today;
-        const badgeClass = isExpired ? 'badge-expired' : 'badge-valid';
-        const badgeText = op.expiry ? (isExpired ? 'EXPIRED' : 'VALID') : 'N/A';
-
-        tbody.innerHTML += `
-          <tr>
-            <td><strong>${op.name}</strong></td>
-            <td>${op.assignedSite}</td>
-            <td>${op.qualification || 'N/A'}</td>
-            <td>${op.expiry || 'N/A'}</td>
-            <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-          </tr>
-        `;
+      if (found) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('mainContainer').style.display = 'flex';
+        document.getElementById('dlmHeaderInfo').innerText = `DLM: ${currentDLM} | Site: ${currentSite}`;
+        initDLMPlatform(); // Load data specifically for this DLM's site
+      } else {
+        document.getElementById('loginError').style.display = 'block';
       }
     });
   });
 
-  // Load Tasks
-  onValue(ref(db, 'tasks'), (snapshot) => {
-    const data = snapshot.val() || {};
-    const tbody = document.getElementById('tasksTableBody');
-    tbody.innerHTML = '';
+  function initDLMPlatform() {
+    // Load Operatives
+    onValue(ref(db, 'operatives'), (snapshot) => {
+      const data = snapshot.val() || {};
+      const select = document.getElementById('taskOpSelect');
+      const tbody = document.getElementById('opsTableBody');
+      select.innerHTML = '';
+      tbody.innerHTML = '';
 
-    Object.keys(data).forEach(key => {
-      const task = data[key];
-      if (task.site === currentSite) {
-        const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '';
-        const commentHtml = task.comment ? `<p style="font-size:0.85rem; margin-top:5px; color:#cbd5e1;">"${task.comment}"</p>` : '';
-        
-        tbody.innerHTML += `
-          <tr>
-            <td><strong>${task.operative}</strong></td>
-            <td>${task.details}</td>
-            <td><span class="badge badge-valid">${task.status}</span></td>
-            <td>${photoHtml}${commentHtml}</td>
-            <td>
-              ${task.status === 'Submitted' ? `
-                <button class="btn-success" onclick="updateTaskStatus('${key}', 'Accepted')" style="margin-bottom:5px;">Accept</button>
-                <input type="text" id="returnNote_${key}" style="margin-bottom:5px;">
-                <button class="btn-danger" onclick="returnTask('${key}')">Return Task</button>
-              ` : '—'}
-            </td>
-          </tr>
-        `;
-      }
+      const today = new Date().toISOString().split('T')[0];
+
+      Object.keys(data).forEach(key => {
+        const op = data[key];
+        if (op.assignedSite === currentSite) {
+          const opt = document.createElement('option');
+          opt.value = op.name;
+          opt.textContent = op.name;
+          select.appendChild(opt);
+
+          const isExpired = op.expiry && op.expiry < today;
+          const badgeClass = isExpired ? 'badge-expired' : 'badge-valid';
+          const badgeText = op.expiry ? (isExpired ? 'EXPIRED' : 'VALID') : 'N/A';
+
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${op.name}</strong></td>
+              <td>${op.assignedSite}</td>
+              <td>${op.qualification || 'N/A'}</td>
+              <td>${op.expiry || 'N/A'}</td>
+              <td><span class="badge ${badgeClass}">${badgeText}</span></td>
+            </tr>
+          `;
+        }
+      });
     });
-  });
+
+    // Load Tasks
+    onValue(ref(db, 'tasks'), (snapshot) => {
+      const data = snapshot.val() || {};
+      const tbody = document.getElementById('tasksTableBody');
+      tbody.innerHTML = '';
+
+      Object.keys(data).forEach(key => {
+        const task = data[key];
+        if (task.site === currentSite) {
+          const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')">` : '';
+          const commentHtml = task.comment ? `<p style="font-size:0.85rem; margin-top:5px; color:#cbd5e1;">"${task.comment}"</p>` : '';
+          
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${task.operative}</strong></td>
+              <td>${task.details}</td>
+              <td><span class="badge badge-valid">${task.status}</span></td>
+              <td>${photoHtml}${commentHtml}</td>
+              <td>
+                ${task.status === 'Submitted' ? `
+                  <button class="btn-success" onclick="updateTaskStatus('${key}', 'Accepted')" style="margin-bottom:5px;">Accept</button>
+                  <input type="text" id="returnNote_${key}" style="margin-bottom:5px;">
+                  <button class="btn-danger" onclick="returnTask('${key}')">Return Task</button>
+                ` : '—'}
+              </td>
+            </tr>
+          `;
+        }
+      });
+    });
+  }
 
   // Form Submit: Register Operative
   document.getElementById('regForm').addEventListener('submit', (e) => {
