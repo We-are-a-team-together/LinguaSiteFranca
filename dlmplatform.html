@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - DLM Platform</title>
+    <title>LinguaSiteFranca - DLM Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
@@ -27,27 +27,17 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         let currentDlmId = null;
-        let currentAuthUser = null;
         const appDiv = document.getElementById('app');
 
         function showLogin() {
             appDiv.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
-                    <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
-                        <div class="text-center mb-6">
-                            <h1 class="text-2xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                            <p class="text-gray-500 text-sm mt-2">Site Manager Portal</p>
-                        </div>
+                <div class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
+                    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+                        <h1 class="text-2xl font-bold text-center mb-6">DLM Portal</h1>
                         <form id="loginForm" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="loginEmail" required class="w-full p-3 border border-gray-300 rounded-lg">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input type="password" id="loginPassword" required class="w-full p-3 border border-gray-300 rounded-lg">
-                            </div>
-                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">Sign In</button>
+                            <input type="email" id="loginEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
+                            <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border rounded-lg">
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Sign In</button>
                         </form>
                         <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
                     </div>
@@ -71,233 +61,144 @@
 
         function showDashboard() {
             appDiv.innerHTML = `
-                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-50">
-                    <div class="max-w-7xl mx-auto flex justify-between items-center">
-                        <div>
-                            <h1 class="text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
-                            <p class="text-xs text-gray-500">Site Manager Dashboard</p>
-                        </div>
-                        <button id="logoutBtn" class="text-sm text-red-600 hover:text-red-800 font-medium">Sign Out</button>
+                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+                    <div class="max-w-4xl mx-auto flex justify-between items-center">
+                        <h1 class="text-lg font-bold">LinguaSiteFranca - DLM Dashboard</h1>
+                        <button id="logoutBtn" class="text-sm text-red-600">Sign Out</button>
                     </div>
                 </nav>
+                <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold mb-4">Assign Task to Operative</h2>
+                        <form id="taskForm" class="space-y-4">
+                            <select id="taskOperative" required class="w-full p-3 border rounded-lg">
+                                <option value="">Select Operative...</option>
+                            </select>
+                            <textarea id="taskDesc" placeholder="Task description in English" rows="3" required class="w-full p-3 border rounded-lg"></textarea>
+                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">Assign Task</button>
+                        </form>
+                    </div>
 
-                <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">👷 Manage Operatives</h2>
-                            <p class="text-indigo-100 text-sm mt-1">View assigned operatives</p>
-                        </div>
-                        <div class="p-6">
-                            <div id="operativeList" class="space-y-3"><p class="text-gray-500 text-center py-4">Loading operatives...</p></div>
-                        </div>
-                    </section>
-
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">📋 Assign Task</h2>
-                            <p class="text-blue-100 text-sm mt-1">Create and assign tasks</p>
-                        </div>
-                        <div class="p-6">
-                            <form id="assignTaskForm" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Operative</label>
-                                    <select id="taskOperative" required class="w-full p-3 border border-gray-300 rounded-lg">
-                                        <option value="">Choose an operative...</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Task Description</label>
-                                    <textarea id="taskDescription" rows="3" required class="w-full p-3 border border-gray-300 rounded-lg" placeholder="Describe the task in English..."></textarea>
-                                </div>
-                                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg">Assign Task</button>
-                            </form>
-                        </div>
-                    </section>
-
-                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                            <h2 class="text-lg font-bold text-white">✅ Review Submissions</h2>
-                            <p class="text-green-100 text-sm mt-1">Review operative task submissions</p>
-                        </div>
-                        <div class="p-6">
-                            <div id="taskReviewList" class="space-y-4"><p class="text-gray-500 text-center py-4">Loading submissions...</p></div>
-                        </div>
-                    </section>
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-bold mb-4">Pending Submissions</h2>
+                        <div id="submissionsList" class="space-y-4"><p class="text-gray-500">Loading...</p></div>
+                    </div>
                 </div>
             `;
 
             document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-            document.getElementById('assignTaskForm').addEventListener('submit', handleAssignTask);
+            document.getElementById('taskForm').addEventListener('submit', handleAssignTask);
 
             loadOperatives();
-            loadTasks();
+            loadSubmissions();
+        }
+
+        function loadOperatives() {
+            const q = query(ref(db, 'users'), orderByChild('assignedDlm'), equalTo(currentDlmId));
+            onValue(q, (snapshot) => {
+                const select = document.getElementById('taskOperative');
+                if (!select) return;
+                select.innerHTML = '<option value="">Select Operative...</option>';
+                snapshot.forEach(child => {
+                    const u = child.val();
+                    const opt = document.createElement('option');
+                    opt.value = child.key;
+                    opt.textContent = u.name || u.email;
+                    select.appendChild(opt);
+                });
+            });
+        }
+
+        function loadSubmissions() {
+            const q = query(ref(db, 'tasks'), orderByChild('dlmId'), equalTo(currentDlmId));
+            onValue(q, (snapshot) => {
+                const list = document.getElementById('submissionsList');
+                if (!list) return;
+                list.innerHTML = '';
+                let found = false;
+
+                snapshot.forEach(child => {
+                    const task = child.val();
+                    if (task.status === 'submitted') {
+                        found = true;
+                        const div = document.createElement('div');
+                        div.className = 'border p-4 rounded-lg bg-gray-50 space-y-3';
+                        div.innerHTML = `
+                            <p><strong>Task:</strong> ${task.description_en}</p>
+                            <p><strong>Comment:</strong> ${task.operative_comment_native || 'None'}</p>
+                            <div class="flex gap-2 flex-wrap">
+                                ${task.photos ? task.photos.map(p => `<img src="${p}" class="w-16 h-16 object-cover rounded border">`).join('') : ''}
+                            </div>
+                            <textarea id="feedback_${child.key}" placeholder="Feedback..." class="w-full p-2 border rounded text-sm"></textarea>
+                            <div class="flex gap-2">
+                                <button onclick="window.review('${child.key}', 'approved')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Approve</button>
+                                <button onclick="window.review('${child.key}', 'rejected')" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold">Request Revision</button>
+                            </div>
+                        `;
+                        list.appendChild(div);
+                    }
+                });
+
+                if (!found) list.innerHTML = '<p class="text-gray-500">No pending submissions.</p>';
+            });
         }
 
         async function handleAssignTask(e) {
             e.preventDefault();
             const operativeId = document.getElementById('taskOperative').value;
-            const description = document.getElementById('taskDescription').value;
+            const description_en = document.getElementById('taskDesc').value;
 
             try {
                 const newRef = push(ref(db, 'tasks'));
                 await set(newRef, {
                     dlmId: currentDlmId,
                     operativeId,
-                    description_en: description,
+                    description_en,
                     status: 'assigned',
                     createdAt: new Date().toISOString()
                 });
-
                 alert('✅ Task assigned!');
                 e.target.reset();
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
             }
         }
 
-        function loadOperatives() {
-            const q = query(ref(db, 'users'), orderByChild('assignedDlm'), equalTo(currentDlmId));
-            
-            onValue(q, (snapshot) => {
-                const list = document.getElementById('operativeList');
-                const select = document.getElementById('taskOperative');
-                
-                if (!list || !select) return;
-                
-                list.innerHTML = '';
-                select.innerHTML = '<option value="">Choose an operative...</option>';
-                
-                let count = 0;
-                snapshot.forEach((child) => {
-                    const op = child.val();
-                    count++;
-                    
-                    const div = document.createElement('div');
-                    div.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200';
-                    div.innerHTML = `
-                        <p class="font-bold text-gray-800">${op.name}</p>
-                        <p class="text-sm text-gray-500">${op.email}</p>
-                        <p class="text-xs text-indigo-600 mt-1">🌐 Language: ${op.languageSelected ? (op.languageDisplayName || op.nativeLanguage || 'Set') : 'Not set yet'}</p>
-                    `;
-                    list.appendChild(div);
-                    
-                    const option = document.createElement('option');
-                    option.value = child.key;
-                    option.textContent = `${op.name} (${op.email})`;
-                    select.appendChild(option);
-                });
-
-                if (count === 0) {
-                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No operatives assigned to you yet</p>';
-                }
-            });
-        }
-
-        function loadTasks() {
-            const q = query(ref(db, 'tasks'), orderByChild('dlmId'), equalTo(currentDlmId));
-            
-            onValue(q, (snapshot) => {
-                const list = document.getElementById('taskReviewList');
-                if (!list) return;
-                
-                list.innerHTML = '';
-                let hasTasks = false;
-                
-                snapshot.forEach((child) => {
-                    const task = child.val();
-                    if (task.status === 'submitted') {
-                        hasTasks = true;
-                        
-                        const div = document.createElement('div');
-                        div.className = 'border border-gray-200 rounded-xl p-6 bg-gray-50';
-                        div.innerHTML = `
-                            <div class="flex justify-between items-start mb-4">
-                                <h3 class="font-bold text-lg text-gray-800">Task Submission</h3>
-                                <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-medium">Pending Review</span>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg mb-4 border border-gray-200">
-                                <p class="text-xs text-gray-500 font-bold uppercase mb-2">Operative's Comment</p>
-                                <p class="text-gray-800">${task.operative_comment_native || 'No comment provided'}</p>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg mb-4 border border-gray-200">
-                                <p class="text-xs text-gray-500 font-bold uppercase mb-2">Photos</p>
-                                <div class="flex gap-2 mt-2 flex-wrap">
-                                    ${task.photos ? task.photos.map(url => `<img src="${url}" class="h-20 w-20 object-cover rounded border border-gray-300">`).join('') : '<p class="text-gray-400 text-sm">No photos</p>'}
-                                </div>
-                            </div>
-                            <div class="space-y-3">
-                                <textarea id="feedback_${child.key}" rows="2" placeholder="Your feedback..." class="w-full p-3 border border-gray-300 rounded-lg"></textarea>
-                                <div class="flex gap-2">
-                                    <button onclick="window.reviewTask('${child.key}', 'approved')" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg">Approve</button>
-                                    <button onclick="window.reviewTask('${child.key}', 'rejected')" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-lg">Reject</button>
-                                </div>
-                            </div>
-                        `;
-                        list.appendChild(div);
-                    }
-                });
-                
-                if (!hasTasks) {
-                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No pending submissions</p>';
-                }
-            });
-        }
-
-        window.reviewTask = async (taskId, decision) => {
-            const feedbackEl = document.getElementById(`feedback_${taskId}`);
-            if (!feedbackEl) {
-                alert('Error: Feedback element not found');
-                return;
-            }
-            
-            const feedback = feedbackEl.value;
-            
+        window.review = async (taskId, status) => {
+            const feedback = document.getElementById(`feedback_${taskId}`).value;
             try {
-                const taskRef = ref(db, `tasks/${taskId}`);
-                const taskSnapshot = await get(taskRef);
-                const taskData = taskSnapshot.val();
-                
-                await set(taskRef, {
-                    ...taskData,
-                    status: decision,
-                    dlm_feedback_en: feedback,
-                    reviewedAt: new Date().toISOString()
+                const tRef = ref(db, `tasks/${taskId}`);
+                const snap = await get(tRef);
+                const data = snap.val();
+                await set(tRef, {
+                    ...data,
+                    status,
+                    dlm_feedback_en: feedback
                 });
-                
-                alert(`✅ Task ${decision === 'approved' ? 'approved' : 'rejected'}!`);
-            } catch (error) {
-                alert('❌ Error: ' + error.message);
+                alert('✅ Review saved!');
+            } catch (err) {
+                alert('❌ Error: ' + err.message);
             }
         };
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentAuthUser = user;
-                console.log('🟢 Auth state changed: User signed in:', user.uid);
+                console.log('🟢 DLM Auth: User signed in:', user.uid);
                 try {
-                    const userSnapshot = await get(ref(db, `users/${user.uid}`));
-                    if (userSnapshot.exists()) {
-                        const userData = userSnapshot.val();
-                        if (userData.role === 'dlm') {
-                            currentDlmId = user.uid;
-                            showDashboard();
-                        } else {
-                            console.warn('⚠️ Access denied: User is not a DLM. Role found:', userData.role);
-                            alert('Access denied: DLM account required');
-                            signOut(auth);
-                        }
+                    const snap = await get(ref(db, `users/${user.uid}`));
+                    if (snap.exists() && snap.val().role === 'dlm') {
+                        currentDlmId = user.uid;
+                        showDashboard();
                     } else {
-                        console.warn('⚠️ User authenticated, but record missing in database users node for UID:', user.uid);
-                        alert('User profile not found');
+                        console.warn('⚠️ Access denied: Not DLM role.');
+                        alert('Access denied: DLM account required');
                         signOut(auth);
                     }
-                } catch (error) {
-                    console.error('❌ Database read error during auth check:', error);
+                } catch (err) {
+                    console.error('❌ DB error:', err);
                 }
             } else {
-                currentAuthUser = null;
-                currentDlmId = null;
-                console.log('ℹ️ Auth state changed: User is signed out.');
+                console.log('ℹ️ DLM Auth: Signed out.');
                 showLogin();
             }
         });
