@@ -27,12 +27,35 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         let currentUser = null;
+        let currentAuthUser = null;
         let currentTaskId = null;
         const appDiv = document.getElementById('app');
 
         const translations = {
-            'en': { taskTitle: 'Your Task', submitBtn: 'Submit Task', logout: 'Sign Out' },
-            'ro': { taskTitle: 'Sarcina Ta', submitBtn: 'Trimite Sarcina', logout: 'Deconectare' }
+            'en': { 
+                taskTitle: 'Your Task', 
+                submitBtn: 'Submit Task', 
+                logout: 'Sign Out',
+                commentsLabel: 'Comments',
+                photosLabel: 'Photos (1-3)',
+                noTask: 'No active task assigned.',
+                statusPending: 'Pending',
+                statusRevision: 'Needs Revision',
+                statusApproved: 'Approved',
+                feedbackTitle: 'Manager Feedback'
+            },
+            'ro': { 
+                taskTitle: 'Sarcina Ta', 
+                submitBtn: 'Trimite Sarcina', 
+                logout: 'Deconectare',
+                commentsLabel: 'Comentarii',
+                photosLabel: 'Fotografii (1-3)',
+                noTask: 'Nicio sarcină activă atribuită.',
+                statusPending: 'În așteptare',
+                statusRevision: 'Necesită Revizuire',
+                statusApproved: 'Aprobat',
+                feedbackTitle: 'Feedback Manager'
+            }
         };
 
         function showLogin() {
@@ -79,18 +102,25 @@
                 <div class="max-w-lg mx-auto px-6 py-8 space-y-6">
                     <div class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-blue-500">
                         <h2 class="text-xs font-bold text-gray-500 uppercase mb-2">${t.taskTitle}</h2>
-                        <p id="taskDescription" class="text-lg font-semibold">Loading...</p>
-                        <span id="taskStatus" class="inline-block mt-2 px-3 py-1 rounded-full text-xs bg-yellow-100">Pending</span>
+                        <p id="taskDescription" class="text-lg font-semibold text-gray-800">${t.noTask}</p>
+                        <div id="taskStatusContainer" class="mt-2">
+                            <span id="taskStatus" class="inline-block px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600">Checking...</span>
+                        </div>
+                    </div>
+
+                    <div id="feedbackCard" class="bg-white rounded-xl shadow-sm p-6 border-l-4 border-indigo-500 hidden">
+                        <h2 class="text-xs font-bold text-indigo-500 uppercase mb-2">${t.feedbackTitle}</h2>
+                        <p id="feedbackText" class="text-gray-700"></p>
                     </div>
 
                     <form id="submitTaskForm" class="bg-white rounded-xl shadow-sm p-6 space-y-4">
                         <h2 class="text-lg font-bold">${t.submitBtn}</h2>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Photos (1-3)</label>
+                            <label class="block text-sm font-medium mb-1">${t.photosLabel}</label>
                             <input type="file" id="photoInput" accept="image/*" multiple class="w-full p-3 border rounded-lg">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-1">Comments</label>
+                            <label class="block text-sm font-medium mb-1">${t.commentsLabel}</label>
                             <textarea id="operativeComment" rows="3" class="w-full p-3 border rounded-lg"></textarea>
                         </div>
                         <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">${t.submitBtn}</button>
@@ -100,7 +130,7 @@
 
             document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
             document.getElementById('submitTaskForm').addEventListener('submit', handleSubmitTask);
-            loadTask();
+            loadTask(lang);
         }
 
         async function handleSubmitTask(e) {
@@ -149,28 +179,62 @@
             }
         }
 
-        function loadTask() {
-            const q = query(ref(db, 'tasks'), orderByChild('operativeId'), equalTo(currentUser.uid));
+        function loadTask(lang = 'en') {
+            const t = translations[lang] || translations['en'];
+            if (!currentAuthUser) return;
+
+            const q = query(ref(db, 'tasks'), orderByChild('operativeId'), equalTo(currentAuthUser.uid));
             
             onValue(q, (snapshot) => {
+                let foundTask = false;
                 snapshot.forEach((child) => {
                     const task = child.val();
-                    if (['assigned', 'rejected'].includes(task.status)) {
-                        currentTaskId = child.key;
-                        document.getElementById('taskDescription').textContent = task.description_en;
-                        
-                        const statusEl = document.getElementById('taskStatus');
-                        if (task.status === 'rejected') {
-                            statusEl.textContent = 'Needs Revision';
-                            statusEl.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs bg-red-100';
+                    // Show active tasks assigned, rejected (needs revision), or even submitted/approved for visibility
+                    currentTaskId = child.key;
+                    foundTask = true;
+
+                    document.getElementById('taskDescription').textContent = task.description_en || t.noTask;
+                    
+                    const statusEl = document.getElementById('taskStatus');
+                    const feedbackCard = document.getElementById('feedbackCard');
+                    const feedbackText = document.getElementById('feedbackText');
+                    
+                    if (task.status === 'assigned') {
+                        statusEl.textContent = t.statusPending;
+                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 font-medium';
+                        feedbackCard.classList.add('hidden');
+                    } else if (task.status === 'rejected') {
+                        statusEl.textContent = t.statusRevision;
+                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-red-100 text-red-800 font-medium';
+                        if (task.dlm_feedback_en) {
+                            feedbackText.textContent = task.dlm_feedback_en;
+                            feedbackCard.classList.remove('hidden');
+                        }
+                    } else if (task.status === 'submitted') {
+                        statusEl.textContent = 'Submitted - Under Review';
+                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-blue-100 text-blue-800 font-medium';
+                        feedbackCard.classList.add('hidden');
+                    } else if (task.status === 'approved') {
+                        statusEl.textContent = t.statusApproved;
+                        statusEl.className = 'inline-block px-3 py-1 rounded-full text-xs bg-green-100 text-green-800 font-medium';
+                        if (task.dlm_feedback_en) {
+                            feedbackText.textContent = task.dlm_feedback_en;
+                            feedbackCard.classList.remove('hidden');
                         }
                     }
                 });
+
+                if (!foundTask) {
+                    document.getElementById('taskDescription').textContent = t.noTask;
+                    document.getElementById('taskStatus').textContent = 'No Task';
+                    document.getElementById('taskStatus').className = 'inline-block px-3 py-1 rounded-full text-xs bg-gray-100 text-gray-600';
+                }
             });
         }
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentAuthUser = user;
                 try {
                     const userSnapshot = await get(ref(db, `users/${user.uid}`));
                     if (userSnapshot.exists()) {
@@ -191,6 +255,8 @@
                     showLogin();
                 }
             } else {
+                currentAuthUser = null;
+                currentUser = null;
                 showLogin();
             }
         });
