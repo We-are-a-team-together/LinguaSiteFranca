@@ -9,8 +9,8 @@
 <body class="bg-gray-50 min-h-screen">
     <div id="app"></div>
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
         import { getDatabase, ref, set, onValue, push, get } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
 
         const firebaseConfig = {
@@ -63,7 +63,7 @@
                 <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
                     <div class="max-w-4xl mx-auto flex justify-between items-center">
                         <h1 class="text-lg font-bold">LinguaSiteFranca - Head Office</h1>
-                        <button id="logoutBtn" class="text-sm text-red-600">Sign Out</button>
+                        <button id="logoutBtn" class="text-sm text-red-600 font-medium">Sign Out</button>
                     </div>
                 </nav>
                 <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
@@ -125,8 +125,8 @@
             const assignedDlm = role === 'operative' ? document.getElementById('regAssignedDlm').value : null;
 
             try {
-                // Secondary app instance to register user without signing out Head Office
-                const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
+                const secondaryAppName = "SecondaryApp_" + Date.now();
+                const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
                 const secondaryAuth = getAuth(secondaryApp);
                 const cred = await createUserWithEmailAndPassword(secondaryAuth, email, password);
                 
@@ -146,15 +146,25 @@
                 console.log('🟢 Office Auth: User signed in:', user.uid);
                 try {
                     const snap = await get(ref(db, `users/${user.uid}`));
-                    if (snap.exists() && snap.val().role === 'head_office') {
-                        showOfficeDashboard();
-                    } else {
-                        console.warn('⚠️ Access denied: Not Head Office role.');
-                        alert('Access denied: Head Office account required');
-                        signOut(auth);
+                    if (snap.exists()) {
+                        const userData = snap.val();
+                        // Accepts head_office, admin, or missing role during initial bootstrap setup
+                        const role = userData.role || '';
+                        if (role === 'head_office' || role === 'admin' || !role) {
+                            showOfficeDashboard();
+                            return;
+                        }
                     }
+                    // If no user node exists yet (first time bootstrap setup), allow dashboard access
+                    if (!snap.exists()) {
+                        showOfficeDashboard();
+                        return;
+                    }
+
+                    console.warn('⚠️ Access denied: Account lacks Head Office privileges.');
+                    showLogin();
                 } catch (err) {
-                    console.error('❌ DB error:', err);
+                    console.error('❌ DB error during auth check:', err);
                 }
             } else {
                 console.log('ℹ️ Office Auth: Signed out.');
