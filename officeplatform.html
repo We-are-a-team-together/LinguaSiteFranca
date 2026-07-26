@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinguaSiteFranca - Head Office</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="root"></div>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
+        import { getDatabase, ref, set, onValue, remove, push } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+            authDomain: "lingua-site-franca.firebaseapp.com",
+            projectId: "lingua-site-franca",
+            storageBucket: "lingua-site-franca.firebasestorage.app",
+            messagingSenderId: "737514168886",
+            appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        // UI Elements
+        const root = document.getElementById('root');
+        
+        // Render UI
+        function renderUI() {
+            root.innerHTML = `
+                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+                    <div class="max-w-7xl mx-auto flex justify-between items-center">
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-800">LinguaSiteFranca</h1>
+                            <p class="text-xs text-gray-500">Head Office Control Panel</p>
+                        </div>
+                        <button id="logoutBtn" class="text-sm text-red-600 hover:text-red-800">Sign Out</button>
+                    </div>
+                </nav>
+
+                <div class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+                    <!-- DLM Management -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4"> Direct Line Managers (DLMs)</h2>
+                        <form id="createDlmForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <input type="text" id="dlmName" placeholder="DLM Full Name" required class="w-full p-3 border rounded-lg">
+                            <input type="email" id="dlmEmail" placeholder="DLM Email" required class="w-full p-3 border rounded-lg">
+                            <input type="password" id="dlmPassword" placeholder="Password (min 6)" required minlength="6" class="w-full p-3 border rounded-lg">
+                            <input type="text" id="dlmProject" placeholder="Assigned Project" required class="w-full p-3 border rounded-lg">
+                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">Create DLM Account</button>
+                        </form>
+                        <div id="dlmList" class="space-y-3"></div>
+                    </section>
+
+                    <!-- Projects -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4">📍 Projects & Locations</h2>
+                        <form id="createProjectForm" class="space-y-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                            <input type="text" id="projectName" placeholder="Project Name" required class="w-full p-3 border rounded-lg">
+                            <input type="text" id="projectLocation" placeholder="Location/Address" required class="w-full p-3 border rounded-lg">
+                            <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-lg">Create Project</button>
+                        </form>
+                        <div id="projectList" class="space-y-3"></div>
+                    </section>
+
+                    <!-- Branding -->
+                    <section class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 class="text-lg font-bold text-gray-800 mb-4"> Branding</h2>
+                        <form id="brandingForm" class="space-y-4">
+                            <input type="text" id="businessName" placeholder="Business Name" class="w-full p-3 border rounded-lg">
+                            <input type="text" id="footerText" placeholder="Footer Text" class="w-full p-3 border rounded-lg">
+                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Save Branding</button>
+                        </form>
+                    </section>
+                </div>
+            `;
+
+            // Event Listeners
+            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+            document.getElementById('createDlmForm').addEventListener('submit', handleCreateDLM);
+            document.getElementById('createProjectForm').addEventListener('submit', handleCreateProject);
+            document.getElementById('brandingForm').addEventListener('submit', handleSaveBranding);
+
+            // Load Data
+            loadDLMs();
+            loadProjects();
+            loadBranding();
+        }
+
+        async function handleCreateDLM(e) {
+            e.preventDefault();
+            const name = document.getElementById('dlmName').value;
+            const email = document.getElementById('dlmEmail').value;
+            const password = document.getElementById('dlmPassword').value;
+            const project = document.getElementById('dlmProject').value;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const uid = userCredential.user.uid;
+                
+                await set(ref(db, `users/${uid}`), {
+                    name,
+                    email,
+                    role: 'dlm',
+                    assignedProject: project,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('✅ DLM created!');
+                e.target.reset();
+                loadDLMs();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function handleCreateProject(e) {
+            e.preventDefault();
+            const name = document.getElementById('projectName').value;
+            const location = document.getElementById('projectLocation').value;
+
+            try {
+                await push(ref(db, 'projects'), {
+                    name,
+                    location,
+                    createdAt: new Date().toISOString()
+                });
+
+                alert('✅ Project created!');
+                e.target.reset();
+                loadProjects();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function handleSaveBranding(e) {
+            e.preventDefault();
+            const businessName = document.getElementById('businessName').value;
+            const footerText = document.getElementById('footerText').value;
+
+            try {
+                await set(ref(db, 'settings/branding'), {
+                    businessName,
+                    footerText,
+                    updatedAt: new Date().toISOString()
+                });
+
+                alert('✅ Branding saved!');
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function loadDLMs() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const list = document.getElementById('dlmList');
+                if (!list) return;
+                
+                list.innerHTML = '';
+                const dlms = [];
+                
+                snapshot.forEach((child) => {
+                    const user = child.val();
+                    if (user.role === 'dlm') {
+                        dlms.push({ id: child.key, ...user });
+                    }
+                });
+
+                if (dlms.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No DLMs yet</p>';
+                    return;
+                }
+
+                dlms.forEach(dlm => {
+                    list.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-lg border flex justify-between items-center">
+                            <div>
+                                <p class="font-bold">${dlm.name}</p>
+                                <p class="text-sm text-gray-500">${dlm.email} • ${dlm.assignedProject}</p>
+                            </div>
+                            <button onclick="window.deleteDLM('${dlm.id}')" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.deleteDLM = async (uid) => {
+            if (confirm('Delete this DLM?')) {
+                try {
+                    await remove(ref(db, `users/${uid}`));
+                    alert('✅ DLM deleted');
+                } catch (error) {
+                    alert(' Error: ' + error.message);
+                }
+            }
+        };
+
+        function loadProjects() {
+            onValue(ref(db, 'projects'), (snapshot) => {
+                const list = document.getElementById('projectList');
+                if (!list) return;
+                
+                list.innerHTML = '';
+                const projects = [];
+                
+                snapshot.forEach((child) => {
+                    projects.push({ id: child.key, ...child.val() });
+                });
+
+                if (projects.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-center py-4">No projects yet</p>';
+                    return;
+                }
+
+                projects.forEach(p => {
+                    list.innerHTML += `
+                        <div class="bg-gray-50 p-4 rounded-lg border flex justify-between items-center">
+                            <div>
+                                <p class="font-bold">${p.name}</p>
+                                <p class="text-sm text-gray-500">📍 ${p.location}</p>
+                            </div>
+                            <button onclick="window.deleteProject('${p.id}')" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        window.deleteProject = async (projectId) => {
+            if (confirm('Delete this project?')) {
+                try {
+                    await remove(ref(db, `projects/${projectId}`));
+                    alert('✅ Project deleted');
+                } catch (error) {
+                    alert('❌ Error: ' + error.message);
+                }
+            }
+        };
+
+        function loadBranding() {
+            onValue(ref(db, 'settings/branding'), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    document.getElementById('businessName').value = data.businessName || '';
+                    document.getElementById('footerText').value = data.footerText || '';
+                }
+            });
+        }
+
+        // Auth State
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                renderUI();
+            } else {
+                // Show login
+                root.innerHTML = `
+                    <div class="min-h-screen flex items-center justify-center p-4">
+                        <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
+                            <h1 class="text-2xl font-bold text-center mb-6">LinguaSiteFranca</h1>
+                            <form id="loginForm" class="space-y-4">
+                                <input type="email" id="loginEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
+                                <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border rounded-lg">
+                                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Sign In</button>
+                            </form>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = document.getElementById('loginEmail').value;
+                    const password = document.getElementById('loginPassword').value;
+                    
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                    } catch (error) {
+                        alert('❌ Error: ' + error.message);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
