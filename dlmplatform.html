@@ -3,61 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DLM Platform</title>
+    <title>DLM Platform — Site Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
     
-    <header class="p-4 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
-        <h1 class="text-xl font-bold" id="brand-title"></h1>
-        <span id="dlm-welcome" class="text-sm text-gray-300"></span>
+    <header class="p-4 sm:p-6 shadow-md flex justify-between items-center transition-colors duration-300" id="main-header">
+        <h1 class="text-xl sm:text-2xl font-bold" id="brand-title"></h1>
+        <span id="dlm-welcome" class="text-xs sm:text-sm text-gray-300"></span>
     </header>
 
     <!-- Login Section -->
     <div id="login-section" class="flex flex-col items-center justify-center flex-grow p-4">
-        <div class="bg-gray-800 p-8 rounded-lg w-full max-w-md text-center shadow-lg">
+        <div class="bg-gray-800 p-6 sm:p-8 rounded-lg w-full max-w-md text-center shadow-lg border border-gray-700">
             <h2 class="text-xl font-bold mb-4">DLM Portal Sign In</h2>
-            <input type="text" id="login-name" placeholder="Enter Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <input type="text" id="login-name" placeholder="Enter Your Full Name" class="w-full p-3 mb-4 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <button id="btn-login" class="w-full bg-blue-600 p-3 rounded font-medium hover:bg-blue-500 transition">Access Project</button>
         </div>
     </div>
 
     <!-- Main Dashboard -->
-    <main id="dashboard-section" class="hidden flex-grow p-6 flex flex-col gap-8">
+    <main id="dashboard-section" class="hidden flex-grow p-4 sm:p-6 max-w-7xl mx-auto w-full flex flex-col gap-8">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Register Operative -->
-            <section class="bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Register Operative</h2>
+            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Register Operative</h2>
                 <div class="flex flex-col gap-3">
-                    <label class="text-sm text-gray-300">Operative Full Name</label>
-                    <input type="text" id="op-name" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
-                    <button id="btn-create-op" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2 font-medium">Register Operative</button>
+                    <label class="text-xs text-gray-400">Operative Full Name</label>
+                    <input type="text" id="op-name" placeholder="e.g. Dumitru Catana" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none">
+                    <button id="btn-create-op" class="bg-blue-600 p-3 rounded hover:bg-blue-500 font-medium transition mt-2">Register Operative</button>
                 </div>
             </section>
 
             <!-- Assign Task -->
-            <section class="bg-gray-800 p-6 rounded-lg shadow">
-                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Assign Task</h2>
+            <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+                <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2 text-blue-400">Assign Task</h2>
                 <div class="flex flex-col gap-3">
-                    <label class="text-sm text-gray-300">Select Operative</label>
-                    <select id="task-op" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
-                    <label class="text-sm text-gray-300">Task Details (English)</label>
-                    <textarea id="task-desc" class="p-2 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-20"></textarea>
-                    <button id="btn-assign-task" class="bg-green-600 p-2 rounded hover:bg-green-500 mt-2 font-medium">Dispatch Task</button>
+                    <label class="text-xs text-gray-400">Select Operative</label>
+                    <select id="task-op" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none"></select>
+                    <label class="text-xs text-gray-400">Task Details (English)</label>
+                    <textarea id="task-desc" placeholder="e.g. Install SFS studs leveling correct with north elevation" class="p-2.5 rounded bg-gray-700 text-white border border-gray-600 focus:outline-none h-20 text-sm"></textarea>
+                    <button id="btn-assign-task" class="bg-green-600 p-3 rounded hover:bg-green-500 font-medium transition mt-2">Dispatch Task</button>
                 </div>
             </section>
         </div>
 
         <!-- Registered Operatives List -->
-        <section class="bg-gray-800 p-6 rounded-lg shadow">
+        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
             <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Registered Operatives Directory</h2>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700 text-gray-200">
+                <table class="w-full text-left text-sm text-gray-300 min-w-[500px]">
+                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
                         <tr>
                             <th class="p-3">Operative Name</th>
-                            <th class="p-3">Assigned Project</th>
+                            <th class="p-3">Assigned Site</th>
                         </tr>
                     </thead>
                     <tbody id="operatives-table-body"></tbody>
@@ -65,18 +65,18 @@
             </div>
         </section>
 
-        <!-- Tasks Oversight Table -->
-        <section class="bg-gray-800 p-6 rounded-lg shadow">
-            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Task Tracking & Submissions</h2>
+        <!-- Tasks Oversight & Review Table -->
+        <section class="bg-gray-800 p-5 sm:p-6 rounded-lg shadow border border-gray-700">
+            <h2 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">Task Tracking & Live Submissions</h2>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-300">
-                    <thead class="bg-gray-700 text-gray-200">
+                <table class="w-full text-left text-sm text-gray-300 min-w-[750px]">
+                    <thead class="bg-gray-700 text-gray-200 uppercase text-xs">
                         <tr>
                             <th class="p-3">Operative</th>
                             <th class="p-3">Task Details</th>
                             <th class="p-3">Status</th>
-                            <th class="p-3">Submission / Photo</th>
-                            <th class="p-3">Action</th>
+                            <th class="p-3">Submission & Translated Comment</th>
+                            <th class="p-3">Action / Return Note</th>
                         </tr>
                     </thead>
                     <tbody id="tasks-table-body"></tbody>
@@ -109,6 +109,18 @@
 
         const sanitizeKey = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, "_");
 
+        // Translate incoming comments back to English for DLM
+        async function translateToEnglish(text, sourceLang) {
+            if (!text || sourceLang === 'en') return text;
+            try {
+                const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sourceLang}|en`);
+                const data = await res.json();
+                return data.responseData.translatedText || text;
+            } catch (err) {
+                return text;
+            }
+        }
+
         onValue(ref(db, 'branding'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -127,7 +139,7 @@
 
             if (snapshot.exists()) {
                 currentDlmProject = snapshot.val().projectName;
-                document.getElementById('dlm-welcome').innerText = `DLM: ${dlmName} | Project: ${currentDlmProject}`;
+                document.getElementById('dlm-welcome').innerText = `DLM: ${dlmName} | Site: ${currentDlmProject}`;
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
                 loadOperatives();
@@ -154,7 +166,7 @@
 
                         const tr = document.createElement('tr');
                         tr.className = "border-b border-gray-700 hover:bg-gray-750";
-                        tr.innerHTML = `<td class="p-3 font-medium">${op.name}</td><td class="p-3">${op.projectName}</td>`;
+                        tr.innerHTML = `<td class="p-3 font-medium text-white">${op.name}</td><td class="p-3">${op.projectName}</td>`;
                         tableBody.appendChild(tr);
                     }
                 });
@@ -176,6 +188,8 @@
             if (opKey && desc) {
                 push(ref(db, `tasks/${opKey}`), { 
                     description: desc, 
+                    projectName: currentDlmProject,
+                    dlmName: dlmName,
                     status: 'pending',
                     timestamp: Date.now() 
                 });
@@ -194,37 +208,64 @@
                         const task = taskSnap.val();
                         const taskId = taskSnap.key;
 
-                        const tr = document.createElement('tr');
-                        tr.className = "border-b border-gray-700";
+                        if (task.projectName === currentDlmProject) {
+                            const tr = document.createElement('tr');
+                            tr.className = "border-b border-gray-700";
 
-                        let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
-                        if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
-                        if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
-                        if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Rejected</span>`;
+                            let statusBadge = `<span class="bg-yellow-600 text-xs px-2 py-1 rounded">Pending</span>`;
+                            if (task.status === 'submitted') statusBadge = `<span class="bg-blue-600 text-xs px-2 py-1 rounded">Submitted</span>`;
+                            if (task.status === 'accepted') statusBadge = `<span class="bg-green-600 text-xs px-2 py-1 rounded">Accepted</span>`;
+                            if (task.status === 'rejected') statusBadge = `<span class="bg-red-600 text-xs px-2 py-1 rounded">Returned</span>`;
 
-                        tr.innerHTML = `
-                            <td class="p-3 font-medium">${opKey.replace(/_/g, ' ').toUpperCase()}</td>
-                            <td class="p-3 max-w-xs">${task.description}</td>
-                            <td class="p-3">${statusBadge}</td>
-                            <td class="p-3">
-                                ${task.originalComment ? `<p class="italic text-xs mb-1">"${task.originalComment}"</p>` : ''}
-                                ${task.photo ? `<img src="${task.photo}" class="w-20 h-20 object-cover rounded border border-gray-600">` : 'No Photo'}
-                            </td>
-                            <td class="p-3">
-                                ${task.status === 'submitted' ? `
-                                    <button onclick="updateStatus('${opKey}', '${taskId}', 'accepted')" class="bg-green-600 px-2 py-1 text-xs rounded hover:bg-green-500 mr-1">Accept</button>
-                                    <button onclick="updateStatus('${opKey}', '${taskId}', 'rejected')" class="bg-red-600 px-2 py-1 text-xs rounded hover:bg-red-500">Reject</button>
-                                ` : '-'}
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
+                            tr.innerHTML = `
+                                <td class="p-3 font-medium text-white">${opKey.replace(/_/g, ' ').toUpperCase()}</td>
+                                <td class="p-3 max-w-xs">${task.description}</td>
+                                <td class="p-3">${statusBadge}</td>
+                                <td class="p-3" id="comment-cell-${taskId}">
+                                    ${task.photo ? `<img src="${task.photo}" class="w-20 h-20 object-cover rounded border border-gray-600 mb-2">` : '<p class="text-xs text-gray-500">No Photo</p>'}
+                                    <p class="text-xs text-gray-300 italic" id="translated-text-${taskId}">Translating comment...</p>
+                                </td>
+                                <td class="p-3">
+                                    ${task.status === 'submitted' ? `
+                                        <button onclick="acceptTask('${opKey}', '${taskId}')" class="bg-green-600 px-3 py-1.5 text-xs rounded hover:bg-green-500 mr-1 font-medium mb-2 w-full sm:w-auto">Accept</button>
+                                        <div class="flex flex-col gap-1 mt-1">
+                                            <input type="text" id="return-note-${taskId}" placeholder="Return reason (English)..." class="p-1 text-xs rounded bg-gray-700 text-white border border-gray-600">
+                                            <button onclick="rejectTask('${opKey}', '${taskId}')" class="bg-red-600 px-2 py-1 text-xs rounded hover:bg-red-500 font-medium">Return Task</button>
+                                        </div>
+                                    ` : (task.rejectionComment ? `<p class="text-xs text-red-400">Return Note: "${task.rejectionComment}"</p>` : '-')}
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+
+                            // Trigger dynamic back-translation to English
+                            if (task.originalComment) {
+                                translateToEnglish(task.originalComment, task.sourceLang || 'en').then(translated => {
+                                    const el = document.getElementById(`translated-text-${taskId}`);
+                                    if(el) el.innerText = `"${translated}" (Orig: ${task.originalComment})`;
+                                });
+                            } else {
+                                const el = document.getElementById(`translated-text-${taskId}`);
+                                if(el) el.innerText = "No operative comment.";
+                            }
+                        }
                     });
                 });
             });
         }
 
-        window.updateStatus = (opKey, taskId, newStatus) => {
-            update(ref(db, `tasks/${opKey}/${taskId}`), { status: newStatus });
+        window.acceptTask = (opKey, taskId) => {
+            update(ref(db, `tasks/${opKey}/${taskId}`), { 
+                status: 'accepted',
+                completedTimestamp: Date.now()
+            });
+        };
+
+        window.rejectTask = (opKey, taskId) => {
+            const note = document.getElementById(`return-note-${taskId}`).value.trim();
+            update(ref(db, `tasks/${opKey}/${taskId}`), { 
+                status: 'rejected',
+                rejectionComment: note || "Task requires correction."
+            });
         };
     </script>
 </body>
