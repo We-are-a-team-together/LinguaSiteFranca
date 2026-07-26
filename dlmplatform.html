@@ -3,15 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LinguaSiteFranca - DLM Portal</title>
+    <title>DLM Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div id="app"></div>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col font-sans">
+    
+    <header class="p-4 shadow-md transition-colors duration-300" id="main-header">
+        <h1 class="text-xl font-bold" id="brand-title"></h1>
+    </header>
+
+    <!-- Login Section -->
+    <div id="login-section" class="flex flex-col items-center justify-center flex-grow">
+        <div class="bg-gray-800 p-8 rounded-lg w-96 text-center">
+            <h2 class="text-xl mb-4">DLM Login</h2>
+            <input type="email" id="login-email" class="w-full p-2 mb-4 rounded bg-gray-700 text-white focus:outline-none" value="">
+            <button id="btn-login" class="w-full bg-blue-600 p-2 rounded hover:bg-blue-500">Access Portal</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Section (Hidden by default) -->
+    <main id="dashboard-section" class="hidden flex-grow p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- Operative Creation -->
+        <section class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-lg font-semibold mb-4">Register Operative</h2>
+            <div class="flex flex-col gap-3">
+                <label>Operative Name</label>
+                <input type="text" id="op-name" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <label>Operative Email</label>
+                <input type="email" id="op-email" class="p-2 rounded bg-gray-700 text-white focus:outline-none" value="">
+                <button id="btn-create-op" class="bg-blue-600 p-2 rounded hover:bg-blue-500 mt-2">Register</button>
+            </div>
+        </section>
+
+        <!-- Task Assignment -->
+        <section class="bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-lg font-semibold mb-4">Assign Task</h2>
+            <div class="flex flex-col gap-3">
+                <label>Select Operative</label>
+                <select id="task-op" class="p-2 rounded bg-gray-700 text-white focus:outline-none"></select>
+                <label>Task Details</label>
+                <textarea id="task-desc" class="p-2 rounded bg-gray-700 text-white focus:outline-none h-24" value=""></textarea>
+                <button id="btn-assign-task" class="bg-green-600 p-2 rounded hover:bg-green-500 mt-2">Dispatch Task</button>
+            </div>
+        </section>
+        
+        <!-- Task Review (Spans full width) -->
+        <section class="bg-gray-800 p-6 rounded-lg md:col-span-2">
+            <h2 class="text-lg font-semibold mb-4">Review Submissions</h2>
+            <div id="submissions-list" class="flex flex-col gap-4"></div>
+        </section>
+    </main>
+
+    <footer class="p-4 text-center text-sm text-gray-400 transition-colors duration-300" id="main-footer"></footer>
+
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js';
-        import { getDatabase, ref, set, onValue, push, get, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js';
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getDatabase, ref, get, push, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -24,184 +72,74 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getDatabase(app);
-        let currentDlmId = null;
-        const appDiv = document.getElementById('app');
+        let currentDlmProject = null;
 
-        function showLogin() {
-            appDiv.innerHTML = `
-                <div class="min-h-screen flex items-center justify-center p-4 bg-gray-100">
-                    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-                        <h1 class="text-2xl font-bold text-center mb-6">DLM Portal</h1>
-                        <form id="loginForm" class="space-y-4">
-                            <input type="email" id="loginEmail" placeholder="Email" required class="w-full p-3 border rounded-lg">
-                            <input type="password" id="loginPassword" placeholder="Password" required class="w-full p-3 border rounded-lg">
-                            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg">Sign In</button>
-                        </form>
-                        <p id="errorMsg" class="text-red-500 text-sm text-center mt-4 hidden"></p>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                const errorMsg = document.getElementById('errorMsg');
-
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } catch (error) {
-                    errorMsg.textContent = error.message;
-                    errorMsg.classList.remove('hidden');
-                }
-            });
-        }
-
-        function showDashboard() {
-            appDiv.innerHTML = `
-                <nav class="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
-                    <div class="max-w-4xl mx-auto flex justify-between items-center">
-                        <h1 class="text-lg font-bold">LinguaSiteFranca - DLM Dashboard</h1>
-                        <button id="logoutBtn" class="text-sm text-red-600">Sign Out</button>
-                    </div>
-                </nav>
-                <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h2 class="text-xl font-bold mb-4">Assign Task to Operative</h2>
-                        <form id="taskForm" class="space-y-4">
-                            <select id="taskOperative" required class="w-full p-3 border rounded-lg">
-                                <option value="">Select Operative...</option>
-                            </select>
-                            <textarea id="taskDesc" placeholder="Task description in English" rows="3" required class="w-full p-3 border rounded-lg"></textarea>
-                            <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg">Assign Task</button>
-                        </form>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h2 class="text-xl font-bold mb-4">Pending Submissions</h2>
-                        <div id="submissionsList" class="space-y-4"><p class="text-gray-500">Loading...</p></div>
-                    </div>
-                </div>
-            `;
-
-            document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-            document.getElementById('taskForm').addEventListener('submit', handleAssignTask);
-
-            loadOperatives();
-            loadSubmissions();
-        }
-
-        function loadOperatives() {
-            const q = query(ref(db, 'users'), orderByChild('assignedDlm'), equalTo(currentDlmId));
-            onValue(q, (snapshot) => {
-                const select = document.getElementById('taskOperative');
-                if (!select) return;
-                select.innerHTML = '<option value="">Select Operative...</option>';
-                snapshot.forEach(child => {
-                    const u = child.val();
-                    const opt = document.createElement('option');
-                    opt.value = child.key;
-                    opt.textContent = u.name || u.email;
-                    select.appendChild(opt);
-                });
-            });
-        }
-
-        function loadSubmissions() {
-            const q = query(ref(db, 'tasks'), orderByChild('dlmId'), equalTo(currentDlmId));
-            onValue(q, (snapshot) => {
-                const list = document.getElementById('submissionsList');
-                if (!list) return;
-                list.innerHTML = '';
-                let found = false;
-
-                snapshot.forEach(child => {
-                    const task = child.val();
-                    if (task.status === 'submitted') {
-                        found = true;
-                        const div = document.createElement('div');
-                        div.className = 'border p-4 rounded-lg bg-gray-50 space-y-3';
-                        div.innerHTML = `
-                            <p><strong>Task:</strong> ${task.description_en}</p>
-                            <p><strong>Comment:</strong> ${task.operative_comment_native || 'None'}</p>
-                            <div class="flex gap-2 flex-wrap">
-                                ${task.photos ? task.photos.map(p => `<img src="${p}" class="w-16 h-16 object-cover rounded border">`).join('') : ''}
-                            </div>
-                            <textarea id="feedback_${child.key}" placeholder="Feedback..." class="w-full p-2 border rounded text-sm"></textarea>
-                            <div class="flex gap-2">
-                                <button onclick="window.review('${child.key}', 'approved')" class="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold">Approve</button>
-                                <button onclick="window.review('${child.key}', 'rejected')" class="bg-red-600 text-white px-4 py-2 rounded text-sm font-bold">Request Revision</button>
-                            </div>
-                        `;
-                        list.appendChild(div);
-                    }
-                });
-
-                if (!found) list.innerHTML = '<p class="text-gray-500">No pending submissions.</p>';
-            });
-        }
-
-        async function handleAssignTask(e) {
-            e.preventDefault();
-            const operativeId = document.getElementById('taskOperative').value;
-            const description_en = document.getElementById('taskDesc').value;
-
-            try {
-                const newRef = push(ref(db, 'tasks'));
-                await set(newRef, {
-                    dlmId: currentDlmId,
-                    operativeId,
-                    description_en,
-                    status: 'assigned',
-                    createdAt: new Date().toISOString()
-                });
-                alert('✅ Task assigned!');
-                e.target.reset();
-            } catch (err) {
-                alert('❌ Error: ' + err.message);
-            }
-        }
-
-        window.review = async (taskId, status) => {
-            const feedback = document.getElementById(`feedback_${taskId}`).value;
-            try {
-                const tRef = ref(db, `tasks/${taskId}`);
-                const snap = await get(tRef);
-                const data = snap.val();
-                await set(tRef, {
-                    ...data,
-                    status,
-                    dlm_feedback_en: feedback
-                });
-                alert('✅ Review saved!');
-            } catch (err) {
-                alert('❌ Error: ' + err.message);
-            }
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log('🟢 DLM Auth: User signed in:', user.uid);
-                try {
-                    const snap = await get(ref(db, `users/${user.uid}`));
-                    if (snap.exists() && snap.val().role === 'dlm') {
-                        currentDlmId = user.uid;
-                        showDashboard();
-                    } else {
-                        console.warn('⚠️ Access denied: Not DLM role.');
-                        alert('Access denied: DLM account required');
-                        signOut(auth);
-                    }
-                } catch (err) {
-                    console.error('❌ DB error:', err);
-                }
-            } else {
-                console.log('ℹ️ DLM Auth: Signed out.');
-                showLogin();
+        // Branding Sync
+        onValue(ref(db, 'branding'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('brand-title').innerText = data.title || '';
+                document.getElementById('main-header').style.backgroundColor = data.headerColor || '#1f2937';
+                document.getElementById('main-footer').innerText = data.footer || '';
             }
         });
+
+        // Login Logic
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const email = document.getElementById('login-email').value.replace(/\./g, ',');
+            const snapshot = await get(ref(db, 'dlms/' + email));
+            if (snapshot.exists()) {
+                currentDlmProject = snapshot.val().projectId;
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                loadOperatives();
+                loadSubmissions();
+            }
+        });
+
+        function loadOperatives() {
+            onValue(ref(db, 'operatives'), (snapshot) => {
+                const select = document.getElementById('task-op');
+                select.innerHTML = '';
+                snapshot.forEach((child) => {
+                    if(child.val().projectId === currentDlmProject) {
+                        const opt = document.createElement('option');
+                        opt.value = child.key;
+                        opt.text = child.val().name;
+                        select.appendChild(opt);
+                    }
+                });
+            });
+        }
+
+        document.getElementById('btn-create-op').addEventListener('click', () => {
+            const name = document.getElementById('op-name').value;
+            const email = document.getElementById('op-email').value;
+            if (name && email) {
+                set(ref(db, 'operatives/' + email.replace(/\./g, ',')), { name, email, projectId: currentDlmProject });
+                document.getElementById('op-name').value = '';
+                document.getElementById('op-email').value = '';
+            }
+        });
+
+        document.getElementById('btn-assign-task').addEventListener('click', () => {
+            const opId = document.getElementById('task-op').value;
+            const desc = document.getElementById('task-desc').value;
+            if (opId && desc) {
+                push(ref(db, `tasks/${opId}`), { 
+                    description: desc, 
+                    status: 'pending',
+                    timestamp: Date.now() 
+                });
+                document.getElementById('task-desc').value = '';
+            }
+        });
+
+        function loadSubmissions() {
+             // Logic to read from tasks node and generate review cards with accept/reject buttons
+             // Translations from operatives will appear here.
+        }
     </script>
 </body>
 </html>
