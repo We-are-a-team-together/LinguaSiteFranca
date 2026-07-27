@@ -37,6 +37,8 @@
     .return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
 
     .item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+    .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); margin-top: 8px; display: block; }
+    .thumb-img:hover { transform: scale(1.05); }
 
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
@@ -50,6 +52,9 @@
 
     .empty-state { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 1.1rem; }
     .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+    
+    .modal { display: none; position: fixed; z-index: 3000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
   </style>
 </head>
 <body>
@@ -84,6 +89,10 @@
   <div class="dynamic-footer"></div>
 </div>
 
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="Zoom">
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -103,7 +112,6 @@
 
   let currentOp = "";
 
-  // Login System
   document.getElementById('opLoginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     currentOp = document.getElementById('opLoginName').value.trim();
@@ -113,7 +121,6 @@
     renderAllWork();
   });
 
-  // Global Branding Listener
   onValue(ref(db, 'branding'), (snapshot) => {
     const data = snapshot.val();
     if (data) {
@@ -177,7 +184,6 @@
     }
   }
 
-  // Combined Render function for both Legacy Tasks AND Multi-Task Reports
   window.renderAllWork = function() {
     if (!currentOp) return;
     const userInput = document.getElementById('langInput').value;
@@ -250,16 +256,21 @@
 
         if (isAssignedToOp) {
           hasWork = true;
-          const itemsArray = rep.items ? (Array.isArray(rep.items) ? rep.items : Object.values(rep.items)) : [];
+          // Safely map items whether stored as an Array or Object map in Firebase
+          const rawItems = rep.items;
+          const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
           
           let itemsHtml = '';
           itemsArray.forEach((item, index) => {
-            const itemTitle = item.title || item.details || `Item ${index + 1}`;
+            const itemText = item.title || item.details || item.description || `Task Item ${index + 1}`;
+            const dlmPhotoHtml = item.photo ? `<div style="margin-top:8px;"><small style="color:var(--text-muted);">DLM Reference Photo:</small><br><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
+
             itemsHtml += `
               <div class="item-box">
-                <strong>Item ${index + 1}:</strong> ${itemTitle} (${item.status || 'Assigned'})
-                <div class="form-group" style="margin-top: 10px;">
-                  <label>Photo Evidence for Item ${index + 1}</label>
+                <strong>Item ${index + 1}:</strong> ${itemText} (${item.status || 'Assigned'})
+                ${dlmPhotoHtml}
+                <div class="form-group" style="margin-top: 12px;">
+                  <label>Upload New Photo Evidence</label>
                   <input type="file" id="report_photo_${key}_${index}" accept="image/*" capture="environment">
                 </div>
                 <div class="form-group">
@@ -276,7 +287,7 @@
             <div class="task-title">Master Report: ${rep.title || 'Untitled Report'} (${rep.status || 'Assigned'})</div>
             <div class="task-desc">
               <strong>Site:</strong> ${rep.site || 'N/A'}<br>
-              <strong>DLM Manager:</strong> ${rep.dlm || 'N/A'}
+              <strong>DLM:</strong> ${rep.dlm || 'N/A'}
             </div>
             <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
               ${itemsHtml}
@@ -284,17 +295,6 @@
             </form>
           `;
           container.appendChild(card);
-
-          // Asynchronously translate report item titles for user's language
-          itemsArray.forEach((item, index) => {
-            const itemTitle = item.title || item.details || '';
-            if (itemTitle) {
-              translateText(itemTitle, langCode).then(translated => {
-                const titleEl = document.getElementById(`item_title_${key}_${index}`);
-                // Can update dynamically if needed
-              });
-            }
-          });
         }
       }
 
@@ -303,7 +303,6 @@
       }
     }
 
-    // Fetch both nodes simultaneously
     onValue(ref(db, 'tasks'), (snapshot) => {
       tasksData = snapshot.val() || {};
       checkAndDisplay();
@@ -313,6 +312,11 @@
       reportsData = snapshot.val() || {};
       checkAndDisplay();
     }, { onlyOnce: true });
+  };
+
+  window.openModal = (src) => {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imgModal').style.display = 'flex';
   };
 
   window.submitTask = async (e, key) => {
@@ -344,12 +348,12 @@
   window.submitReport = async (e, key, itemCount) => {
     e.preventDefault();
     
-    // Fetch existing report to preserve structure
     onValue(ref(db, `reports/${key}`), async (snapshot) => {
       const rep = snapshot.val();
       if (!rep) return alert('Report not found');
 
-      let itemsArray = Array.isArray(rep.items) ? [...rep.items] : Object.values(rep.items);
+      let rawItems = rep.items;
+      let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
 
       for (let i = 0; i < itemCount; i++) {
         const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
