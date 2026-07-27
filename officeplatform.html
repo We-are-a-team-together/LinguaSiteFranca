@@ -43,6 +43,7 @@
     .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
     .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
     .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+    .badge-assigned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
     .thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
     .thumb-img:hover { transform: scale(1.05); }
     .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
@@ -129,7 +130,28 @@
   </div>
 
   <div class="card">
-    <div class="card-title">Master Task & Reports Management</div>
+    <div class="card-title">Master Reports & Multi-Task Management</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Report Title</th>
+            <th>Site</th>
+            <th>DLM Manager</th>
+            <th>Assigned Operatives</th>
+            <th>Status</th>
+            <th>Items / Submissions</th>
+            <th>Management Action</th>
+          </tr>
+        </thead>
+        <tbody id="masterReportsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Legacy Master Tasks & Live Submissions</div>
     <div style="overflow-x: auto;">
       <table>
         <thead>
@@ -279,7 +301,76 @@
     });
   });
 
-  // Safe Non-Blocking Master Tasks & Reports Loader with Management Abilities
+  // Master Reports Loader (Syncing with 'reports' node as structured in DLM interface)
+  onValue(ref(db, 'reports'), async (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('masterReportsTableBody');
+    tbody.innerHTML = '';
+
+    const keys = Object.keys(data);
+    for (const key of keys) {
+      const rep = data[key];
+      let assignedNames = 'None';
+      if (rep.assignedTo) {
+        if (Array.isArray(rep.assignedTo)) {
+          assignedNames = rep.assignedTo.join(', ');
+        } else if (typeof rep.assignedTo === 'object') {
+          assignedNames = Object.values(rep.assignedTo).join(', ');
+        } else {
+          assignedNames = rep.assignedTo;
+        }
+      }
+
+      let itemsSummary = '';
+      if (rep.items && Array.isArray(rep.items)) {
+        for (let i = 0; i < rep.items.length; i++) {
+          const item = rep.items[i];
+          const translatedComment = await translateToEnglish(item.comment || '');
+          const photoThumb = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')">` : '—';
+          itemsSummary += `<div style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);">
+            <strong>Item ${i+1}:</strong> ${item.title || item.details || ''} (${item.status || 'Assigned'})<br>
+            <small style="color:var(--text-muted);">Comment: ${translatedComment}</small><br>${photoThumb}
+          </div>`;
+        }
+      } else {
+        itemsSummary = '—';
+      }
+
+      const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${reportDate}</td>
+          <td><strong>${rep.title || 'Untitled Report'}</strong></td>
+          <td>${rep.items && rep.items[0] && rep.items[0].site ? rep.items[0].site : 'N/A'}</td>
+          <td>${rep.dlm || 'N/A'}</td>
+          <td>${assignedNames}</td>
+          <td><span class="badge badge-assigned">${rep.status || 'Assigned'}</span></td>
+          <td>${itemsSummary}</td>
+          <td>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="updateReportStatus('${key}', 'Approved')">Approve</button>
+              <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  });
+
+  window.deleteReport = (key) => {
+    if (confirm('Are you sure you want to delete this report?')) {
+      remove(ref(db, `reports/${key}`));
+    }
+  };
+
+  window.updateReportStatus = (key, newStatus) => {
+    update(ref(db, `reports/${key}`), { status: newStatus }).then(() => {
+      alert('Report status updated successfully!');
+    });
+  };
+
+  // Safe Non-Blocking Master Tasks & Reports Loader
   onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('masterTasksTableBody');
