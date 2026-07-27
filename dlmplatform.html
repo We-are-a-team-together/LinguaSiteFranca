@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DLM Platform - Site Operations & Reports</title>
+  <title>Operations Platform - Management Console</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -38,7 +38,7 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
     input[type="file"] { padding: 8px; font-size: 0.85rem; }
 
-    /* Custom Checkbox Group for Operatives */
+    /* Custom Checkbox Group for Personnel */
     .checkbox-group { max-height: 150px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
     .checkbox-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #fff; cursor: pointer; font-size: 0.9rem; }
     .checkbox-label input { width: auto; margin: 0; }
@@ -83,35 +83,35 @@
 <div class="container">
   <header>
     <div class="header-left">
-      <h1><span class="brand-name">LinguaSiteFranca</span> — DLM Platform</h1>
+      <h1><span class="brand-name">Platform</span> — Operations Console</h1>
       <button id="navToggleBtn" class="btn btn-outline btn-auto">Open Reports View</button>
     </div>
-    <div class="dlm-badge" id="dlmBadgeInfo">DLM: Loading... | Site: Loading...</div>
+    <div class="dlm-badge" id="dlmBadgeInfo">Manager: Loading... | Location: Loading...</div>
   </header>
 
   <!-- ==================== MAIN DASHBOARD VIEW ==================== -->
   <div id="mainDashboardView">
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">Register Operative</div>
+        <div class="card-title">Register Personnel</div>
         <form id="registerOpForm">
           <div class="form-group">
-            <label>Operative Full Name</label>
-            <input type="text" id="opName" required>
+            <label>Personnel Full Name</label>
+            <input type="text" id="opName" placeholder="" required>
           </div>
           <div class="form-group">
-            <label>Operative Employer</label>
-            <input type="text" id="opEmployer" placeholder="e.g. Subcontractor Ltd" required>
+            <label>Personnel Employer / Department</label>
+            <input type="text" id="opEmployer" placeholder="" required>
           </div>
           <div class="form-group">
-            <label>Qualification / Card Type</label>
-            <input type="text" id="opQual" placeholder="e.g. CSCS, CPCS" required>
+            <label>Credential / Certification Type</label>
+            <input type="text" id="opQual" placeholder="" required>
           </div>
           <div class="form-group">
-            <label>Qualification Expiry Date</label>
-            <input type="date" id="opExpiry" required>
+            <label>Credential Expiry Date</label>
+            <input type="date" id="opExpiry" placeholder="" required>
           </div>
-          <button type="submit" class="btn btn-primary">Register Operative</button>
+          <button type="submit" class="btn btn-primary">Register Personnel</button>
         </form>
       </div>
 
@@ -119,12 +119,12 @@
         <div class="card-title">Assign Task</div>
         <form id="assignTaskForm">
           <div class="form-group">
-            <label>Select Operative</label>
+            <label>Select Personnel</label>
             <select id="taskOpSelect" required></select>
           </div>
           <div class="form-group">
-            <label>Task Details (English)</label>
-            <textarea id="taskDetails" rows="4" placeholder="Describe the task clearly in English..." required></textarea>
+            <label>Task Details</label>
+            <textarea id="taskDetails" rows="4" placeholder="" required></textarea>
           </div>
           <button type="submit" class="btn btn-success">Dispatch Task</button>
         </form>
@@ -132,15 +132,15 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Registered Operatives Directory</div>
+      <div class="card-title">Registered Personnel Directory</div>
       <div style="overflow-x: auto;">
         <table>
           <thead>
             <tr>
-              <th>Operative Name</th>
-              <th>Employer</th>
-              <th>Assigned Site</th>
-              <th>Qualification</th>
+              <th>Personnel Name</th>
+              <th>Employer / Department</th>
+              <th>Assigned Location</th>
+              <th>Credential</th>
               <th>Expiry Date</th>
               <th>Status</th>
               <th>Action</th>
@@ -157,10 +157,10 @@
         <table>
           <thead>
             <tr>
-              <th>Operative</th>
+              <th>Personnel</th>
               <th>Task Details</th>
               <th>Status</th>
-              <th>Submission Photo & Comment (English)</th>
+              <th>Submission Photo & Comment</th>
               <th>Action / Return Note</th>
             </tr>
           </thead>
@@ -173,18 +173,18 @@
   <!-- ==================== REPORTS MANAGEMENT VIEW ==================== -->
   <div id="reportsView" style="display: none;">
     <div class="card">
-      <div class="card-title">Create New Report (Snagging, QA, Multi-Task)</div>
+      <div class="card-title">Create New Report</div>
       <form id="createReportForm">
         <div class="grid-2">
           <div class="form-group">
             <label>Report Title</label>
-            <input type="text" id="reportTitle" placeholder="e.g. Block A Snagging Report" required>
+            <input type="text" id="reportTitle" placeholder="" required>
           </div>
           <div class="form-group">
-            <label>Assign To (Select at least one Operative)</label>
-            <!-- Checkbox Group for Operatives -->
+            <label>Assign To (Select at least one)</label>
+            <!-- Checkbox Group for Personnel -->
             <div id="reportOperativesList" class="checkbox-group">
-              <span style="color: var(--text-muted); font-size: 0.85rem;">Loading operatives...</span>
+              <span style="color: var(--text-muted); font-size: 0.85rem;">Loading personnel...</span>
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@
         <div id="reportItemsContainer"></div>
         
         <div style="display: flex; gap: 15px; margin-top: 15px;">
-          <button type="button" id="addReportItemBtn" class="btn btn-outline">+ Add Task / Snag Item</button>
+          <button type="button" id="addReportItemBtn" class="btn btn-outline">+ Add Item</button>
           <button type="submit" class="btn btn-primary">Save & Assign Report</button>
         </div>
       </form>
@@ -237,8 +237,8 @@
 
     <!-- Interactive action area if report is Submitted -->
     <div id="reportActionArea" style="display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border);">
-      <label style="color: var(--warning);">Operative submitted this report. Review items below and take action:</label>
-      <input type="text" id="reportReturnNote" placeholder="Enter reason if returning to operative..." style="margin: 10px 0;">
+      <label style="color: var(--warning);">Submitted for review. Review items below and take action:</label>
+      <input type="text" id="reportReturnNote" placeholder="" style="margin: 10px 0;">
       <div style="display: flex; gap: 10px;">
         <button class="btn-success btn-auto" id="btnAcceptReport">Accept Report (Close Out)</button>
         <button class="btn-warning btn-auto" id="btnReturnReport">Return for Revision</button>
@@ -250,7 +250,7 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Task Description</th>
+            <th>Description</th>
             <th>Attached Photo</th>
           </tr>
         </thead>
@@ -285,8 +285,8 @@
   let currentSite = urlParams.get('site');
 
   if (isReload || !currentDlm || !currentSite) {
-    currentDlm = prompt("DLM Session Logged Out. Please enter DLM Name:");
-    currentSite = prompt("Please enter Assigned Site Name (e.g. The Monument Court):");
+    currentDlm = prompt("Session Logged Out. Please enter Manager Name:");
+    currentSite = prompt("Please enter Assigned Location Name:");
     if (!currentDlm || !currentSite) {
       alert("Login cancelled. Reloading login prompt.");
       window.location.reload();
@@ -295,7 +295,7 @@
     }
   }
 
-  document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Site: ${currentSite}`;
+  document.getElementById('dlmBadgeInfo').innerText = `Manager: ${currentDlm} | Location: ${currentSite}`;
 
   async function translateToEnglish(text) {
     if (!text) return 'None';
@@ -313,7 +313,7 @@
     if (data) {
       if (data.businessName) {
         document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-        document.title = `${data.businessName} - DLM Platform`;
+        document.title = `${data.businessName} - Operations Platform`;
       }
       if (data.footerText) {
         document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
@@ -352,11 +352,11 @@
       name, employer, qualification, expiry, assignedSite: currentSite
     }).then(() => {
       document.getElementById('registerOpForm').reset();
-      alert('Operative registered successfully!');
+      alert('Personnel registered successfully!');
     });
   });
 
-  // Load Operatives - Populates both Dropdown AND Checkbox List
+  // Load Personnel - Populates both Dropdown AND Checkbox List
   onValue(ref(db, 'operatives'), (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('operativesTableBody');
@@ -364,7 +364,7 @@
     const reportCheckboxes = document.getElementById('reportOperativesList');
     
     tbody.innerHTML = '';
-    select.innerHTML = '<option value="">-- Select Operative --</option>';
+    select.innerHTML = '<option value="">-- Select Personnel --</option>';
     reportCheckboxes.innerHTML = '';
 
     const today = new Date().toISOString().split('T')[0];
@@ -403,18 +403,18 @@
       }
     });
 
-    if (siteOpCount === 0) reportCheckboxes.innerHTML = '<span style="color:var(--danger); font-size:0.85rem;">No operatives registered for this site yet.</span>';
+    if (siteOpCount === 0) reportCheckboxes.innerHTML = '<span style="color:var(--danger); font-size:0.85rem;">No personnel registered for this location yet.</span>';
   });
 
   window.deleteOperative = (key) => {
-    if (confirm('Are you sure you want to delete this operative?')) remove(ref(db, `operatives/${key}`));
+    if (confirm('Are you sure you want to delete this personnel record?')) remove(ref(db, `operatives/${key}`));
   };
 
   document.getElementById('assignTaskForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const operative = document.getElementById('taskOpSelect').value;
     const details = document.getElementById('taskDetails').value.trim();
-    if (!operative) return alert('Please select an operative.');
+    if (!operative) return alert('Please select personnel.');
 
     push(ref(db, 'tasks'), {
       site: currentSite, dlm: currentDlm, operative, details, status: 'Assigned', createdAt: new Date().toISOString()
@@ -439,7 +439,7 @@
         if (task.status === 'Submitted') {
           actionHtml = `
             <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
-              <input type="text" id="returnNote_${key}" placeholder="Enter return note..." style="padding: 6px; font-size: 0.85rem;">
+              <input type="text" id="returnNote_${key}" placeholder="" style="padding: 6px; font-size: 0.85rem;">
               <div style="display: flex; gap: 5px;">
                 <button class="btn-success btn-auto" onclick="acceptTask('${key}')" style="flex: 1; padding: 6px;">Accept</button>
                 <button class="btn-warning btn-auto" onclick="returnTask('${key}')" style="flex: 1; padding: 6px;">Return</button>
@@ -486,8 +486,8 @@
     div.innerHTML = `
       <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">✕</button>
       <div class="form-group">
-        <label>Task / Defect Description</label>
-        <textarea class="report-desc-input" rows="2" placeholder="Describe the issue or task..." required></textarea>
+        <label>Description</label>
+        <textarea class="report-desc-input" rows="2" placeholder="" required></textarea>
       </div>
       <div class="form-group">
         <label>Attach Photo (Optional)</label>
@@ -509,13 +509,13 @@
     e.preventDefault();
     const title = document.getElementById('reportTitle').value.trim();
     
-    // Grab all checked operatives
+    // Grab all checked personnel
     const checkedOps = Array.from(document.querySelectorAll('.report-op-checkbox:checked')).map(cb => cb.value);
-    if (checkedOps.length === 0) return alert('Please assign this report to at least one operative.');
+    if (checkedOps.length === 0) return alert('Please assign this report to at least one person.');
     
     const items = [];
     const itemBoxes = document.querySelectorAll('.report-item-box');
-    if (itemBoxes.length === 0) return alert('Please add at least one task/item to the report.');
+    if (itemBoxes.length === 0) return alert('Please add at least one item to the report.');
 
     document.querySelector('#createReportForm button[type="submit"]').innerText = 'Saving...';
 
@@ -698,19 +698,19 @@
           
           <div class="meta-grid">
             <div class="meta-box">
-              <div class="meta-label">Site Location</div>
+              <div class="meta-label">Location</div>
               <div class="meta-value">${report.site}</div>
             </div>
             <div class="meta-box">
-              <div class="meta-label">Assigned Operative(s)</div>
+              <div class="meta-label">Assigned To</div>
               <div class="meta-value">${report.assignedTo.join(', ')}</div>
             </div>
             <div class="meta-box">
-              <div class="meta-label">Created By (DLM)</div>
+              <div class="meta-label">Manager / Lead</div>
               <div class="meta-value">${report.dlm}</div>
             </div>
             <div class="meta-box">
-              <div class="meta-label">Date Generated</div>
+              <div class="meta-label">Date Created</div>
               <div class="meta-value">${new Date(report.createdAt).toLocaleString()}</div>
             </div>
           </div>
@@ -719,8 +719,8 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Task / Snag Description</th>
-                <th style="text-align: center;">Photographic Evidence</th>
+                <th>Description</th>
+                <th>Photo Evidence</th>
               </tr>
             </thead>
             <tbody>
@@ -729,15 +729,16 @@
           </table>
 
           <div class="footer">
-            Generated via LinguaSiteFranca DLM Platform • Official Site Record
+            Generated via Operations Console Management Platform
           </div>
         </body>
       </html>
     `);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); }, 800);
+    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
   };
 </script>
+
 </body>
 </html>
