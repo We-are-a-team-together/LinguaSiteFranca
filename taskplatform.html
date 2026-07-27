@@ -14,6 +14,7 @@
       --border: #334155;
       --success: #10b981;
       --danger: #ef4444;
+      --warning: #f59e0b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
@@ -33,8 +34,9 @@
     .task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
     .task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent); }
     
-    /* New style for the translated return note */
     .return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
+
+    .item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
 
     .form-group { margin-bottom: 15px; }
     label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
@@ -60,7 +62,7 @@
       <div class="form-group">
         <input type="text" id="opLoginName" placeholder="Enter your registered Name" required>
       </div>
-      <button type="submit" class="btn-login">Access Tasks</button>
+      <button type="submit" class="btn-login">Access Tasks & Reports</button>
     </form>
   </div>
 </div>
@@ -70,13 +72,13 @@
     <h2><span class="brand-name">LinguaSiteFranca</span> — <span id="opDisplayName">Operative</span>'s Workspace</h2>
     <div class="lang-container">
       <label for="langInput" style="font-size: 0.9rem; color: var(--text-muted);">Spoken Language:</label>
-      <input list="languagesList" id="langInput" class="lang-input" onchange="renderTasks()">
+      <input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()">
       <datalist id="languagesList"></datalist>
     </div>
   </header>
 
   <div id="tasksContainer">
-    <div class="empty-state">Loading assigned tasks...</div>
+    <div class="empty-state">Loading assigned tasks and reports...</div>
   </div>
 
   <div class="dynamic-footer"></div>
@@ -108,7 +110,7 @@
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('mainContainer').style.display = 'flex';
     document.getElementById('opDisplayName').innerText = currentOp;
-    renderTasks();
+    renderAllWork();
   });
 
   // Global Branding Listener
@@ -125,7 +127,6 @@
     }
   });
 
-  // Comprehensive 100+ World Languages Mapping Dictionary
   const LANG_MAP = {
     "afrikaans": "af", "albanian": "sq", "amharic": "am", "arabic": "ar", "armenian": "hy",
     "azerbaijani": "az", "basque": "eu", "belarusian": "be", "bengali": "bn", "bosnian": "bs",
@@ -176,57 +177,142 @@
     }
   }
 
-  window.renderTasks = function() {
+  // Combined Render function for both Legacy Tasks AND Multi-Task Reports
+  window.renderAllWork = function() {
     if (!currentOp) return;
     const userInput = document.getElementById('langInput').value;
     const langCode = resolveLanguageCode(userInput);
+    const container = document.getElementById('tasksContainer');
+    container.innerHTML = '<div class="empty-state">Loading assigned work...</div>';
 
-    onValue(ref(db, 'tasks'), async (snapshot) => {
-      const data = snapshot.val() || {};
-      const container = document.getElementById('tasksContainer');
+    let loadedCount = 0;
+    let tasksData = {};
+    let reportsData = {};
+
+    function checkAndDisplay() {
+      loadedCount++;
+      if (loadedCount < 2) return;
+
       container.innerHTML = '';
+      let hasWork = false;
 
-      let hasTasks = false;
+      // 1. Render Legacy Tasks
+      for (const key of Object.keys(tasksData)) {
+        const task = tasksData[key];
+        if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
+          hasWork = true;
+          translateText(task.details || '', langCode).then(translatedDetails => {
+            let returnNoteHTML = '';
+            if (task.returnNote) {
+              translateText(task.returnNote, langCode).then(translatedReturnNote => {
+                const el = document.getElementById(`return_note_${key}`);
+                if (el) el.innerHTML = `<strong>Return Note:</strong><br>${translatedReturnNote}`;
+              });
+              returnNoteHTML = `<div class="return-note-desc" id="return_note_${key}"><strong>Return Note:</strong><br>Loading...</div>`;
+            }
 
-      for (const key of Object.keys(data)) {
-        const task = data[key];
-        if (task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
-          hasTasks = true;
-          const translatedDetails = await translateText(task.details, langCode);
-          
-          // Logic added to translate the return note
-          let returnNoteHTML = '';
-          if (task.returnNote) {
-            const translatedReturnNote = await translateText(task.returnNote, langCode);
-            returnNoteHTML = `<div class="return-note-desc"><strong>Return Note:</strong><br>${translatedReturnNote}</div>`;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <div class="task-title">Legacy Task (${task.status})</div>
+              <div class="task-desc">${translatedDetails}</div>
+              ${returnNoteHTML}
+              <form onsubmit="submitTask(event, '${key}')">
+                <div class="form-group">
+                  <label>Photo Evidence</label>
+                  <input type="file" id="photo_${key}" accept="image/*" capture="environment">
+                </div>
+                <div class="form-group">
+                  <label>Comments / Notes</label>
+                  <textarea id="comment_${key}" rows="3"></textarea>
+                </div>
+                <button type="submit">Submit Task</button>
+              </form>
+            `;
+            container.appendChild(card);
+          });
+        }
+      }
+
+      // 2. Render Multi-Task Reports assigned to Operative
+      for (const key of Object.keys(reportsData)) {
+        const rep = reportsData[key];
+        let isAssignedToOp = false;
+        if (rep.assignedTo) {
+          if (Array.isArray(rep.assignedTo)) {
+            isAssignedToOp = rep.assignedTo.some(name => name.toLowerCase() === currentOp.toLowerCase());
+          } else if (typeof rep.assignedTo === 'object') {
+            isAssignedToOp = Object.values(rep.assignedTo).some(name => name.toLowerCase() === currentOp.toLowerCase());
+          } else if (typeof rep.assignedTo === 'string') {
+            isAssignedToOp = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
           }
+        }
+
+        if (isAssignedToOp) {
+          hasWork = true;
+          const itemsArray = rep.items ? (Array.isArray(rep.items) ? rep.items : Object.values(rep.items)) : [];
+          
+          let itemsHtml = '';
+          itemsArray.forEach((item, index) => {
+            const itemTitle = item.title || item.details || `Item ${index + 1}`;
+            itemsHtml += `
+              <div class="item-box">
+                <strong>Item ${index + 1}:</strong> ${itemTitle} (${item.status || 'Assigned'})
+                <div class="form-group" style="margin-top: 10px;">
+                  <label>Photo Evidence for Item ${index + 1}</label>
+                  <input type="file" id="report_photo_${key}_${index}" accept="image/*" capture="environment">
+                </div>
+                <div class="form-group">
+                  <label>Comment / Note for Item ${index + 1}</label>
+                  <textarea id="report_comment_${key}_${index}" rows="2">${item.comment || ''}</textarea>
+                </div>
+              </div>
+            `;
+          });
 
           const card = document.createElement('div');
           card.className = 'card';
           card.innerHTML = `
-            <div class="task-title">Task (${task.status})</div>
-            <div class="task-desc">${translatedDetails}</div>
-            ${returnNoteHTML}
-            <form onsubmit="submitTask(event, '${key}')">
-              <div class="form-group">
-                <label>Photo Evidence</label>
-                <input type="file" id="photo_${key}" accept="image/*" capture="environment">
-              </div>
-              <div class="form-group">
-                <label>Comments / Notes</label>
-                <textarea id="comment_${key}" rows="3"></textarea>
-              </div>
-              <button type="submit">Submit Task</button>
+            <div class="task-title">Master Report: ${rep.title || 'Untitled Report'} (${rep.status || 'Assigned'})</div>
+            <div class="task-desc">
+              <strong>Site:</strong> ${rep.site || 'N/A'}<br>
+              <strong>DLM Manager:</strong> ${rep.dlm || 'N/A'}
+            </div>
+            <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
+              ${itemsHtml}
+              <button type="submit">Submit Report Updates</button>
             </form>
           `;
           container.appendChild(card);
+
+          // Asynchronously translate report item titles for user's language
+          itemsArray.forEach((item, index) => {
+            const itemTitle = item.title || item.details || '';
+            if (itemTitle) {
+              translateText(itemTitle, langCode).then(translated => {
+                const titleEl = document.getElementById(`item_title_${key}_${index}`);
+                // Can update dynamically if needed
+              });
+            }
+          });
         }
       }
 
-      if (!hasTasks) {
-        container.innerHTML = `<div class="empty-state">No active tasks assigned to ${currentOp}.</div>`;
+      if (!hasWork) {
+        container.innerHTML = `<div class="empty-state">No active tasks or reports assigned to ${currentOp}.</div>`;
       }
-    });
+    }
+
+    // Fetch both nodes simultaneously
+    onValue(ref(db, 'tasks'), (snapshot) => {
+      tasksData = snapshot.val() || {};
+      checkAndDisplay();
+    }, { onlyOnce: true });
+
+    onValue(ref(db, 'reports'), (snapshot) => {
+      reportsData = snapshot.val() || {};
+      checkAndDisplay();
+    }, { onlyOnce: true });
   };
 
   window.submitTask = async (e, key) => {
@@ -251,7 +337,48 @@
       submittedAt: new Date().toISOString()
     }).then(() => {
       alert('Task submitted successfully!');
+      renderAllWork();
     });
+  };
+
+  window.submitReport = async (e, key, itemCount) => {
+    e.preventDefault();
+    
+    // Fetch existing report to preserve structure
+    onValue(ref(db, `reports/${key}`), async (snapshot) => {
+      const rep = snapshot.val();
+      if (!rep) return alert('Report not found');
+
+      let itemsArray = Array.isArray(rep.items) ? [...rep.items] : Object.values(rep.items);
+
+      for (let i = 0; i < itemCount; i++) {
+        const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
+        const fileInput = document.getElementById(`report_photo_${key}_${i}`);
+
+        if (itemsArray[i]) {
+          itemsArray[i].comment = comment;
+          itemsArray[i].status = 'Submitted';
+          if (fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const photoData = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(file);
+            });
+            itemsArray[i].photo = photoData;
+          }
+        }
+      }
+
+      update(ref(db, `reports/${key}`), {
+        status: 'Submitted',
+        items: itemsArray,
+        submittedAt: new Date().toISOString()
+      }).then(() => {
+        alert('Report submitted successfully!');
+        renderAllWork();
+      });
+    }, { onlyOnce: true });
   };
 </script>
 </body>
