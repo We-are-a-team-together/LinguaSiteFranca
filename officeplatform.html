@@ -301,7 +301,7 @@
     });
   });
 
-  // Master Reports Loader (Syncing with 'reports' node as structured in DLM interface)
+  // Master Reports Loader (Correctly extracting site from items array or root)
   onValue(ref(db, 'reports'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('masterReportsTableBody');
@@ -321,16 +321,24 @@
         }
       }
 
+      let siteName = rep.site || 'N/A';
       let itemsSummary = '';
-      if (rep.items && Array.isArray(rep.items)) {
-        for (let i = 0; i < rep.items.length; i++) {
-          const item = rep.items[i];
-          const translatedComment = await translateToEnglish(item.comment || '');
-          const photoThumb = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')">` : '—';
-          itemsSummary += `<div style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);">
-            <strong>Item ${i+1}:</strong> ${item.title || item.details || ''} (${item.status || 'Assigned'})<br>
-            <small style="color:var(--text-muted);">Comment: ${translatedComment}</small><br>${photoThumb}
-          </div>`;
+      if (rep.items) {
+        // Handle both array and object structures for items
+        const itemsArray = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+        for (let i = 0; i < itemsArray.length; i++) {
+          const item = itemsArray[i];
+          if (item) {
+            if (siteName === 'N/A' && item.site) {
+              siteName = item.site;
+            }
+            const translatedComment = await translateToEnglish(item.comment || '');
+            const photoThumb = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')">` : '—';
+            itemsSummary += `<div style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);">
+              <strong>Item ${i+1}:</strong> ${item.title || item.details || ''} (${item.status || 'Assigned'})<br>
+              <small style="color:var(--text-muted);">Comment: ${translatedComment}</small><br>${photoThumb}
+            </div>`;
+          }
         }
       } else {
         itemsSummary = '—';
@@ -342,7 +350,7 @@
         <tr>
           <td>${reportDate}</td>
           <td><strong>${rep.title || 'Untitled Report'}</strong></td>
-          <td>${rep.items && rep.items[0] && rep.items[0].site ? rep.items[0].site : 'N/A'}</td>
+          <td>${siteName}</td>
           <td>${rep.dlm || 'N/A'}</td>
           <td>${assignedNames}</td>
           <td><span class="badge badge-assigned">${rep.status || 'Assigned'}</span></td>
@@ -350,6 +358,7 @@
           <td>
             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
               <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="updateReportStatus('${key}', 'Approved')">Approve</button>
+              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem; background: var(--success);" onclick="exportSingleReportPdf('${key}')">PDF</button>
               <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
             </div>
           </td>
@@ -368,6 +377,100 @@
     update(ref(db, `reports/${key}`), { status: newStatus }).then(() => {
       alert('Report status updated successfully!');
     });
+  };
+
+  // Export Single Report Styled PDF
+  window.exportSingleReportPdf = async (key) => {
+    const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+    const rep = snapshot.val();
+    if (!rep) return alert('Report not found');
+
+    let assignedNames = 'None';
+    if (rep.assignedTo) {
+      if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+      else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+      else assignedNames = rep.assignedTo;
+    }
+
+    let siteName = rep.site || 'N/A';
+    let itemsHtml = '';
+    if (rep.items) {
+      const itemsArray = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+      for (let i = 0; i < itemsArray.length; i++) {
+        const item = itemsArray[i];
+        if (item) {
+          if (siteName === 'N/A' && item.site) siteName = item.site;
+          const translatedComment = await translateToEnglish(item.comment || '');
+          const photoTag = item.photo ? `<br><img src="${item.photo}" style="max-width:120px; max-height:120px; border-radius:4px; margin-top:8px; border:1px solid #cbd5e1;" />` : '';
+          itemsHtml += `
+            <tr>
+              <td><strong>Item ${i+1}</strong></td>
+              <td>${item.title || item.details || ''}</td>
+              <td>${item.status || 'Assigned'}</td>
+              <td>${translatedComment} ${photoTag}</td>
+            </tr>
+          `;
+        }
+      }
+    }
+
+    const printWindow = window.open('', '', 'height=800,width=1000');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${rep.title || 'Report'} - LinguaSiteFranca</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+            .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
+            h2 { color: #1e293b; margin: 0; font-size: 1.5rem; }
+            .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+            .meta { font-size: 0.85rem; color: #475569; text-align: right; line-height: 1.4; }
+            .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+            th { background-color: #f8fafc; color: #334155; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+          </style>
+        </head>
+        <body>
+          <div class="report-header">
+            <div>
+              <h2>${rep.title || 'Untitled Report'}</h2>
+              <div class="subtitle">Multi-Task & Snagging Report Details</div>
+            </div>
+            <div class="meta">
+              <strong>Site:</strong> ${siteName}<br>
+              <strong>DLM Manager:</strong> ${rep.dlm || 'N/A'}<br>
+              <strong>Date:</strong> ${rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—'}
+            </div>
+          </div>
+          <div class="info-grid">
+            <div><strong>Assigned Operatives:</strong> ${assignedNames}</div>
+            <div><strong>Status:</strong> ${rep.status || 'Assigned'}</div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Item #</th>
+                <th>Task / Snag Details</th>
+                <th>Status</th>
+                <th>Submission & Translated Comment</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+          <div class="footer">
+            We are a team together Ltd — Professional Construction Site Management Platform
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => { printWindow.print(); }, 600);
   };
 
   // Safe Non-Blocking Master Tasks & Reports Loader
@@ -477,7 +580,7 @@
         <head>
           <title>Master Operations Report - LinguaSiteFranca</title>
           <style>
-            body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+            body { index: 1; font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
             .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
             h2 { color: #1e293b; margin: 0; font-size: 1.5rem; }
             .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
@@ -503,7 +606,7 @@
           <table>
             <thead>
               <tr>
-                <th>Site</th>
+                <th>Site name</th>
                 <th>DLM Manager</th>
                 <th>Operative</th>
                 <th>Task Details</th>
