@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Site Supervisor Platform</title>
+<title>Direct Line Manager Platform</title>
 <style>
 :root {
   --bg: #0f172a;
@@ -21,6 +21,7 @@
 html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
 body { padding: clamp(10px, 2vw, 20px); }
 
+/* Login */
 .login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
 .login-card { width: 100%; max-width: 420px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; }
 .login-card h2 { color: var(--accent); margin-bottom: 8px; font-size: 1.4rem; }
@@ -85,7 +86,7 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
 .modal img.zoom-img { max-width: 100%; max-height: 80vh; border-radius: 8px; border: 2px solid var(--border); margin: auto; display: block; }
 
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 150px; overflow-y: auto; }
+.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
 .history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
 
 @media (max-width: 600px) {
@@ -102,11 +103,11 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <img id="loginLogo" class="login-logo" src="" alt="Logo">
-    <h2 id="loginTitle">Site Supervisor Login</h2>
+    <h2 id="loginTitle">Direct Line Manager Login</h2>
     <p>Enter credentials assigned by the Office</p>
     <form id="dlmLoginForm">
       <div class="form-group">
-        <input type="text" id="dlmLoginName" placeholder="Supervisor Name" required autocomplete="username">
+        <input type="text" id="dlmLoginName" placeholder="Your Name" required autocomplete="username">
       </div>
       <div class="form-group">
         <input type="password" id="dlmLoginPassword" placeholder="Password" required autocomplete="current-password">
@@ -121,7 +122,7 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
   <header>
     <div class="header-left">
       <img id="headerLogo" class="header-logo" src="" alt="Logo">
-      <h1><span class="brand-name">Platform</span> — Supervisor</h1>
+      <h1><span class="brand-name">Platform</span> — Direct Line Manager</h1>
       <button id="navToggleBtn" class="btn btn-outline btn-auto">Open Reports View</button>
     </div>
     <div class="dlm-badge" id="dlmBadgeInfo">Loading...</div>
@@ -165,11 +166,11 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
     <div class="card">
       <div class="card-title">
         <span>Task Tracking & Submissions</span>
-        <button class="btn btn-success btn-auto btn-sm" id="exportTasksCsvBtn">Export Tasks CSV</button>
+        <button class="btn btn-success btn-auto btn-sm" id="exportTasksCsvBtn">Export All Tasks CSV</button>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ref</th><th>Member</th><th>Task</th><th>Status</th><th>Submission</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Ref</th><th>Member</th><th>Task</th><th>Status</th><th>Submission (Photo + Comment EN)</th><th>Actions</th></tr></thead>
           <tbody id="tasksTableBody"></tbody>
         </table>
       </div>
@@ -237,7 +238,7 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
     </div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>#</th><th>Description</th><th>Reference Photo</th><th>Submission</th></tr></thead>
+        <thead><tr><th>#</th><th>Description</th><th>Reference Photo</th><th>Submission (Photo + Comment EN)</th></tr></thead>
         <tbody id="viewReportItemsBody"></tbody>
       </table>
     </div>
@@ -285,7 +286,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let currentDlm = "";
-let currentDlmPassword = "";
+let currentDlmKey = ""; // keep the account key so we can detect deletion
 let currentSite = "";
 
 // ====== BRANDING ======
@@ -294,8 +295,8 @@ onValue(ref(db, 'branding'), (snapshot) => {
   if (!data) return;
   if (data.businessName) {
     document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-    document.title = `${data.businessName} - Supervisor Platform`;
-    document.getElementById('loginTitle').innerText = `${data.businessName} — Supervisor Login`;
+    document.title = `${data.businessName} - Direct Line Manager Platform`;
+    document.getElementById('loginTitle').innerText = `${data.businessName} — DLM Login`;
   }
   if (data.footerText) document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
   if (data.logo) {
@@ -308,7 +309,7 @@ onValue(ref(db, 'branding'), (snapshot) => {
   if (data.secondaryColor) document.documentElement.style.setProperty('--success', data.secondaryColor);
 });
 
-// ====== LOGIN ======
+// ====== LOGIN (DLM name + password from office) ======
 document.getElementById('dlmLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('dlmLoginName').value.trim();
@@ -318,20 +319,34 @@ document.getElementById('dlmLoginForm').addEventListener('submit', async (e) => 
 
   const snap = await new Promise(resolve => onValue(ref(db, 'dlmAccounts'), resolve, { onlyOnce: true }));
   const accounts = snap.val() || {};
-  const match = Object.values(accounts).find(a =>
-    a.name && a.name.toLowerCase() === name.toLowerCase() && a.password === pwd
-  );
+  let matchKey = null;
+  let match = null;
+  for (const k of Object.keys(accounts)) {
+    const a = accounts[k];
+    if (a.name && a.name.toLowerCase() === name.toLowerCase() && a.password === pwd) {
+      matchKey = k; match = a; break;
+    }
+  }
   if (!match) {
-    errEl.innerText = 'Invalid supervisor name or password.';
+    errEl.innerText = 'Invalid name or password. If your account was removed by the Office, please contact them.';
     errEl.style.display = 'block';
     return;
   }
   currentDlm = match.name;
-  currentDlmPassword = pwd;
+  currentDlmKey = matchKey;
   currentSite = match.assignedSite || 'Unassigned';
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainContainer').style.display = 'flex';
-  document.getElementById('dlmBadgeInfo').innerText = `Supervisor: ${currentDlm} | Location: ${currentSite}`;
+  document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Location: ${currentSite}`;
+
+  // Watch for account deletion in real time
+  onValue(ref(db, `dlmAccounts/${currentDlmKey}`), (s) => {
+    if (!s.exists()) {
+      alert('Your account has been removed by the Office. You will be logged out.');
+      window.location.reload();
+    }
+  });
+
   loadDashboard();
 });
 
@@ -466,14 +481,14 @@ function loadDashboard() {
       dlmPhoto: dlmPhoto,
       status: 'Assigned',
       createdAt: now,
-      history: [{ action: 'Task created by supervisor', timestamp: now }]
+      history: [{ action: 'Task created by DLM', timestamp: now }]
     }).then(() => {
       document.getElementById('assignTaskForm').reset();
       alert('Task dispatched successfully!');
     });
   });
 
-  // Tasks table
+  // Tasks table (with translated comments)
   onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('tasksTableBody');
@@ -487,14 +502,15 @@ function loadDashboard() {
         else if (task.status === 'Returned') badgeClass = 'badge-expired';
         else if (task.status === 'Submitted') badgeClass = 'badge-submitted';
         const translatedComment = await translateToEnglish(task.comment || '');
-        const photoThumb = (task.operativePhoto || task.photo) ? `<img src="${task.operativePhoto || task.photo}" class="thumb-img" onclick="openImageModal('${task.operativePhoto || task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : '—';
+        const opPhoto = task.operativePhoto || task.photo;
+        const photoThumb = opPhoto ? `<img src="${opPhoto}" class="thumb-img" onclick="openImageModal('${opPhoto}')"><br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small>` : `<small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small>`;
         tbody.innerHTML += `
           <tr>
             <td><strong>${refNum}</strong></td>
             <td>${task.operative}</td>
             <td style="max-width:200px;">${task.details}</td>
             <td><span class="badge ${badgeClass}">${task.status}</span></td>
-            <td>${photoThumb}<br><small style="color:var(--text-muted);">${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}</small></td>
+            <td>${photoThumb}<br><small style="color:var(--text-muted);">${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></td>
             <td>
               <div class="action-row">
                 <button class="btn btn-primary btn-sm" onclick="openTaskView('${key}')">View</button>
@@ -544,14 +560,14 @@ window.openTaskView = async (key) => {
 
   document.getElementById('viewTaskDetails').innerHTML = `
     <div class="card" style="margin-bottom:10px;">
-      <strong>Supervisor's Description:</strong>
-      <div class="task-desc" style="margin-top:8px;">${task.details || 'N/A'}</div>
+      <strong>DLM Description:</strong>
+      <div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
       <div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
       <div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
     </div>
     <div class="card">
       <strong>Team Member's Response:</strong>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated):</small><div class="task-desc" style="border-left-color: var(--success);">${translatedComment}</div></div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
       <div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
       <div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
     </div>
@@ -561,7 +577,7 @@ window.openTaskView = async (key) => {
   const historyBox = document.getElementById('taskHistoryBox');
   if (history.length > 0) {
     historyBox.style.display = 'block';
-    historyBox.innerHTML = '<strong>Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+    historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
   } else historyBox.style.display = 'none';
 
   document.getElementById('taskViewModal').style.display = 'flex';
@@ -572,7 +588,7 @@ document.getElementById('btnAcceptTask').addEventListener('click', async () => {
   const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
   const task = snap.val();
   const history = task.history || [];
-  history.push({ action: 'Accepted by supervisor', timestamp: new Date().toISOString() });
+  history.push({ action: 'Accepted by DLM', timestamp: new Date().toISOString() });
   await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Accepted', history });
   document.getElementById('taskViewModal').style.display = 'none';
 });
@@ -583,7 +599,7 @@ document.getElementById('btnReturnTask').addEventListener('click', async () => {
   const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
   const task = snap.val();
   const history = task.history || [];
-  history.push({ action: 'Returned by supervisor', timestamp: new Date().toISOString(), note });
+  history.push({ action: 'Returned by DLM', timestamp: new Date().toISOString(), note });
   await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Returned', returnNote: note, history });
   document.getElementById('taskViewModal').style.display = 'none';
 });
@@ -630,7 +646,7 @@ document.getElementById('createReportForm').addEventListener('submit', async (e)
     site: currentSite, dlm: currentDlm, title,
     assignedTo: checkedOps, items,
     status: 'Assigned', createdAt: now,
-    history: [{ action: 'Report created by supervisor', timestamp: now }]
+    history: [{ action: 'Report created by DLM', timestamp: now }]
   }).then(() => {
     document.getElementById('createReportForm').reset();
     reportItemsContainer.innerHTML = '';
@@ -639,15 +655,18 @@ document.getElementById('createReportForm').addEventListener('submit', async (e)
   });
 });
 
+// ====== REPORTS TABLE — SHOWS ALL REPORTS WITH FULL MANAGEMENT ======
 let allReportsData = {};
 let currentActiveReportKey = null;
 onValue(ref(db, 'reports'), (snapshot) => {
   allReportsData = snapshot.val() || {};
   const tbody = document.getElementById('reportsTableBody');
   tbody.innerHTML = '';
+  let count = 0;
   Object.keys(allReportsData).reverse().forEach(key => {
     const rep = allReportsData[key];
     if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+      count++;
       const date = new Date(rep.createdAt).toLocaleDateString();
       let badgeClass = 'badge-open';
       if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
@@ -674,6 +693,9 @@ onValue(ref(db, 'reports'), (snapshot) => {
         </tr>`;
     }
   });
+  if (count === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">No reports yet. Create one above.</td></tr>`;
+  }
   if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
     openReportView(currentActiveReportKey);
   }
@@ -685,8 +707,9 @@ window.deleteReport = (key) => {
 
 window.acceptReport = async (key) => {
   const rep = allReportsData[key];
+  if (!rep) return;
   const history = rep.history || [];
-  history.push({ action: 'Report accepted by supervisor', timestamp: new Date().toISOString() });
+  history.push({ action: 'Report accepted by DLM', timestamp: new Date().toISOString() });
   await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
   alert('Report accepted!');
 };
@@ -695,8 +718,9 @@ window.returnReport = async (key) => {
   const note = prompt('Enter reason for returning:');
   if (!note) return;
   const rep = allReportsData[key];
+  if (!rep) return;
   const history = rep.history || [];
-  history.push({ action: 'Report returned by supervisor', timestamp: new Date().toISOString(), note });
+  history.push({ action: 'Report returned by DLM', timestamp: new Date().toISOString(), note });
   await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
   alert('Report returned!');
 };
@@ -736,9 +760,9 @@ window.openReportView = async (key) => {
       itemsBody.innerHTML += `
         <tr>
           <td><strong>${i + 1}</strong></td>
-          <td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small><br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small></td>
+          <td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small></td>
           <td>${photoTag}</td>
-          <td>${opPhotoTag}<br><small style="color:var(--text-muted);">${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}</small></td>
+          <td>${opPhotoTag}<br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small><br><small style="color:var(--text-muted);">${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
         </tr>`;
     }
   }
@@ -757,7 +781,7 @@ document.getElementById('btnAcceptReport').addEventListener('click', async () =>
   if (!currentActiveReportKey) return;
   const rep = allReportsData[currentActiveReportKey];
   const history = rep.history || [];
-  history.push({ action: 'Report accepted by supervisor', timestamp: new Date().toISOString() });
+  history.push({ action: 'Report accepted by DLM', timestamp: new Date().toISOString() });
   await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted', history });
   document.getElementById('reportViewModal').style.display = 'none';
 });
@@ -767,7 +791,7 @@ document.getElementById('btnReturnReport').addEventListener('click', async () =>
   if (!note) return alert('Please provide a reason for returning.');
   const rep = allReportsData[currentActiveReportKey];
   const history = rep.history || [];
-  history.push({ action: 'Report returned by supervisor', timestamp: new Date().toISOString(), note });
+  history.push({ action: 'Report returned by DLM', timestamp: new Date().toISOString(), note });
   await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned', returnNote: note, history });
   document.getElementById('reportViewModal').style.display = 'none';
 });
@@ -777,6 +801,24 @@ window.openImageModal = (src) => {
   document.getElementById('imgModal').style.display = 'flex';
 };
 
+// ====== CSV HELPER ======
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function formatHistory(historyArr) {
+  if (!historyArr || historyArr.length === 0) return 'No history';
+  return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+}
+
 // ====== PDF EXPORT (TASK) ======
 window.exportTaskPDF = async (key) => {
   const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
@@ -784,8 +826,8 @@ window.exportTaskPDF = async (key) => {
   if (!task) return alert('Task not found.');
   const translatedComment = await translateToEnglish(task.comment || '');
   const opPhoto = task.operativePhoto || task.photo;
-  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
+  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
   const history = task.history || [];
   const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
 
@@ -804,11 +846,11 @@ th { background: #f1f5f9; }
 .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 </style></head><body>
 <h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
-<div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
-<div class="section"><h3>Supervisor's Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
-<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence:</strong><br>${opPhotoTag}</p><p><small>Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
-<div class="section"><h3>Activity Timeline</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
+<div class="meta">Location: ${task.site} | DLM: ${task.dlm} | Assigned to: ${task.operative} | Current Status: <strong>${task.status}</strong></div>
+<div class="section"><h3>DLM Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo provided by DLM:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
+<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence provided by operative:</strong><br>${opPhotoTag}</p><p><small>Submitted at: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
+<div class="section"><h3>Activity Timeline (all submissions, returns and re-submissions)</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${task.status}</div>
 </body></html>`);
   printWindow.document.close();
   printWindow.focus();
@@ -821,27 +863,18 @@ window.exportTaskCSV = async (key) => {
   const task = snap.val();
   if (!task) return alert('Task not found.');
   const translatedComment = await translateToEnglish(task.comment || '');
-  const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
+  const history = formatHistory(task.history || []);
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
   csv += [
     `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(task.site || '').replace(/"/g, '""')}"`,
-    `"${(task.dlm || '').replace(/"/g, '""')}"`,
-    `"${(task.operative || '').replace(/"/g, '""')}"`,
     `"${(task.details || '').replace(/"/g, '""')}"`,
-    `"${(task.status || '').replace(/"/g, '""')}"`,
     `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
     `"${translatedComment.replace(/"/g, '""')}"`,
     `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+    `"${(task.status || '').replace(/"/g, '""')}"`,
     `"${history.replace(/"/g, '""')}"`
   ].join(",") + "\n";
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 
 // ====== PDF EXPORT (REPORT) ======
@@ -863,7 +896,13 @@ window.exportReportPDF = async (key) => {
       itemsHtml += `
         <tr>
           <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
-          <td>${item.description}<br><br><strong>Supervisor's photo:</strong><br>${dlmPhotoTag}<br><br><strong>Member's comment (translated):</strong><br>${translatedComment}<br><br><strong>Member's photo:</strong><br>${opPhotoTag}<br><br><small>Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
+          <td>
+            <strong>DLM Description:</strong> ${item.description}<br><br>
+            <strong>Photo provided by DLM:</strong><br>${dlmPhotoTag}<br><br>
+            <strong>Operative comment (translated to English):</strong><br>${translatedComment}<br><br>
+            <strong>Photo provided by operative:</strong><br>${opPhotoTag}<br><br>
+            <small>Response submitted at: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small>
+          </td>
           <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
         </tr>`;
     }
@@ -884,12 +923,12 @@ th { background: #f1f5f9; }
 .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 </style></head><body>
 <h2>Report — ${report.title}</h2>
-<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | Supervisor: ${report.dlm} | Assigned to: ${assignedNames} | Status: <strong>${report.status}</strong></div>
+<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | DLM: ${report.dlm} | Assigned to: ${assignedNames} | Current Status: <strong>${report.status}</strong></div>
 <h3>Items</h3>
 <table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-<h3 style="margin-top:20px;">Report Timeline</h3>
+<h3 style="margin-top:20px;">Report Timeline (all returns and re-submissions)</h3>
 <table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${report.status}</div>
 </body></html>`);
   printWindow.document.close();
   printWindow.focus();
@@ -900,105 +939,99 @@ th { background: #f1f5f9; }
 window.exportReportCSV = async (key) => {
   const rep = allReportsData[key];
   if (!rep) return alert('Report not found.');
-  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
-  const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-  csv += [
-    `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(rep.title || '').replace(/"/g, '""')}"`,
-    `"${(rep.site || '').replace(/"/g, '""')}"`,
-    `"${(rep.dlm || '').replace(/"/g, '""')}"`,
-    `"${assignedNames.replace(/"/g, '""')}"`,
-    `"${(rep.status || '').replace(/"/g, '""')}"`,
-    `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-    `"${history.replace(/"/g, '""')}"`
-  ].join(",") + "\n";
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+  const reportHistory = formatHistory(rep.history || []);
   if (rep.items) {
     const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-    csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
     for (let i = 0; i < itemsArr.length; i++) {
       const item = itemsArr[i];
       const translatedComment = await translateToEnglish(item.comment || '');
-      const itemHistory = (item.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}`).join(' | ');
+      const itemHistory = formatHistory(item.history || []);
       csv += [
-        `"${i+1}"`,
+        `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
         `"${(item.description || '').replace(/"/g, '""')}"`,
-        `"${(item.status || '').replace(/"/g, '""')}"`,
+        `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
         `"${translatedComment.replace(/"/g, '""')}"`,
         `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
-        `"${itemHistory.replace(/"/g, '""')}"`
+        `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
+        `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
       ].join(",") + "\n";
     }
+  } else {
+    csv += [
+      `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+      `"${(rep.title || '').replace(/"/g, '""')}"`,
+      `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+      `"N/A"`,
+      `""`,
+      `"${(rep.status || '').replace(/"/g, '""')}"`,
+      `"${reportHistory.replace(/"/g, '""')}"`
+    ].join(",") + "\n";
   }
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 
 // ====== CSV EXPORT (ALL TASKS) ======
 document.getElementById('exportTasksCsvBtn').addEventListener('click', async () => {
   const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
   const data = snap.val() || {};
-  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
   for (const key of Object.keys(data)) {
     const task = data[key];
     if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
       const translatedComment = await translateToEnglish(task.comment || '');
-      const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+      const history = formatHistory(task.history || []);
       csv += [
         `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-        `"${(task.site || '').replace(/"/g, '""')}"`,
-        `"${(task.dlm || '').replace(/"/g, '""')}"`,
-        `"${(task.operative || '').replace(/"/g, '""')}"`,
         `"${(task.details || '').replace(/"/g, '""')}"`,
-        `"${(task.status || '').replace(/"/g, '""')}"`,
         `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
         `"${translatedComment.replace(/"/g, '""')}"`,
         `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+        `"${(task.status || '').replace(/"/g, '""')}"`,
         `"${history.replace(/"/g, '""')}"`
       ].join(",") + "\n";
     }
   }
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `all_tasks_${currentSite}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadCSV(`all_tasks_${currentSite}_${Date.now()}.csv`, csv);
 });
 
 // ====== CSV EXPORT (ALL REPORTS) ======
 document.getElementById('exportReportsCsvBtn').addEventListener('click', async () => {
-  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
   for (const key of Object.keys(allReportsData)) {
     const rep = allReportsData[key];
     if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
-      const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-      const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-      csv += [
-        `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-        `"${(rep.title || '').replace(/"/g, '""')}"`,
-        `"${(rep.site || '').replace(/"/g, '""')}"`,
-        `"${(rep.dlm || '').replace(/"/g, '""')}"`,
-        `"${assignedNames.replace(/"/g, '""')}"`,
-        `"${(rep.status || '').replace(/"/g, '""')}"`,
-        `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-        `"${history.replace(/"/g, '""')}"`
-      ].join(",") + "\n";
+      const reportHistory = formatHistory(rep.history || []);
+      if (rep.items) {
+        const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+        for (let i = 0; i < itemsArr.length; i++) {
+          const item = itemsArr[i];
+          const translatedComment = await translateToEnglish(item.comment || '');
+          const itemHistory = formatHistory(item.history || []);
+          csv += [
+            `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
+            `"${(item.description || '').replace(/"/g, '""')}"`,
+            `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+            `"${translatedComment.replace(/"/g, '""')}"`,
+            `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+            `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
+            `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
+          ].join(",") + "\n";
+        }
+      } else {
+        csv += [
+          `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+          `"${(rep.title || '').replace(/"/g, '""')}"`,
+          `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+          `"N/A"`,
+          `""`,
+          `"${(rep.status || '').replace(/"/g, '""')}"`,
+          `"${reportHistory.replace(/"/g, '""')}"`
+        ].join(",") + "\n";
+      }
     }
   }
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `all_reports_${currentSite}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  downloadCSV(`all_reports_${currentSite}_${Date.now()}.csv`, csv);
 });
 </script>
 </body>
