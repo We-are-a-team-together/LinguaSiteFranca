@@ -78,7 +78,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title">Create DLM Account / Assign Manager</div>
+      <div class="card-title">Create DLM Account / Assign Manager & Branding Control</div>
       <form id="assignManagerForm">
         <div class="form-group">
           <label>Select Site</label>
@@ -89,6 +89,21 @@
           <input type="text" id="dlmManagerName" placeholder="" required>
         </div>
         <button type="submit" class="btn btn-primary">Create DLM Account</button>
+      </form>
+
+      <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
+
+      <div class="card-title" style="font-size: 1rem; color: var(--text);">Global Branding & Footer Configuration</div>
+      <form id="brandingForm">
+        <div class="form-group">
+          <label>Company / Brand Name</label>
+          <input type="text" id="brandNameInput" placeholder="We are a team together Ltd" required>
+        </div>
+        <div class="form-group">
+          <label>Footer Custom Text</label>
+          <input type="text" id="footerTextInput" placeholder="We are a team together Ltd — Professional Construction Site Management Platform" required>
+        </div>
+        <button type="submit" class="btn btn-success">Update Branding Panel</button>
       </form>
     </div>
   </div>
@@ -205,17 +220,31 @@
     }
   }
 
+  // Load and sync global branding
   onValue(ref(db, 'branding'), (snapshot) => {
     const data = snapshot.val();
     if (data) {
       if (data.businessName) {
         document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
         document.title = `${data.businessName} - Office Dashboard`;
+        const brandInput = document.getElementById('brandNameInput');
+        if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
       }
       if (data.footerText) {
         document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+        const footerInput = document.getElementById('footerTextInput');
+        if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
       }
     }
+  });
+
+  document.getElementById('brandingForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const businessName = document.getElementById('brandNameInput').value.trim();
+    const footerText = document.getElementById('footerTextInput').value.trim();
+    set(ref(db, 'branding'), { businessName, footerText }).then(() => {
+      alert('Global branding and footer updated successfully!');
+    });
   });
 
   document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
