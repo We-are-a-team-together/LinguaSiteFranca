@@ -46,7 +46,7 @@
     .badge-assigned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
     .thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
     .thumb-img:hover { transform: scale(1.05); }
-    .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+    .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); }
     .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
     .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
   </style>
@@ -170,7 +170,7 @@
     </div>
   </div>
 
-  <div class="dynamic-footer"></div>
+  <div class="dynamic-footer">We are a team together Ltd — Professional Construction Site Management Platform</div>
 </div>
 
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
@@ -301,7 +301,6 @@
     });
   });
 
-  // Master Reports Loader (Correctly extracting site from items array or root)
   onValue(ref(db, 'reports'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('masterReportsTableBody');
@@ -324,7 +323,6 @@
       let siteName = rep.site || 'N/A';
       let itemsSummary = '';
       if (rep.items) {
-        // Handle both array and object structures for items
         const itemsArray = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
         for (let i = 0; i < itemsArray.length; i++) {
           const item = itemsArray[i];
@@ -379,7 +377,6 @@
     });
   };
 
-  // Export Single Report Styled PDF
   window.exportSingleReportPdf = async (key) => {
     const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
     const rep = snapshot.val();
@@ -473,7 +470,6 @@
     setTimeout(() => { printWindow.print(); }, 600);
   };
 
-  // Safe Non-Blocking Master Tasks & Reports Loader
   onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('masterTasksTableBody');
@@ -521,7 +517,6 @@
     });
   };
 
-  // Export CSV Report
   document.getElementById('exportCsvBtn').addEventListener('click', async () => {
     const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
     const data = snapshot.val() || {};
@@ -551,7 +546,6 @@
     document.body.removeChild(link);
   });
 
-  // Export Professional Styled PDF / Print Report with Aesthetic UI & Colors
   document.getElementById('exportPdfBtn').addEventListener('click', async () => {
     const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
     const data = snapshot.val() || {};
@@ -580,7 +574,7 @@
         <head>
           <title>Master Operations Report - LinguaSiteFranca</title>
           <style>
-            body { index: 1; font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
             .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
             h2 { color: #1e293b; margin: 0; font-size: 1.5rem; }
             .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
