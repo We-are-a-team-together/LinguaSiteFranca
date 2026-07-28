@@ -21,17 +21,14 @@
 html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
 body { padding: clamp(10px, 2vw, 20px); }
 
-/* Login */
 .login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
 .login-card { width: 100%; max-width: 420px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; }
 .login-card h2 { color: var(--accent); margin-bottom: 8px; font-size: 1.4rem; }
 .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
 .login-logo { max-width: 120px; max-height: 80px; margin: 0 auto 15px; display: none; }
 
-/* Container */
 .container { width: 100%; max-width: 1400px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
 
-/* Header */
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 12px; }
 .header-brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .header-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; display: none; }
@@ -40,7 +37,6 @@ header { display: flex; justify-content: space-between; align-items: center; mar
 .lang-input { padding: 9px 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.9rem; width: 100%; min-width: 180px; max-width: 260px; }
 .lang-input:focus { outline: none; border-color: var(--accent); }
 
-/* Cards */
 .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: clamp(15px, 2vw, 25px); margin-bottom: 18px; }
 .task-title { font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 700; color: var(--accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 .task-ref { font-size: 0.75rem; color: var(--text-muted); font-weight: 400; }
@@ -77,12 +73,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 </head>
 <body>
 
-<!-- Login Overlay -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <img id="loginLogo" class="login-logo" src="" alt="Logo">
     <h2 id="loginTitle">Team Member Login</h2>
-    <p>Enter your credentials provided by your Site Supervisor</p>
+    <p id="loginSubtitle">Enter your credentials provided by your Site Supervisor</p>
     <form id="opLoginForm">
       <div class="form-group">
         <input type="text" id="opLoginName" placeholder="Your Name" required autocomplete="username">
@@ -90,7 +85,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       <div class="form-group">
         <input type="password" id="opLoginPassword" placeholder="Password" required autocomplete="current-password">
       </div>
-      <button type="submit" class="btn-login">Access Workspace</button>
+      <button type="submit" class="btn-login" id="loginBtn">Access Workspace</button>
     </form>
     <p id="loginError" style="color: var(--danger); margin-top: 12px; font-size: 0.85rem; display: none;"></p>
   </div>
@@ -103,14 +98,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       <div class="header-title"><span class="brand-name">Workspace</span> — <span id="opDisplayName">Team Member</span></div>
     </div>
     <div class="lang-container">
-      <label for="langInput" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Language:</label>
+      <label for="langInput" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="langLabel">Language:</label>
       <input list="languagesList" id="langInput" class="lang-input" placeholder="English">
       <datalist id="languagesList"></datalist>
     </div>
   </header>
 
   <div id="tasksContainer">
-    <div class="empty-state">Loading your assignments...</div>
+    <div class="empty-state" id="loadingMsg">Loading your assignments...</div>
   </div>
 
   <div class="dynamic-footer"></div>
@@ -137,16 +132,45 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let currentOp = "";
-let currentOpPassword = "";
+let currentLangCode = 'en';
 
-// ====== BRANDING ======
+const UI_TEXT = {
+  loginTitle: "Team Member Login",
+  loginSubtitle: "Enter your credentials provided by your Site Supervisor",
+  loginBtn: "Access Workspace",
+  langLabel: "Language:",
+  loadingMsg: "Loading your assignments...",
+  noWork: "No active assignments for",
+  completedBanner: "✓ Completed — Awaiting final review",
+  lockedBanner: "⏳ Submitted — Under review by your supervisor",
+  supervisorNote: "Supervisor Note:",
+  refImage: "Reference image from supervisor:",
+  yourPhoto: "Your submitted photo",
+  yourComment: "Your submitted comment",
+  photoEvidence: "Photo Evidence *",
+  commentNotes: "Comment / Notes *",
+  submitAssignment: "Submit Assignment",
+  reportTitle: "Report:",
+  location: "Location:",
+  supervisor: "Supervisor:",
+  refImageItem: "Reference image:",
+  uploadPhoto: "Upload Photo Evidence *",
+  commentNote: "Comment / Note *",
+  submitReport: "Submit Report Updates",
+  item: "Item",
+  assigned: "Assigned",
+  completedReport: "✓ Report completed — Awaiting final review",
+  submittedReport: "⏳ Report submitted — Under review by your supervisor"
+};
+
+let translatedUI = { ...UI_TEXT };
+
 onValue(ref(db, 'branding'), (snapshot) => {
   const data = snapshot.val();
   if (!data) return;
   if (data.businessName) {
     document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
     document.title = `${data.businessName} - Team Member Workspace`;
-    document.getElementById('loginTitle').innerText = `${data.businessName} — Login`;
   }
   if (data.footerText) {
     document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
@@ -161,7 +185,6 @@ onValue(ref(db, 'branding'), (snapshot) => {
   if (data.secondaryColor) document.documentElement.style.setProperty('--success', data.secondaryColor);
 });
 
-// ====== LANGUAGE MAP ======
 const LANG_MAP = {
   "afrikaans":"af","albanian":"sq","amharic":"am","arabic":"ar","armenian":"hy",
   "azerbaijani":"az","basque":"eu","belarusian":"be","bengali":"bn","bosnian":"bs",
@@ -185,12 +208,14 @@ const LANG_MAP = {
   "turkmen":"tk","ukrainian":"uk","urdu":"ur","uyghur":"ug","uzbek":"uz",
   "vietnamese":"vi","welsh":"cy","xhosa":"xh","yiddish":"yi","yoruba":"yo","zulu":"zu"
 };
+
 const datalist = document.getElementById('languagesList');
 Object.keys(LANG_MAP).forEach(langName => {
   const opt = document.createElement('option');
   opt.value = langName.charAt(0).toUpperCase() + langName.slice(1);
   datalist.appendChild(opt);
 });
+
 function resolveLanguageCode(input) {
   if (!input) return 'en';
   const clean = input.trim().toLowerCase();
@@ -199,8 +224,9 @@ function resolveLanguageCode(input) {
   const found = Object.keys(LANG_MAP).find(k => k.includes(clean) || clean.includes(k));
   return found ? LANG_MAP[found] : 'en';
 }
+
 async function translateText(text, targetLangCode) {
-  if (!text) return '';
+  if (!text || targetLangCode === 'en') return text;
   try {
     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`);
     const data = await res.json();
@@ -208,7 +234,25 @@ async function translateText(text, targetLangCode) {
   } catch (e) { return text; }
 }
 
-// ====== LOGIN ======
+async function translateUI(targetLangCode) {
+  if (targetLangCode === 'en') {
+    translatedUI = { ...UI_TEXT };
+  } else {
+    const texts = Object.values(UI_TEXT);
+    const promises = texts.map(t => translateText(t, targetLangCode));
+    const results = await Promise.all(promises);
+    translatedUI = {};
+    Object.keys(UI_TEXT).forEach((key, i) => {
+      translatedUI[key] = results[i];
+    });
+  }
+  document.getElementById('loginTitle').innerText = translatedUI.loginTitle;
+  document.getElementById('loginSubtitle').innerText = translatedUI.loginSubtitle;
+  document.getElementById('loginBtn').innerText = translatedUI.loginBtn;
+  document.getElementById('langLabel').innerText = translatedUI.langLabel;
+  document.getElementById('loadingMsg').innerText = translatedUI.loadingMsg;
+}
+
 document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('opLoginName').value.trim();
@@ -227,31 +271,27 @@ document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
     return;
   }
   currentOp = match.name;
-  currentOpPassword = pwd;
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainContainer').style.display = 'flex';
   document.getElementById('opDisplayName').innerText = currentOp;
   renderAllWork();
 });
 
-// ====== IMMEDIATE LANGUAGE CHANGE WITH DEBOUNCE ======
 let renderTimeout;
-document.getElementById('langInput').addEventListener('input', () => {
+document.getElementById('langInput').addEventListener('input', async () => {
   clearTimeout(renderTimeout);
-  renderTimeout = setTimeout(() => renderAllWork(), 300);
-});
-document.getElementById('langInput').addEventListener('change', () => {
-  clearTimeout(renderTimeout);
-  renderTimeout = setTimeout(() => renderAllWork(), 100);
+  renderTimeout = setTimeout(async () => {
+    const userInput = document.getElementById('langInput').value;
+    currentLangCode = resolveLanguageCode(userInput);
+    await translateUI(currentLangCode);
+    renderAllWork();
+  }, 300);
 });
 
-// ====== RENDER ======
 window.renderAllWork = async function() {
   if (!currentOp) return;
-  const userInput = document.getElementById('langInput').value;
-  const langCode = resolveLanguageCode(userInput);
   const container = document.getElementById('tasksContainer');
-  container.innerHTML = '<div class="empty-state">Loading your assignments...</div>';
+  container.innerHTML = `<div class="empty-state">${translatedUI.loadingMsg}</div>`;
 
   let loadedCount = 0;
   let tasksData = {}, reportsData = {};
@@ -262,16 +302,14 @@ window.renderAllWork = async function() {
     container.innerHTML = '';
     let hasWork = false;
 
-    // Legacy Tasks
     for (const key of Object.keys(tasksData)) {
       const task = tasksData[key];
       if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase()) {
         hasWork = true;
-        renderTaskCard(key, task, langCode, container);
+        renderTaskCard(key, task, container);
       }
     }
 
-    // Reports
     for (const key of Object.keys(reportsData)) {
       const rep = reportsData[key];
       let isAssigned = false;
@@ -282,12 +320,12 @@ window.renderAllWork = async function() {
       }
       if (isAssigned) {
         hasWork = true;
-        renderReportCard(key, rep, langCode, container);
+        renderReportCard(key, rep, container);
       }
     }
 
     if (!hasWork) {
-      container.innerHTML = `<div class="empty-state">No active assignments for ${currentOp}.</div>`;
+      container.innerHTML = `<div class="empty-state">${translatedUI.noWork} ${currentOp}.</div>`;
     }
   }
 
@@ -295,48 +333,48 @@ window.renderAllWork = async function() {
   onValue(ref(db, 'reports'), (s) => { reportsData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
 };
 
-async function renderTaskCard(key, task, langCode, container) {
-  const translatedDetails = await translateText(task.details || '', langCode);
+async function renderTaskCard(key, task, container) {
+  const translatedDetails = await translateText(task.details || '', currentLangCode);
   const isLocked = task.status === 'Submitted' || task.status === 'Accepted' || task.status === 'Approved';
   const isCompleted = task.status === 'Accepted' || task.status === 'Approved';
 
   let bannerHTML = '';
-  if (isCompleted) bannerHTML = `<div class="completed-banner">✓ Completed — Awaiting final review</div>`;
-  else if (task.status === 'Submitted') bannerHTML = `<div class="locked-banner">⏳ Submitted — Under review by your supervisor</div>`;
+  if (isCompleted) bannerHTML = `<div class="completed-banner">${translatedUI.completedBanner}</div>`;
+  else if (task.status === 'Submitted') bannerHTML = `<div class="locked-banner">${translatedUI.lockedBanner}</div>`;
 
   let returnNoteHTML = '';
   if (task.returnNote) {
-    const tNote = await translateText(task.returnNote, langCode);
-    returnNoteHTML = `<div class="return-note-desc"><strong>Supervisor Note:</strong><br>${tNote}</div>`;
+    const tNote = await translateText(task.returnNote, currentLangCode);
+    returnNoteHTML = `<div class="return-note-desc"><strong>${translatedUI.supervisorNote}</strong><br>${tNote}</div>`;
   }
 
   let dlmPhotoHTML = '';
   if (task.dlmPhoto) {
-    dlmPhotoHTML = `<div class="dlm-ref-photo"><small>Reference image from supervisor:</small><img src="${task.dlmPhoto}" class="thumb-img" onclick="openModal('${task.dlmPhoto}')"></div>`;
+    dlmPhotoHTML = `<div class="dlm-ref-photo"><small>${translatedUI.refImage}</small><img src="${task.dlmPhoto}" class="thumb-img" onclick="openModal('${task.dlmPhoto}')"></div>`;
   }
 
   let formHTML = '';
   if (isLocked) {
     if (task.photo || task.operativePhoto) {
       const opPhoto = task.operativePhoto || task.photo;
-      formHTML += `<div class="form-group"><label>Your submitted photo</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
+      formHTML += `<div class="form-group"><label>${translatedUI.yourPhoto}</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
     }
     if (task.comment) {
-      const tc = await translateText(task.comment, langCode);
-      formHTML += `<div class="form-group"><label>Your submitted comment</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
+      const tc = await translateText(task.comment, currentLangCode);
+      formHTML += `<div class="form-group"><label>${translatedUI.yourComment}</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
     }
   } else {
     formHTML = `
       <form onsubmit="submitTask(event, '${key}')">
         <div class="form-group">
-          <label>Photo Evidence *</label>
+          <label>${translatedUI.photoEvidence}</label>
           <input type="file" id="photo_${key}" accept="image/*" capture="environment" required>
         </div>
         <div class="form-group">
-          <label>Comment / Notes *</label>
+          <label>${translatedUI.commentNotes}</label>
           <textarea id="comment_${key}" rows="3" required placeholder="Describe what you have done..."></textarea>
         </div>
-        <button type="submit">Submit Assignment</button>
+        <button type="submit">${translatedUI.submitAssignment}</button>
       </form>
     `;
   }
@@ -345,7 +383,7 @@ async function renderTaskCard(key, task, langCode, container) {
   card.className = 'card';
   card.innerHTML = `
     <div class="task-title">
-      <span>Assignment ${task.status ? `(${task.status})` : ''}</span>
+      <span>${translatedUI.assigned} ${task.status ? `(${task.status})` : ''}</span>
       <span class="task-ref">Ref: ${task.refNumber || key.substring(0,8)}</span>
     </div>
     <div class="task-desc">${translatedDetails || 'No description provided'}</div>
@@ -357,51 +395,51 @@ async function renderTaskCard(key, task, langCode, container) {
   container.appendChild(card);
 }
 
-async function renderReportCard(key, rep, langCode, container) {
+async function renderReportCard(key, rep, container) {
   const rawItems = rep.items;
-  const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
+  const itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
   const isReportLocked = rep.status === 'Submitted' || rep.status === 'Accepted' || rep.status === 'Approved';
   const isReportCompleted = rep.status === 'Accepted' || rep.status === 'Approved';
 
   let bannerHTML = '';
-  if (isReportCompleted) bannerHTML = `<div class="completed-banner">✓ Report completed — Awaiting final review</div>`;
-  else if (rep.status === 'Submitted') bannerHTML = `<div class="locked-banner">⏳ Report submitted — Under review by your supervisor</div>`;
+  if (isReportCompleted) bannerHTML = `<div class="completed-banner">${translatedUI.completedReport}</div>`;
+  else if (rep.status === 'Submitted') bannerHTML = `<div class="locked-banner">${translatedUI.submittedReport}</div>`;
 
   let returnNoteHTML = '';
   if (rep.returnNote) {
-    const tNote = await translateText(rep.returnNote, langCode);
-    returnNoteHTML = `<div class="return-note-desc"><strong>Supervisor Note:</strong><br>${tNote}</div>`;
+    const tNote = await translateText(rep.returnNote, currentLangCode);
+    returnNoteHTML = `<div class="return-note-desc"><strong>${translatedUI.supervisorNote}</strong><br>${tNote}</div>`;
   }
 
   let itemsHtml = '';
   for (let i = 0; i < itemsArray.length; i++) {
     const item = itemsArray[i];
-    const itemText = item.title || item.description || item.details || `Item ${i + 1}`;
-    const translatedItem = await translateText(itemText, langCode);
+    const itemText = item.description || item.title || item.details || `${translatedUI.item} ${i + 1}`;
+    const translatedItem = await translateText(itemText, currentLangCode);
     const itemLocked = item.status === 'Submitted' || item.status === 'Accepted' || isReportLocked;
 
-    let dlmPhotoHtml = item.photo ? `<div class="dlm-ref-photo"><small>Reference image:</small><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
+    let dlmPhotoHtml = item.photo ? `<div class="dlm-ref-photo"><small>${translatedUI.refImageItem}</small><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
 
     let itemFormHtml = '';
     if (itemLocked) {
       if (item.submittedPhoto || item.operativePhoto) {
         const opPhoto = item.submittedPhoto || item.operativePhoto;
-        itemFormHtml += `<div class="form-group"><label>Your submitted photo</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
+        itemFormHtml += `<div class="form-group"><label>${translatedUI.yourPhoto}</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
       }
       if (item.comment) {
-        const tc = await translateText(item.comment, langCode);
-        itemFormHtml += `<div class="form-group"><label>Your submitted comment</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
+        const tc = await translateText(item.comment, currentLangCode);
+        itemFormHtml += `<div class="form-group"><label>${translatedUI.yourComment}</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
       }
     } else {
       itemFormHtml = `
-        <div class="form-group"><label>Upload Photo Evidence *</label><input type="file" id="report_photo_${key}_${i}" accept="image/*" capture="environment" required></div>
-        <div class="form-group"><label>Comment / Note *</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress..."></textarea></div>
+        <div class="form-group"><label>${translatedUI.uploadPhoto}</label><input type="file" id="report_photo_${key}_${i}" accept="image/*" capture="environment" required></div>
+        <div class="form-group"><label>${translatedUI.commentNote}</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress..."></textarea></div>
       `;
     }
 
     itemsHtml += `
       <div class="item-box">
-        <strong>Item ${i + 1}:</strong> ${translatedItem} <small style="color:var(--text-muted);">(${item.status || 'Assigned'})</small>
+        <strong>${translatedUI.item} ${i + 1}:</strong> ${translatedItem} <small style="color:var(--text-muted);">(${item.status || translatedUI.assigned})</small>
         ${dlmPhotoHtml}
         ${itemFormHtml}
       </div>
@@ -412,18 +450,18 @@ async function renderReportCard(key, rep, langCode, container) {
   card.className = 'card';
   card.innerHTML = `
     <div class="task-title">
-      <span>Report: ${rep.title || 'Untitled'} (${rep.status || 'Assigned'})</span>
+      <span>${translatedUI.reportTitle} ${rep.title || 'Untitled'} (${rep.status || translatedUI.assigned})</span>
       <span class="task-ref">Ref: ${rep.refNumber || key.substring(0,8)}</span>
     </div>
     <div class="task-desc">
-      <strong>Location:</strong> ${rep.site || 'N/A'}<br>
-      <strong>Supervisor:</strong> ${rep.dlm || 'N/A'}
+      <strong>${translatedUI.location}</strong> ${rep.site || 'N/A'}<br>
+      <strong>${translatedUI.supervisor}</strong> ${rep.dlm || 'N/A'}
     </div>
     ${bannerHTML}
     ${returnNoteHTML}
     <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
       ${itemsHtml}
-      ${!isReportLocked ? `<button type="submit">Submit Report Updates</button>` : ''}
+      ${!isReportLocked ? `<button type="submit">${translatedUI.submitReport}</button>` : ''}
     </form>
   `;
   container.appendChild(card);
@@ -467,61 +505,60 @@ window.submitTask = async (e, key) => {
 
 window.submitReport = async (e, key, itemCount) => {
   e.preventDefault();
-  onValue(ref(db, `reports/${key}`), async (snapshot) => {
-    const rep = snapshot.val();
-    if (!rep) return alert('Report not found');
-    let rawItems = rep.items;
-    let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-    const now = new Date().toISOString();
-    let anyChanges = false;
+  const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snapshot.val();
+  if (!rep) return alert('Report not found');
+  
+  let rawItems = rep.items;
+  let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
+  const now = new Date().toISOString();
+  let anyChanges = false;
 
-    for (let i = 0; i < itemCount; i++) {
-      const commentEl = document.getElementById(`report_comment_${key}_${i}`);
-      const fileEl = document.getElementById(`report_photo_${key}_${i}`);
+  for (let i = 0; i < itemCount; i++) {
+    const commentEl = document.getElementById(`report_comment_${key}_${i}`);
+    const fileEl = document.getElementById(`report_photo_${key}_${i}`);
 
-      // Skip locked items (no inputs rendered)
-      if (!commentEl || !fileEl) continue;
+    if (!commentEl || !fileEl) continue;
 
-      const comment = commentEl.value.trim();
-      if (!comment || fileEl.files.length === 0) {
-        return alert(`Item ${i+1}: Both photo and comment are required.`);
-      }
-
-      const file = fileEl.files[0];
-      const photoData = await new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
-
-      if (itemsArray[i]) {
-        const itemHistory = itemsArray[i].history || [];
-        itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
-        itemsArray[i].comment = comment;
-        itemsArray[i].status = 'Submitted';
-        itemsArray[i].submittedPhoto = photoData;
-        itemsArray[i].operativePhoto = photoData;
-        itemsArray[i].submittedAt = now;
-        itemsArray[i].history = itemHistory;
-        anyChanges = true;
-      }
+    const comment = commentEl.value.trim();
+    if (!comment || fileEl.files.length === 0) {
+      return alert(`${translatedUI.item} ${i+1}: Both photo and comment are required.`);
     }
 
-    if (!anyChanges) {
-      return alert('No items to submit. All items appear to be already submitted.');
-    }
-
-    const reportHistory = rep.history || [];
-    reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
-    await update(ref(db, `reports/${key}`), {
-      status: 'Submitted',
-      items: itemsArray,
-      submittedAt: now,
-      history: reportHistory
+    const file = fileEl.files[0];
+    const photoData = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
     });
-    alert('Report submitted successfully!');
-    renderAllWork();
-  }, { onlyOnce: true });
+
+    if (itemsArray[i]) {
+      const itemHistory = itemsArray[i].history || [];
+      itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
+      itemsArray[i].comment = comment;
+      itemsArray[i].status = 'Submitted';
+      itemsArray[i].submittedPhoto = photoData;
+      itemsArray[i].operativePhoto = photoData;
+      itemsArray[i].submittedAt = now;
+      itemsArray[i].history = itemHistory;
+      anyChanges = true;
+    }
+  }
+
+  if (!anyChanges) {
+    return alert('No items to submit. All items appear to be already submitted.');
+  }
+
+  const reportHistory = rep.history || [];
+  reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
+  await update(ref(db, `reports/${key}`), {
+    status: 'Submitted',
+    items: itemsArray,
+    submittedAt: now,
+    history: reportHistory
+  });
+  alert('Report submitted successfully!');
+  renderAllWork();
 };
 </script>
 </body>
