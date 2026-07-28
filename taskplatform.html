@@ -365,7 +365,7 @@ async function renderTaskCard(key, task, container) {
     }
   } else {
     formHTML = `
-      <form onsubmit="submitTask(event, '${key}')">
+      <form onsubmit="submitTask(event, '${key}')" novalidate>
         <div class="form-group">
           <label>${translatedUI.photoEvidence}</label>
           <input type="file" id="photo_${key}" accept="image/*" capture="environment" required>
@@ -459,7 +459,7 @@ async function renderReportCard(key, rep, container) {
     </div>
     ${bannerHTML}
     ${returnNoteHTML}
-    <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
+    <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})" novalidate>
       ${itemsHtml}
       ${!isReportLocked ? `<button type="submit">${translatedUI.submitReport}</button>` : ''}
     </form>
@@ -474,22 +474,28 @@ window.openModal = (src) => {
 
 window.submitTask = async (e, key) => {
   e.preventDefault();
-  const comment = document.getElementById(`comment_${key}`).value.trim();
-  const fileInput = document.getElementById(`photo_${key}`);
-  if (!comment || fileInput.files.length === 0) {
-    return alert('Both a photo and a comment are required before submitting.');
-  }
-  const file = fileInput.files[0];
-  const photoData = await new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-  const now = new Date().toISOString();
-  onValue(ref(db, `tasks/${key}`), async (snap) => {
-    const existing = snap.val() || {};
+  console.log("submitTask triggered. Key:", key);
+  try {
+    const comment = document.getElementById(`comment_${key}`).value.trim();
+    const fileInput = document.getElementById(`photo_${key}`);
+    
+    if (!comment || fileInput.files.length === 0) {
+      return alert('Both a photo and a comment are required before submitting.');
+    }
+    
+    const file = fileInput.files[0];
+    const photoData = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+    
+    const now = new Date().toISOString();
+    const snapshot = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+    const existing = snapshot.val() || {};
     const history = existing.history || [];
     history.push({ action: 'Submitted by team member', timestamp: now, comment });
+    
     await update(ref(db, `tasks/${key}`), {
       status: 'Submitted',
       comment: comment,
@@ -498,67 +504,95 @@ window.submitTask = async (e, key) => {
       submittedAt: now,
       history: history
     });
+    
     alert('Assignment submitted successfully!');
     renderAllWork();
-  }, { onlyOnce: true });
+  } catch (error) {
+    console.error("Error in submitTask:", error);
+    alert("An error occurred while submitting the task: " + error.message);
+  }
 };
 
 window.submitReport = async (e, key, itemCount) => {
   e.preventDefault();
-  const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snapshot.val();
-  if (!rep) return alert('Report not found');
+  console.log("submitReport triggered. Key:", key, "ItemCount:", Number(itemCount));
   
-  let rawItems = rep.items;
-  let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-  const now = new Date().toISOString();
-  let anyChanges = false;
+  try {
+    const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+    const rep = snapshot.val();
+    if (!rep) {
+      alert('Report not found in database.');
+      return;
+    }
+    
+    let rawItems = rep.items;
+    let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
+    const now = new Date().toISOString();
+    let anyChanges = false;
+    const totalItems = Number(itemCount);
 
-  for (let i = 0; i < itemCount; i++) {
-    const commentEl = document.getElementById(`report_comment_${key}_${i}`);
-    const fileEl = document.getElementById(`report_photo_${key}_${i}`);
+    console.log("Total items in report:", itemsArray.length);
 
-    if (!commentEl || !fileEl) continue;
+    for (let i = 0; i < totalItems; i++) {
+      const commentEl = document.getElementById(`report_comment_${key}_${i}`);
+      const fileEl = document.getElementById(`report_photo_${key}_${i}`);
 
-    const comment = commentEl.value.trim();
-    if (!comment || fileEl.files.length === 0) {
-      return alert(`${translatedUI.item} ${i+1}: Both photo and comment are required.`);
+      if (!commentEl || !fileEl) {
+        console.log(`Item ${i} input elements not found in DOM. Skipping (likely already submitted/locked).`);
+        continue;
+      }
+
+      const comment = commentEl.value.trim();
+      if (!comment || fileEl.files.length === 0) {
+        alert(`${translatedUI.item} ${i+1}: Both photo and comment are required.`);
+        return; // Stop submission
+      }
+
+      const file = fileEl.files[0];
+      const photoData = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+
+      if (itemsArray[i]) {
+        const itemHistory = itemsArray[i].history || [];
+        itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
+        
+        itemsArray[i].comment = comment;
+        itemsArray[i].status = 'Submitted';
+        itemsArray[i].submittedPhoto = photoData;
+        itemsArray[i].operativePhoto = photoData;
+        itemsArray[i].submittedAt = now;
+        itemsArray[i].history = itemHistory;
+        anyChanges = true;
+        console.log(`Item ${i} processed successfully.`);
+      } else {
+        console.warn(`Item ${i} not found in itemsArray.`);
+      }
     }
 
-    const file = fileEl.files[0];
-    const photoData = await new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(file);
+    if (!anyChanges) {
+      alert('No items were submitted. Please ensure you have filled out the required fields for at least one active item.');
+      return;
+    }
+
+    const reportHistory = rep.history || [];
+    reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
+    
+    await update(ref(db, `reports/${key}`), {
+      status: 'Submitted',
+      items: itemsArray,
+      submittedAt: now,
+      history: reportHistory
     });
-
-    if (itemsArray[i]) {
-      const itemHistory = itemsArray[i].history || [];
-      itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
-      itemsArray[i].comment = comment;
-      itemsArray[i].status = 'Submitted';
-      itemsArray[i].submittedPhoto = photoData;
-      itemsArray[i].operativePhoto = photoData;
-      itemsArray[i].submittedAt = now;
-      itemsArray[i].history = itemHistory;
-      anyChanges = true;
-    }
+    
+    alert('Report submitted successfully!');
+    renderAllWork();
+  } catch (error) {
+    console.error("Error in submitReport:", error);
+    alert("An error occurred while submitting the report: " + error.message);
   }
-
-  if (!anyChanges) {
-    return alert('No items to submit. All items appear to be already submitted.');
-  }
-
-  const reportHistory = rep.history || [];
-  reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
-  await update(ref(db, `reports/${key}`), {
-    status: 'Submitted',
-    items: itemsArray,
-    submittedAt: now,
-    history: reportHistory
-  });
-  alert('Report submitted successfully!');
-  renderAllWork();
 };
 </script>
 </body>
