@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Office Management Dashboard</title>
+<title>Office Management Dashboard - DLM Platform</title>
 <style>
 :root {
   --bg: #0f172a;
@@ -17,182 +17,174 @@
   --danger: #ef4444;
   --warning: #f59e0b;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
-body { padding: clamp(10px, 2vw, 20px); }
-
-.container { width: 100%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; display: none; }
-h1 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); font-weight: 700; color: #fff; }
-
-.btn { padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s, opacity 0.2s; font-size: 0.88rem; display: inline-flex; justify-content: center; align-items: center; gap: 6px; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background-color: var(--bg); color: var(--text); padding: 20px; }
+.container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
+header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+.export-btns { display: flex; gap: 10px; }
+.btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
 .btn-primary { background: var(--accent); color: white; }
 .btn-primary:hover { background: var(--accent-hover); }
 .btn-success { background: var(--success); color: white; }
 .btn-success:hover { opacity: 0.9; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-warning { background: var(--warning); color: white; }
-.btn-sm { padding: 6px 10px; font-size: 0.78rem; border-radius: 4px; }
-.btn-auto { width: auto; }
-.btn-full { width: 100%; }
-
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 18px; margin-bottom: 20px; }
-.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: clamp(15px, 2vw, 22px); margin-bottom: 20px; }
-.card-title { font-size: 1.05rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-
-.form-group { margin-bottom: 14px; }
+.btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
+.btn-danger:hover { opacity: 0.9; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
+.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+.card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.form-group { margin-bottom: 15px; }
 label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
-input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-input[type="file"] { padding: 8px; font-size: 0.85rem; }
-input[type="color"] { height: 50px; cursor: pointer; padding: 4px; }
-
-.filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.filter-bar label { margin: 0; color: #fff; font-weight: 600; }
-.filter-bar select { max-width: 300px; }
-
+input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; word-wrap: break-word; }
-th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-
-.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
 .badge-assigned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-.badge-submitted { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
-
-.thumb-img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
-.thumb-img:hover { transform: scale(1.05); transition: transform 0.2s; }
-
-.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border); }
-
-.modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
-.modal img { max-width: 100%; max-height: 90vh; border-radius: 8px; border: 2px solid var(--border); }
-
-.color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
-.color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
-.logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
-
-.action-row { display: flex; gap: 6px; flex-wrap: wrap; }
-
-@media (max-width: 600px) {
-  h1 { font-size: 1.05rem; }
-  th, td { padding: 8px 6px; font-size: 0.78rem; }
-  .thumb-img { width: 44px; height: 44px; }
-  .header-logo { width: 36px; height: 36px; }
-}
+.thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
+.thumb-img:hover { transform: scale(1.05); }
+.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+.modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+.modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <div class="header-left">
-      <img id="headerLogo" class="header-logo" src="" alt="Logo">
-      <h1><span class="brand-name">Organisation</span> — Office Dashboard</h1>
+    <h1><span class="brand-name">We are a team together Ltd</span> — Office Management Dashboard</h1>
+    <div class="export-btns">
+      <button class="btn btn-success" id="exportCsvBtn">Export CSV Report</button>
+      <button class="btn btn-primary" id="exportPdfBtn">Export Styled PDF Report</button>
     </div>
   </header>
 
-  <!-- Site Filter -->
-  <div class="filter-bar">
-    <label for="siteFilter">Filter by Location:</label>
-    <select id="siteFilter" onchange="applyFilter()">
-      <option value="ALL">All Locations</option>
-    </select>
-  </div>
-
   <div class="grid-2">
     <div class="card">
-      <div class="card-title">Register New Location</div>
+      <div class="card-title">Register New Site</div>
       <form id="registerSiteForm">
-        <div class="form-group"><label>Location Name</label><input type="text" id="siteName" required></div>
-        <div class="form-group"><label>Address / Details</label><input type="text" id="siteLocation" required></div>
-        <button type="submit" class="btn btn-primary btn-full">Add Location</button>
+        <div class="form-group">
+          <label>Site Name</label>
+          <input type="text" id="siteName" placeholder="" required>
+        </div>
+        <div class="form-group">
+          <label>Location / Address</label>
+          <input type="text" id="siteLocation" placeholder="" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Site</button>
       </form>
     </div>
     <div class="card">
-      <div class="card-title">Create Supervisor Account</div>
+      <div class="card-title">Create DLM Account / Assign Manager</div>
       <form id="assignManagerForm">
-        <div class="form-group"><label>Assign to Location</label><select id="managerSiteSelect" required></select></div>
-        <div class="form-group"><label>Supervisor Name</label><input type="text" id="dlmManagerName" required></div>
-        <div class="form-group"><label>Password (for their login)</label><input type="text" id="dlmManagerPassword" required placeholder="Set a password"></div>
-        <button type="submit" class="btn btn-primary btn-full">Create Supervisor Account</button>
+        <div class="form-group">
+          <label>Select Site</label>
+          <select id="managerSiteSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label>DLM Manager Name</label>
+          <input type="text" id="dlmManagerName" placeholder="" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Create DLM Account</button>
       </form>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Locations & Supervisors Directory</div>
-    <div class="table-wrap">
+    <div class="card-title">Active Sites & Assigned Managers Directory</div>
+    <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>Location</th><th>Address</th><th>Supervisor</th><th>Action</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>Location</th>
+            <th>Assigned DLM Manager</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody id="sitesTableBody"></tbody>
       </table>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Master Team Members Directory</div>
-    <div class="table-wrap">
+    <div class="card-title">Master Operative & Qualifications Directory</div>
+    <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>Name</th><th>Employer</th><th>Location</th><th>Certification</th><th>Expiry</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Operative Name</th>
+            <th>Employer</th>
+            <th>Assigned Site</th>
+            <th>Qualification</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
         <tbody id="masterOperativesTableBody"></tbody>
       </table>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Master Reports Management</div>
-    <div class="table-wrap">
+    <div class="card-title">Master Reports & Multi-Task Management</div>
+    <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>Date</th><th>Ref</th><th>Title</th><th>Location</th><th>Supervisor</th><th>Assigned To</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Report Title</th>
+            <th>Site</th>
+            <th>DLM Manager</th>
+            <th>Assigned Operatives</th>
+            <th>Status</th>
+            <th>Items / Submissions</th>
+            <th>Management Action</th>
+          </tr>
+        </thead>
         <tbody id="masterReportsTableBody"></tbody>
       </table>
     </div>
   </div>
 
   <div class="card">
-    <div class="card-title">Master Tasks Management</div>
-    <div class="table-wrap">
+    <div class="card-title">Legacy Master Tasks & Live Submissions</div>
+    <div style="overflow-x: auto;">
       <table>
-        <thead><tr><th>Ref</th><th>Location</th><th>Supervisor</th><th>Member</th><th>Task</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Site</th>
+            <th>DLM</th>
+            <th>Operative</th>
+            <th>Task Details</th>
+            <th>Status</th>
+            <th>Submission Photo & Comment (English)</th>
+            <th>Management Action</th>
+          </tr>
+        </thead>
         <tbody id="masterTasksTableBody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Branding Panel -->
-  <div class="card" style="border: 2px solid var(--accent);">
-    <div class="card-title">Global Branding Configuration</div>
+  <div class="card">
+    <div class="card-title">Global Branding & Footer Configuration</div>
     <form id="brandingForm">
-      <div class="grid-2">
-        <div class="form-group"><label>Organisation Title (displayed centrally)</label><input type="text" id="brandNameInput" required></div>
-        <div class="form-group"><label>Footer Text (displayed centrally)</label><input type="text" id="footerTextInput" required></div>
+      <div class="form-group">
+        <label>Company / Brand Name</label>
+        <input type="text" id="brandNameInput" placeholder="We are a team together Ltd" required>
       </div>
       <div class="form-group">
-        <label>Logo (top-left of all interfaces)</label>
-        <input type="file" id="logoInput" accept="image/*">
-        <img id="logoPreview" class="logo-preview" alt="Logo preview">
+        <label>Footer Custom Text</label>
+        <input type="text" id="footerTextInput" placeholder="We are a team together Ltd — Professional Construction Site Management Platform" required>
       </div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label>Primary Brand Colour</label>
-          <input type="color" id="primaryColorInput" value="#3b82f6">
-          <div class="color-preview"><div class="color-swatch" id="primarySwatch" style="background:#3b82f6;"></div><span id="primaryHex">#3b82f6</span></div>
-        </div>
-        <div class="form-group">
-          <label>Secondary Brand Colour</label>
-          <input type="color" id="secondaryColorInput" value="#10b981">
-          <div class="color-preview"><div class="color-swatch" id="secondarySwatch" style="background:#10b981;"></div><span id="secondaryHex">#10b981</span></div>
-        </div>
-      </div>
-      <button type="submit" class="btn btn-success btn-full">Apply Branding to All Interfaces</button>
+      <button type="submit" class="btn btn-success">Update Branding Panel</button>
     </form>
   </div>
 
-  <div class="dynamic-footer"></div>
+  <div class="dynamic-footer">We are a team together Ltd — Professional Construction Site Management Platform</div>
 </div>
 
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
@@ -215,199 +207,125 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let currentFilter = 'ALL';
-let allSitesData = {};
-let allManagersData = {};
-let allOperativesData = {};
-let allReportsData = {};
-let allTasksData = {};
-let currentLogoBase64 = null;
-
-// ====== BRANDING SYNC ======
-onValue(ref(db, 'branding'), (snapshot) => {
-  const data = snapshot.val();
-  if (!data) return;
-  if (data.businessName) {
-    document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-    document.title = `${data.businessName} - Office Dashboard`;
-    const brandInput = document.getElementById('brandNameInput');
-    if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
-  }
-  if (data.footerText) {
-    document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
-    const footerInput = document.getElementById('footerTextInput');
-    if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
-  }
-  if (data.logo) {
-    document.getElementById('headerLogo').src = data.logo;
-    document.getElementById('headerLogo').style.display = 'block';
-    document.getElementById('logoPreview').src = data.logo;
-    document.getElementById('logoPreview').style.display = 'block';
-    currentLogoBase64 = data.logo;
-  }
-  if (data.primaryColor) {
-    document.documentElement.style.setProperty('--accent', data.primaryColor);
-    document.getElementById('primaryColorInput').value = data.primaryColor;
-    document.getElementById('primarySwatch').style.background = data.primaryColor;
-    document.getElementById('primaryHex').innerText = data.primaryColor;
-  }
-  if (data.secondaryColor) {
-    document.documentElement.style.setProperty('--success', data.secondaryColor);
-    document.getElementById('secondaryColorInput').value = data.secondaryColor;
-    document.getElementById('secondarySwatch').style.background = data.secondaryColor;
-    document.getElementById('secondaryHex').innerText = data.secondaryColor;
-  }
-});
-
-document.getElementById('primaryColorInput').addEventListener('input', (e) => {
-  document.getElementById('primarySwatch').style.background = e.target.value;
-  document.getElementById('primaryHex').innerText = e.target.value;
-});
-document.getElementById('secondaryColorInput').addEventListener('input', (e) => {
-  document.getElementById('secondarySwatch').style.background = e.target.value;
-  document.getElementById('secondaryHex').innerText = e.target.value;
-});
-document.getElementById('logoInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    currentLogoBase64 = reader.result;
-    document.getElementById('logoPreview').src = reader.result;
-    document.getElementById('logoPreview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-});
-
-document.getElementById('brandingForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const businessName = document.getElementById('brandNameInput').value.trim();
-  const footerText = document.getElementById('footerTextInput').value.trim();
-  const primaryColor = document.getElementById('primaryColorInput').value;
-  const secondaryColor = document.getElementById('secondaryColorInput').value;
-  set(ref(db, 'branding'), {
-    businessName, footerText,
-    logo: currentLogoBase64 || '',
-    primaryColor, secondaryColor
-  }).then(() => alert('Branding updated across all interfaces!'));
-});
-
-// ====== SITES ======
-document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = document.getElementById('siteName').value.trim();
-  const location = document.getElementById('siteLocation').value.trim();
-  push(ref(db, 'sites'), { name, location }).then(() => {
-    document.getElementById('registerSiteForm').reset();
-    alert('Location registered successfully!');
-  });
-});
-
-// ====== SUPERVISOR ACCOUNTS ======
-document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const site = document.getElementById('managerSiteSelect').value;
-  const manager = document.getElementById('dlmManagerName').value.trim();
-  const password = document.getElementById('dlmManagerPassword').value;
-  push(ref(db, 'dlmAccounts'), { name: manager, password, assignedSite: site, createdAt: new Date().toISOString() })
-    .then(() => {
-      document.getElementById('assignManagerForm').reset();
-      alert('Supervisor account created successfully!');
-    });
-});
-
-// ====== FILTER ======
-function applyFilter() {
-  currentFilter = document.getElementById('siteFilter').value;
-  renderAll();
-}
-window.applyFilter = applyFilter;
-
-function matchesFilter(siteName) {
-  if (currentFilter === 'ALL') return true;
-  return siteName && siteName.toLowerCase() === currentFilter.toLowerCase();
-}
-
-// ====== TRANSLATE ======
 async function translateToEnglish(text) {
   if (!text) return 'None';
   try {
     const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
     const data = await res.json();
     return data[0][0][0];
-  } catch (e) { return text; }
+  } catch (e) {
+    return text;
+  }
 }
 
-// ====== LOAD SITES + MANAGERS ======
-onValue(ref(db, 'sites'), (snapshot) => {
-  allSitesData = snapshot.val() || {};
-  updateSiteDropdowns();
-  renderAll();
-});
-onValue(ref(db, 'managers'), (snapshot) => {
-  allManagersData = snapshot.val() || {};
-  renderAll();
-});
-onValue(ref(db, 'dlmAccounts'), (snapshot) => {
-  const accounts = snapshot.val() || {};
-  Object.values(accounts).forEach(acc => {
-    const siteKey = Object.keys(allSitesData).find(k => allSitesData[k].name === acc.assignedSite);
-    if (siteKey && !allManagersData[siteKey]) {
-      allManagersData[siteKey] = { manager: acc.name, site: acc.assignedSite, password: acc.password };
+// ✅ FIXED: Proper CSV download using Blob
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+onValue(ref(db, 'branding'), (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    if (data.businessName) {
+      document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
+      document.title = `${data.businessName} - Office Dashboard`;
+      const brandInput = document.getElementById('brandNameInput');
+      if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
     }
-  });
-  renderAll();
+    if (data.footerText) {
+      document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+      const footerInput = document.getElementById('footerTextInput');
+      if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
+    }
+  }
 });
 
-function updateSiteDropdowns() {
-  const filterSelect = document.getElementById('siteFilter');
-  const managerSelect = document.getElementById('managerSiteSelect');
-  const currentFilterVal = filterSelect.value;
-  filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
-  managerSelect.innerHTML = '<option value="">-- Select Location --</option>';
-  Object.keys(allSitesData).forEach(key => {
-    const site = allSitesData[key];
-    filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
-    managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+document.getElementById('brandingForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const businessName = document.getElementById('brandNameInput').value.trim();
+  const footerText = document.getElementById('footerTextInput').value.trim();
+  set(ref(db, 'branding'), { businessName, footerText }).then(() => {
+    alert('Global branding and footer updated successfully!');
   });
-  filterSelect.value = currentFilterVal;
-}
+});
 
-function renderAll() {
-  renderSites();
-  renderOperatives();
-  renderReports();
-  renderTasks();
-}
-
-function renderSites() {
-  const tbody = document.getElementById('sitesTableBody');
-  tbody.innerHTML = '';
-  Object.keys(allSitesData).forEach(siteKey => {
-    const site = allSitesData[siteKey];
-    if (!matchesFilter(site.name)) return;
-    const managerEntry = Object.values(allManagersData).find(m => m.site === site.name) ||
-                         Object.values(allManagersData).find(m => m.assignedSite === site.name);
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${site.name}</strong></td>
-        <td>${site.location}</td>
-        <td>${managerEntry ? (managerEntry.manager || managerEntry.name || 'Unassigned') : 'Unassigned'}</td>
-        <td><button class="btn btn-danger btn-sm" onclick="deleteSite('${siteKey}')">Remove</button></td>
-      </tr>`;
+document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('siteName').value.trim();
+  const location = document.getElementById('siteLocation').value.trim();
+  const newRef = push(ref(db, 'sites'));
+  set(newRef, { name, location }).then(() => {
+    document.getElementById('registerSiteForm').reset();
+    alert('Site registered successfully!');
   });
-}
+});
+
+document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const site = document.getElementById('managerSiteSelect').value;
+  const manager = document.getElementById('dlmManagerName').value.trim();
+  const newRef = push(ref(db, 'managers'));
+  set(newRef, { site, manager }).then(() => {
+    document.getElementById('assignManagerForm').reset();
+    alert('DLM Manager account linked successfully!');
+  });
+});
+
+onValue(ref(db, 'sites'), (snapshot) => {
+  const data = snapshot.val() || {};
+  const select = document.getElementById('managerSiteSelect');
+  select.innerHTML = '<option value="">-- Select Site --</option>';
+  Object.keys(data).forEach(key => {
+    const site = data[key];
+    const opt = document.createElement('option');
+    opt.value = site.name;
+    opt.textContent = site.name;
+    select.appendChild(opt);
+  });
+});
+
+onValue(ref(db, 'managers'), (snapshot) => {
+  const managersData = snapshot.val() || {};
+  onValue(ref(db, 'sites'), (siteSnapshot) => {
+    const sitesData = siteSnapshot.val() || {};
+    const tbody = document.getElementById('sitesTableBody');
+    tbody.innerHTML = '';
+    Object.keys(sitesData).forEach(siteKey => {
+      const site = sitesData[siteKey];
+      const managerEntry = Object.values(managersData).find(m => m.site === site.name);
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${site.name}</strong></td>
+          <td>${site.location}</td>
+          <td>${managerEntry ? managerEntry.manager : 'Unassigned'}</td>
+          <td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
+        </tr>
+      `;
+    });
+  });
+});
+
 window.deleteSite = (key) => {
-  if (confirm('Remove this location?')) remove(ref(db, `sites/${key}`));
+  if (confirm('Remove this site?')) {
+    remove(ref(db, `sites/${key}`));
+  }
 };
 
-function renderOperatives() {
+onValue(ref(db, 'operatives'), (snapshot) => {
+  const data = snapshot.val() || {};
   const tbody = document.getElementById('masterOperativesTableBody');
   tbody.innerHTML = '';
   const today = new Date().toISOString().split('T')[0];
-  Object.keys(allOperativesData).forEach(key => {
-    const op = allOperativesData[key];
-    if (!matchesFilter(op.assignedSite)) return;
+  Object.keys(data).forEach(key => {
+    const op = data[key];
     const isExpired = op.expiry && op.expiry < today;
     tbody.innerHTML += `
       <tr>
@@ -417,356 +335,314 @@ function renderOperatives() {
         <td>${op.qualification}</td>
         <td>${op.expiry}</td>
         <td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
-        <td>
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="editOperative('${key}')">Edit</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteOperative('${key}')">Remove</button>
-          </div>
-        </td>
-      </tr>`;
+      </tr>
+    `;
   });
-}
+});
 
-window.editOperative = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `operatives/${key}`), resolve, { onlyOnce: true }));
-  const op = snap.val();
-  if (!op) return;
-  const newName = prompt('Name:', op.name); if (newName === null) return;
-  const newPwd = prompt('Password:', op.password || ''); if (newPwd === null) return;
-  const newEmp = prompt('Employer:', op.employer || ''); if (newEmp === null) return;
-  const newQual = prompt('Certification:', op.qualification || ''); if (newQual === null) return;
-  const newExp = prompt('Expiry date (YYYY-MM-DD):', op.expiry || ''); if (newExp === null) return;
-  await update(ref(db, `operatives/${key}`), {
-    name: newName.trim(), password: newPwd, employer: newEmp.trim(),
-    qualification: newQual.trim(), expiry: newExp.trim()
-  });
-  alert('Member updated.');
-};
-
-window.deleteOperative = (key) => {
-  if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
-};
-
-async function renderReports() {
+onValue(ref(db, 'reports'), async (snapshot) => {
+  const data = snapshot.val() || {};
   const tbody = document.getElementById('masterReportsTableBody');
   tbody.innerHTML = '';
-  const keys = Object.keys(allReportsData);
+  const keys = Object.keys(data);
   for (const key of keys) {
-    const rep = allReportsData[key];
-    if (!matchesFilter(rep.site)) continue;
+    const rep = data[key];
     let assignedNames = 'None';
     if (rep.assignedTo) {
-      if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-      else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-      else assignedNames = rep.assignedTo;
+      if (Array.isArray(rep.assignedTo)) {
+        assignedNames = rep.assignedTo.join(', ');
+      } else if (typeof rep.assignedTo === 'object') {
+        assignedNames = Object.values(rep.assignedTo).join(', ');
+      } else {
+        assignedNames = rep.assignedTo;
+      }
     }
-    let badgeClass = 'badge-assigned';
-    if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
-    else if (rep.status === 'Returned') badgeClass = 'badge-expired';
-    else if (rep.status === 'Submitted') badgeClass = 'badge-submitted';
+    let siteName = rep.site || 'N/A';
+    let itemsSummary = '';
+    if (rep.items) {
+      const itemsArray = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+      for (let i = 0; i < itemsArray.length; i++) {
+        const item = itemsArray[i];
+        if (item) {
+          if (siteName === 'N/A' && item.site) {
+            siteName = item.site;
+          }
+          const translatedComment = await translateToEnglish(item.comment || '');
+          const photoThumb = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')">` : '—';
+          itemsSummary += `<div style="margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border);">
+            <strong>Item ${i+1}:</strong> ${item.title || item.details || ''} (${item.status || 'Assigned'})<br>
+            <small style="color:var(--text-muted);">Comment: ${translatedComment}</small><br>${photoThumb}
+          </div>`;
+        }
+      }
+    } else {
+      itemsSummary = '—';
+    }
     const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
     tbody.innerHTML += `
       <tr>
         <td>${reportDate}</td>
-        <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
-        <td>${rep.title || 'Untitled'}</td>
-        <td>${rep.site || 'N/A'}</td>
+        <td><strong>${rep.title || 'Untitled Report'}</strong></td>
+        <td>${siteName}</td>
         <td>${rep.dlm || 'N/A'}</td>
         <td>${assignedNames}</td>
-        <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
+        <td><span class="badge badge-assigned">${rep.status || 'Assigned'}</span></td>
+        <td>${itemsSummary}</td>
         <td>
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="viewReport('${key}')">View</button>
-            <button class="btn btn-success btn-sm" onclick="acceptReport('${key}')">Accept</button>
-            <button class="btn btn-warning btn-sm" onclick="returnReport('${key}')">Return</button>
-            <button class="btn btn-success btn-sm" onclick="exportSingleReportPdf('${key}')">PDF</button>
-            <button class="btn btn-success btn-sm" onclick="exportSingleReportCsv('${key}')">CSV</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteReport('${key}')">Delete</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="updateReportStatus('${key}', 'Approved')">Approve</button>
+            <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem; background: var(--success);" onclick="exportSingleReportPdf('${key}')">PDF</button>
+            <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
           </div>
         </td>
-      </tr>`;
+      </tr>
+    `;
   }
-}
-
-window.viewReport = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  if (!rep) return alert('Report not found.');
-  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-  let itemsHtml = '';
-  if (rep.items) {
-    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const translatedComment = await translateToEnglish(item.comment || '');
-      itemsHtml += `\n  Item ${i+1}: ${item.description} | Status: ${item.status || 'Assigned'} | Comment (EN): ${translatedComment} | Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}`;
-    }
-  }
-  const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join('\n  ');
-  alert(`Report: ${rep.title}\nRef: ${rep.refNumber || key.substring(0,8)}\nStatus: ${rep.status}\nAssigned to: ${assignedNames}\n\nItems:${itemsHtml}\n\nTimeline:\n  ${history || 'No history'}`);
-};
-
-window.acceptReport = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  const history = rep.history || [];
-  history.push({ action: 'Report accepted by office', timestamp: new Date().toISOString() });
-  await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
-  alert('Report accepted!');
-};
-
-window.returnReport = async (key) => {
-  const note = prompt('Enter reason for returning:');
-  if (!note) return;
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  const history = rep.history || [];
-  history.push({ action: 'Report returned by office', timestamp: new Date().toISOString(), note });
-  await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
-  alert('Report returned!');
-};
-
-window.exportSingleReportCsv = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  if (!rep) return alert('Report not found.');
-  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
-  const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-  csv += [
-    `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(rep.title || '').replace(/"/g, '""')}"`,
-    `"${(rep.site || '').replace(/"/g, '""')}"`,
-    `"${(rep.dlm || '').replace(/"/g, '""')}"`,
-    `"${assignedNames.replace(/"/g, '""')}"`,
-    `"${(rep.status || '').replace(/"/g, '""')}"`,
-    `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-    `"${history.replace(/"/g, '""')}"`
-  ].join(",") + "\n";
-  if (rep.items) {
-    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-    csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const translatedComment = await translateToEnglish(item.comment || '');
-      const itemHistory = (item.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}`).join(' | ');
-      csv += [
-        `"${i+1}"`,
-        `"${(item.description || '').replace(/"/g, '""')}"`,
-        `"${(item.status || '').replace(/"/g, '""')}"`,
-        `"${translatedComment.replace(/"/g, '""')}"`,
-        `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
-        `"${itemHistory.replace(/"/g, '""')}"`
-      ].join(",") + "\n";
-    }
-  }
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-async function renderTasks() {
-  const tbody = document.getElementById('masterTasksTableBody');
-  tbody.innerHTML = '';
-  const keys = Object.keys(allTasksData);
-  for (const key of keys) {
-    const task = allTasksData[key];
-    if (!matchesFilter(task.site)) continue;
-    let badgeClass = 'badge-assigned';
-    if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
-    else if (task.status === 'Returned') badgeClass = 'badge-expired';
-    else if (task.status === 'Submitted') badgeClass = 'badge-submitted';
-    const translatedComment = await translateToEnglish(task.comment || '');
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
-        <td>${task.site || 'N/A'}</td>
-        <td>${task.dlm || 'N/A'}</td>
-        <td>${task.operative || 'N/A'}</td>
-        <td style="max-width:200px;">${task.details || ''}<br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small></td>
-        <td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
-        <td>
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="viewTask('${key}')">View</button>
-            <button class="btn btn-success btn-sm" onclick="acceptTask('${key}')">Accept</button>
-            <button class="btn btn-warning btn-sm" onclick="returnTask('${key}')">Return</button>
-            <button class="btn btn-success btn-sm" onclick="exportTaskPdf('${key}')">PDF</button>
-            <button class="btn btn-success btn-sm" onclick="exportTaskCsv('${key}')">CSV</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteTask('${key}')">Delete</button>
-          </div>
-        </td>
-      </tr>`;
-  }
-}
-
-window.viewTask = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join('\n  ');
-  alert(`Task: ${task.refNumber || key.substring(0,8)}\nStatus: ${task.status}\nAssigned to: ${task.operative}\n\nDescription: ${task.details}\n\nComment (EN): ${translatedComment}\nSubmitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}\n\nTimeline:\n  ${history || 'No history'}`);
-};
-
-window.acceptTask = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  const history = task.history || [];
-  history.push({ action: 'Task accepted by office', timestamp: new Date().toISOString() });
-  await update(ref(db, `tasks/${key}`), { status: 'Accepted', history });
-  alert('Task accepted!');
-};
-
-window.returnTask = async (key) => {
-  const note = prompt('Enter reason for returning:');
-  if (!note) return;
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  const history = task.history || [];
-  history.push({ action: 'Task returned by office', timestamp: new Date().toISOString(), note });
-  await update(ref(db, `tasks/${key}`), { status: 'Returned', returnNote: note, history });
-  alert('Task returned!');
-};
-
-window.exportTaskCsv = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
-  csv += [
-    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(task.site || '').replace(/"/g, '""')}"`,
-    `"${(task.dlm || '').replace(/"/g, '""')}"`,
-    `"${(task.operative || '').replace(/"/g, '""')}"`,
-    `"${(task.details || '').replace(/"/g, '""')}"`,
-    `"${(task.status || '').replace(/"/g, '""')}"`,
-    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
-    `"${translatedComment.replace(/"/g, '""')}"`,
-    `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
-    `"${history.replace(/"/g, '""')}"`
-  ].join(",") + "\n";
-  const encodedUri = encodeURI(csv);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
-// Live data listeners
-onValue(ref(db, 'operatives'), (s) => { allOperativesData = s.val() || {}; renderAll(); });
-onValue(ref(db, 'reports'), (s) => { allReportsData = s.val() || {}; renderAll(); });
-onValue(ref(db, 'tasks'), (s) => { allTasksData = s.val() || {}; renderAll(); });
+});
 
 window.deleteReport = (key) => {
-  if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
+  if (confirm('Are you sure you want to delete this report?')) {
+    remove(ref(db, `reports/${key}`));
+  }
 };
-window.deleteTask = (key) => {
-  if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
+
+window.updateReportStatus = (key, newStatus) => {
+  update(ref(db, `reports/${key}`), { status: newStatus }).then(() => {
+    alert('Report status updated successfully!');
+  });
 };
+
+window.exportSingleReportPdf = async (key) => {
+  const snapshot = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snapshot.val();
+  if (!rep) return alert('Report not found');
+  let assignedNames = 'None';
+  if (rep.assignedTo) {
+    if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+    else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+    else assignedNames = rep.assignedTo;
+  }
+  let siteName = rep.site || 'N/A';
+  let itemsHtml = '';
+  if (rep.items) {
+    const itemsArray = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+    for (let i = 0; i < itemsArray.length; i++) {
+      const item = itemsArray[i];
+      if (item) {
+        if (siteName === 'N/A' && item.site) siteName = item.site;
+        const translatedComment = await translateToEnglish(item.comment || '');
+        const photoTag = item.photo ? `<br><img src="${item.photo}" style="max-width:120px; max-height:120px; border-radius:4px; margin-top:8px; border:1px solid #cbd5e1;" />` : '';
+        itemsHtml += `
+          <tr>
+            <td><strong>Item ${i+1}</strong></td>
+            <td>${item.title || item.details || ''}</td>
+            <td>${item.status || 'Assigned'}</td>
+            <td>${translatedComment} ${photoTag}</td>
+          </tr>
+        `;
+      }
+    }
+  }
+  const printWindow = window.open('', '', 'height=800,width=1000');
+  printWindow.document.write(`
+<html>
+<head>
+  <title>${rep.title || 'Report'} - LinguaSiteFranca</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
+    h2 { color: #1e293b; margin: 0; font-size: 1.5rem; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+    .meta { font-size: 0.85rem; color: #475569; text-align: right; line-height: 1.4; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+    th { background-color: #f8fafc; color: #334155; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    tr:nth-child(even) { background-color: #f8fafc; }
+    .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <div>
+      <h2>${rep.title || 'Untitled Report'}</h2>
+      <div class="subtitle">Multi-Task & Snagging Report Details</div>
+    </div>
+    <div class="meta">
+      <strong>Site:</strong> ${siteName}<br>
+      <strong>DLM Manager:</strong> ${rep.dlm || 'N/A'}<br>
+      <strong>Date:</strong> ${rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—'}
+    </div>
+  </div>
+  <div class="info-grid">
+    <div><strong>Assigned Operatives:</strong> ${assignedNames}</div>
+    <div><strong>Status:</strong> ${rep.status || 'Assigned'}</div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Item #</th>
+        <th>Task / Snag Details</th>
+        <th>Status</th>
+        <th>Submission & Translated Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${itemsHtml}
+    </tbody>
+  </table>
+  <div class="footer">
+    We are a team together Ltd — Professional Construction Site Management Platform
+  </div>
+</body>
+</html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => { printWindow.print(); }, 600);
+};
+
+onValue(ref(db, 'tasks'), async (snapshot) => {
+  const data = snapshot.val() || {};
+  const tbody = document.getElementById('masterTasksTableBody');
+  tbody.innerHTML = '';
+  const keys = Object.keys(data);
+  for (const key of keys) {
+    const task = data[key];
+    const translatedComment = await translateToEnglish(task.comment || '');
+    const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : `—<br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>`;
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${task.site || 'N/A'}</strong></td>
+        <td>${task.dlm || 'N/A'}</td>
+        <td>${task.operative || 'N/A'}</td>
+        <td>${task.details || ''}</td>
+        <td><span class="badge badge-valid">${task.status || 'Assigned'}</span></td>
+        <td>${photoHtml}</td>
+        <td>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="updateTaskStatus('${key}', 'Approved')">Approve</button>
+            <button class="btn-danger" onclick="deleteTask('${key}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+});
 
 window.openModal = (src) => {
   document.getElementById('modalImg').src = src;
   document.getElementById('imgModal').style.display = 'flex';
 };
 
-// ====== PDF EXPORT (TASK) ======
-window.exportTaskPdf = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const opPhoto = task.operativePhoto || task.photo;
-  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
-  const history = task.history || [];
-  const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-
-  const printWindow = window.open('', '', 'height=900,width=900');
-  printWindow.document.write(`
-<html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
-<style>
-body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
-h2 { color: #0f172a; margin-bottom: 5px; }
-.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-.section { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.section h3 { margin: 0 0 10px 0; color: #334155; font-size: 1rem; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
-th { background: #f1f5f9; }
-.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-</style></head><body>
-<h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
-<div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
-<div class="section"><h3>Supervisor's Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
-<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence:</strong><br>${opPhotoTag}</p><p><small>Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
-<div class="section"><h3>Activity Timeline</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
-</body></html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => printWindow.print(), 700);
-};
-
-// ====== PDF EXPORT (REPORT) ======
-window.exportSingleReportPdf = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const report = snap.val();
-  if (!report) return alert('Report not found.');
-  const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
-  let itemsHtml = '';
-  if (report.items) {
-    const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-      const opPhoto = item.submittedPhoto || item.operativePhoto;
-      const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-      const translatedComment = await translateToEnglish(item.comment || '');
-      const itemHistory = item.history || [];
-      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-      itemsHtml += `
-        <tr>
-          <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
-          <td>${item.description}<br><br><strong>Supervisor's photo:</strong><br>${dlmPhotoTag}<br><br><strong>Member's comment (translated):</strong><br>${translatedComment}<br><br><strong>Member's photo:</strong><br>${opPhotoTag}<br><br><small>Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
-          <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
-        </tr>`;
-    }
+window.deleteTask = (key) => {
+  if (confirm('Are you sure you want to delete this report/task?')) {
+    remove(ref(db, `tasks/${key}`));
   }
-  const reportHistory = report.history || [];
-  const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+};
 
-  const printWindow = window.open('', '', 'height=900,width=900');
+window.updateTaskStatus = (key, newStatus) => {
+  update(ref(db, `tasks/${key}`), { status: newStatus }).then(() => {
+    alert('Report status updated successfully!');
+  });
+};
+
+// ✅ FIXED: CSV export using Blob method
+document.getElementById('exportCsvBtn').addEventListener('click', async () => {
+  const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
+  const data = snapshot.val() || {};
+  let csvContent = "Site,DLM,Operative,Task Details,Status,Comments (English)\n";
+  for (const key of Object.keys(data)) {
+    const task = data[key];
+    const translatedComment = await translateToEnglish(task.comment || '');
+    const row = [
+      `"${(task.site || '').replace(/"/g, '""')}"`,
+      `"${(task.dlm || '').replace(/"/g, '""')}"`,
+      `"${(task.operative || '').replace(/"/g, '""')}"`,
+      `"${(task.details || '').replace(/"/g, '""')}"`,
+      `"${(task.status || '').replace(/"/g, '""')}"`,
+      `"${translatedComment.replace(/"/g, '""')}"`
+    ];
+    csvContent += row.join(",") + "\n";
+  }
+  downloadCSV(`master_task_report_english_${Date.now()}.csv`, csvContent);
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+  const snapshot = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
+  const data = snapshot.val() || {};
+  let rowsHtml = '';
+  for (const key of Object.keys(data)) {
+    const task = data[key];
+    const translatedComment = await translateToEnglish(task.comment || '');
+    const photoTag = task.photo ? `<br><img src="${task.photo}" style="max-width:80px; max-height:80px; border-radius:4px; margin-top:5px; border:1px solid #cbd5e1;" />` : '';
+    rowsHtml += `
+      <tr>
+        <td><strong>${task.site || ''}</strong></td>
+        <td>${task.dlm || ''}</td>
+        <td>${task.operative || ''}</td>
+        <td>${task.details || ''}</td>
+        <td><span style="padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: #e2e8f0; color: #0f172a;">${task.status || ''}</span></td>
+        <td>${translatedComment} ${photoTag}</td>
+      </tr>
+    `;
+  }
+  const printWindow = window.open('', '', 'height=800,width=1000');
   printWindow.document.write(`
-<html><head><title>${report.title}</title>
-<style>
-body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
-h2 { color: #0f172a; margin-bottom: 5px; }
-.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
-th { background: #f1f5f9; }
-.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-</style></head><body>
-<h2>Report — ${report.title}</h2>
-<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | Supervisor: ${report.dlm} | Assigned to: ${assignedNames} | Status: <strong>${report.status}</strong></div>
-<h3>Items</h3>
-<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-<h3 style="margin-top:20px;">Report Timeline</h3>
-<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
-</body></html>`);
+<html>
+<head>
+  <title>Master Operations Report - LinguaSiteFranca</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+    .report-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 25px; }
+    h2 { color: #1e293b; margin: 0; font-size: 1.5rem; }
+    .subtitle { color: #64748b; font-size: 0.9rem; margin-top: 5px; }
+    .meta { font-size: 0.85rem; color: #475569; text-align: right; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+    th { background-color: #f8fafc; color: #334155; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    tr:nth-child(even) { background-color: #f8fafc; }
+    .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <div>
+      <h2>LinguaSiteFranca — Executive Operations Report</h2>
+      <div class="subtitle">Master Task Tracking & Translated Submissions (English)</div>
+    </div>
+    <div class="meta">
+      Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}<br>
+      Status: Verified & Synced
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Site name</th>
+        <th>DLM Manager</th>
+        <th>Operative</th>
+        <th>Task Details</th>
+        <th>Status</th>
+        <th>Submission & Translated Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHtml}
+    </tbody>
+  </table>
+  <div class="footer">
+    We are a team together Ltd — Professional Construction Site Management Platform
+  </div>
+</body>
+</html>
+  `);
   printWindow.document.close();
   printWindow.focus();
-  setTimeout(() => printWindow.print(), 700);
-};
+  setTimeout(() => {
+    printWindow.print();
+  }, 600);
+});
 </script>
 </body>
 </html>
