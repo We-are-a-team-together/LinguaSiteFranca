@@ -1,1089 +1,831 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team Member Workspace</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Office Management Dashboard</title>
+<style>
+:root {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background-color: var(--bg); color: var(--text); padding: 20px; }
+.container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
+header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+.header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; display: none; }
+h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+.btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { opacity: 0.9; }
+.btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
+.btn-danger:hover { opacity: 0.9; }
+.btn-warning { background: var(--warning); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
+.btn-warning:hover { opacity: 0.9; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
+.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
+.card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.form-group { margin-bottom: 15px; }
+label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
+input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
+input:focus, select:focus { outline: none; border-color: var(--accent); }
+input[type="file"] { padding: 8px; font-size: 0.85rem; }
+input[type="color"] { height: 50px; cursor: pointer; padding: 4px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+.badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+.badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+.badge-assigned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+.thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
+.thumb-img:hover { transform: scale(1.05); }
+.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); }
+.modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+.modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+.action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    }
+.filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.filter-bar label { margin: 0; color: #fff; font-weight: 600; }
+.filter-bar select { max-width: 300px; }
 
-    html, body {
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    body { padding: clamp(10px, 2vw, 20px); }
-
-    /* ---------- LOGIN SCREEN ---------- */
-    .login-overlay {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      padding: 20px;
-    }
-
-    .login-card {
-      width: 100%;
-      max-width: 420px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 28px;
-      text-align: center;
-    }
-
-    .login-card h2 {
-      color: var(--accent);
-      margin-bottom: 8px;
-      font-size: 1.4rem;
-    }
-
-    .login-card p {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 20px;
-    }
-
-    .login-logo {
-      max-width: 120px;
-      max-height: 80px;
-      margin: 0 auto 15px;
-      display: none;
-    }
-
-    .lang-selector {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      justify-content: center;
-    }
-
-    .lang-selector label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .lang-selector select {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .form-group { margin-bottom: 14px; }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 5px;
-      text-align: left;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: #fff;
-      font-size: 0.95rem;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .btn-login {
-      width: 100%;
-      padding: 12px;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 1rem;
-      margin-top: 10px;
-      transition: opacity 0.2s;
-    }
-
-    .btn-login:hover { opacity: 0.9; }
-
-    .login-error {
-      color: var(--danger);
-      margin-top: 12px;
-      font-size: 0.85rem;
-      display: none;
-    }
-
-    /* ---------- MAIN WORKSPACE ---------- */
-    .container {
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-      display: none;
-      flex-direction: column;
-      min-height: 95vh;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 15px;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .header-logo {
-      width: 44px;
-      height: 44px;
-      object-fit: contain;
-      border-radius: 6px;
-      display: none;
-    }
-
-    .header-title {
-      font-size: clamp(1rem, 2.5vw, 1.3rem);
-      font-weight: 700;
-      color: #fff;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .lang-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .lang-container select {
-      padding: 8px 12px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: #fff;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-
-    .logout-btn {
-      padding: 8px 16px;
-      background: transparent;
-      border: 1px solid var(--danger);
-      color: var(--danger);
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .logout-btn:hover {
-      background: var(--danger);
-      color: #fff;
-    }
-
-    /* ---------- CARDS ---------- */
-    .card {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: clamp(15px, 2vw, 25px);
-      margin-bottom: 18px;
-    }
-
-    .task-title {
-      font-size: clamp(1rem, 2vw, 1.2rem);
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .task-ref {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    .task-desc {
-      font-size: 1rem;
-      line-height: 1.5;
-      margin-bottom: 15px;
-      color: #fff;
-      background: rgba(0,0,0,0.25);
-      padding: 14px;
-      border-radius: 6px;
-      border-left: 4px solid var(--accent);
-      word-wrap: break-word;
-    }
-
-    .return-note-desc {
-      font-size: 1rem;
-      line-height: 1.5;
-      margin-bottom: 15px;
-      color: #fff;
-      background: rgba(239,68,68,0.1);
-      padding: 14px;
-      border-radius: 6px;
-      border-left: 4px solid var(--danger);
-      word-wrap: break-word;
-    }
-
-    .locked-banner {
-      background: rgba(245,158,11,0.15);
-      border: 1px solid var(--warning);
-      color: var(--warning);
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .completed-banner {
-      background: rgba(16,185,129,0.15);
-      border: 1px solid var(--success);
-      color: var(--success);
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .item-box {
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 14px;
-      margin-bottom: 12px;
-    }
-
-    .thumb-img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 6px;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      margin-top: 8px;
-      display: block;
-    }
-
-    .thumb-img:hover {
-      transform: scale(1.05);
-      transition: transform 0.2s;
-    }
-
-    .dlm-ref-photo { margin-top: 10px; }
-
-    .dlm-ref-photo small {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    button[type="submit"],
-    button.btn-submit {
-      width: 100%;
-      padding: 12px;
-      background: var(--success);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: opacity 0.2s;
-    }
-
-    button[type="submit"]:hover:not(:disabled) { opacity: 0.9; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .empty-state {
-      text-align: center;
-      color: var(--text-muted);
-      padding: 40px 20px;
-      font-size: 1rem;
-    }
-
-    .dynamic-footer {
-      margin-top: auto;
-      padding-top: 20px;
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    /* ---------- IMAGE MODAL ---------- */
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 3000;
-      inset: 0;
-      background: rgba(0,0,0,0.9);
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .modal img {
-      max-width: 100%;
-      max-height: 100%;
-      border-radius: 8px;
-      border: 2px solid var(--border);
-    }
-
-    @media (max-width: 600px) {
-      .header-title { font-size: 1rem; }
-      .thumb-img { width: 60px; height: 60px; }
-      header { flex-direction: column; align-items: flex-start; }
-    }
-  </style>
+/* ===== NEW: Branding Preview Styles ===== */
+.color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
+.logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
+</style>
 </head>
 <body>
+<div class="container">
+  <header>
+    <div class="header-left">
+      <img id="headerLogo" class="header-logo" src="" alt="Logo">
+      <h1><span class="brand-name">Office</span> — Management Dashboard</h1>
+    </div>
+  </header>
 
-  <!-- ===================== LOGIN SCREEN ===================== -->
-  <div id="loginOverlay" class="login-overlay">
-    <div class="login-card">
-      <img id="loginLogo" class="login-logo" src="" alt="Logo">
-      <h2 id="loginTitle">Team Member Login</h2>
-      <p id="loginSubtitle">Enter your credentials provided by your Site Supervisor</p>
+  <div class="filter-bar">
+    <label for="siteFilter">Filter by Location:</label>
+    <select id="siteFilter" onchange="applyFilter()">
+      <option value="ALL">All Locations</option>
+    </select>
+  </div>
 
-      <div class="lang-selector">
-        <label id="langLabel" for="loginLangSelect">Language:</label>
-        <select id="loginLangSelect">
-          <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="fr">Français</option>
-          <option value="de">Deutsch</option>
-          <option value="it">Italiano</option>
-          <option value="pt">Português</option>
-          <option value="nl">Nederlands</option>
-          <option value="pl">Polski</option>
-          <option value="ro">Română</option>
-          <option value="tr">Türkçe</option>
-          <option value="ar">العربية</option>
-          <option value="hi">हिन्दी</option>
-          <option value="zh-CN">中文</option>
-          <option value="ja">日本語</option>
-          <option value="ko">한국어</option>
-          <option value="ru">Русский</option>
-          <option value="uk">Українська</option>
-          <option value="bg">Български</option>
-          <option value="cs">Čeština</option>
-          <option value="sk">Slovenčina</option>
-          <option value="hu">Magyar</option>
-          <option value="lt">Lietuvių</option>
-          <option value="lv">Latviešu</option>
-          <option value="et">Eesti</option>
-          <option value="sv">Svenska</option>
-          <option value="da">Dansk</option>
-          <option value="no">Norsk</option>
-          <option value="fi">Suomi</option>
-          <option value="el">Ελληνικά</option>
-        </select>
-      </div>
-
-      <form id="opLoginForm">
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Register New Site</div>
+      <form id="registerSiteForm">
         <div class="form-group">
-          <label id="labelName" for="opLoginName">Name</label>
-          <input type="text" id="opLoginName" placeholder="Your Name" required autocomplete="username">
+          <label>Site Name</label>
+          <input type="text" id="siteName" required>
         </div>
         <div class="form-group">
-          <label id="labelPassword" for="opLoginPassword">Password</label>
-          <input type="password" id="opLoginPassword" placeholder="Password" required autocomplete="current-password">
+          <label>Location / Address</label>
+          <input type="text" id="siteLocation" required>
         </div>
-        <button type="submit" class="btn-login" id="loginBtn">Access Workspace</button>
+        <button type="submit" class="btn btn-primary">Add Site</button>
       </form>
-      <p class="login-error" id="loginError">Invalid credentials. Please try again.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Create DLM Account</div>
+      <form id="assignManagerForm">
+        <div class="form-group">
+          <label>Select Site</label>
+          <select id="managerSiteSelect" required></select>
+        </div>
+        <div class="form-group">
+          <label>DLM Manager Name</label>
+          <input type="text" id="dlmManagerName" required>
+        </div>
+        <div class="form-group">
+          <label>Password (for DLM login)</label>
+          <input type="text" id="dlmManagerPassword" required placeholder="Set a password for this DLM">
+        </div>
+        <button type="submit" class="btn btn-primary">Create DLM Account</button>
+      </form>
     </div>
   </div>
 
-  <!-- ===================== MAIN WORKSPACE ===================== -->
-  <div class="container" id="mainContainer">
-    <header>
-      <div class="header-brand">
-        <img id="headerLogo" class="header-logo" src="" alt="Logo">
-        <div class="header-title"><span class="brand-name">Workspace</span> — <span id="opDisplayName">Team Member</span></div>
-      </div>
-      <div class="header-controls">
-        <div class="lang-container">
-          <label for="wsLangSelect" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="wsLangLabel">Language:</label>
-          <select id="wsLangSelect">
-            <option value="en">English</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="it">Italiano</option>
-            <option value="pt">Português</option>
-            <option value="nl">Nederlands</option>
-            <option value="pl">Polski</option>
-            <option value="ro">Română</option>
-            <option value="tr">Türkçe</option>
-            <option value="ar">العربية</option>
-            <option value="hi">हिन्दी</option>
-            <option value="zh-CN">中文</option>
-            <option value="ja">日本語</option>
-            <option value="ko">한국어</option>
-            <option value="ru">Русский</option>
-            <option value="uk">Українська</option>
-            <option value="bg">Български</option>
-            <option value="cs">Čeština</option>
-            <option value="sk">Slovenčina</option>
-            <option value="hu">Magyar</option>
-            <option value="lt">Lietuvių</option>
-            <option value="lv">Latviešu</option>
-            <option value="et">Eesti</option>
-            <option value="sv">Svenska</option>
-            <option value="da">Dansk</option>
-            <option value="no">Norsk</option>
-            <option value="fi">Suomi</option>
-            <option value="el">Ελληνικά</option>
-          </select>
-        </div>
-        <button class="logout-btn" id="logoutBtn">Logout</button>
-      </div>
-    </header>
-
-    <div id="tasksContainer">
-      <div class="empty-state" id="loadingMsg">Loading your assignments...</div>
+  <div class="card">
+    <div class="card-title">Active Sites & Assigned Managers Directory</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>Location</th>
+            <th>Assigned DLM Manager</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="sitesTableBody"></tbody>
+      </table>
     </div>
-
-    <div class="dynamic-footer"></div>
   </div>
 
-  <!-- ===================== IMAGE MODAL ===================== -->
-  <div class="modal" id="imgModal" onclick="this.style.display='none'">
-    <img id="modalImg" src="" alt="Zoom">
+  <div class="card">
+    <div class="card-title">Master Operative & Qualifications Directory</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Operative Name</th>
+            <th>Employer</th>
+            <th>Assigned Site</th>
+            <th>Qualification</th>
+            <th>Expiry Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="masterOperativesTableBody"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- ===================== JAVASCRIPT ===================== -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  <div class="card">
+    <div class="card-title">Master Reports Management</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Ref</th>
+            <th>Title</th>
+            <th>Site</th>
+            <th>DLM</th>
+            <th>Assigned To</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="masterReportsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-    // ---------- Firebase Config ----------
-    const firebaseConfig = {
-      apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-      authDomain: "lingua-site-franca.firebaseapp.com",
-      databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "lingua-site-franca",
-      storageBucket: "lingua-site-franca.firebasestorage.app",
-      messagingSenderId: "737514168886",
-      appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-    };
+  <div class="card">
+    <div class="card-title">Master Tasks Management</div>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Site</th>
+            <th>DLM</th>
+            <th>Operative</th>
+            <th>Task</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="masterTasksTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // ---------- State ----------
-    let currentOp = "";
-    let currentLangCode = 'en';
-
-    // ---------- UI Text (English base) ----------
-    const UI_TEXT = {
-      loginTitle: "Team Member Login",
-      loginSubtitle: "Enter your credentials provided by your Site Supervisor",
-      loginBtn: "Access Workspace",
-      langLabel: "Language:",
-      nameLabel: "Name",
-      passwordLabel: "Password",
-      namePlaceholder: "Your Name",
-      passwordPlaceholder: "Password",
-      loginError: "Invalid credentials. Please try again.",
-      loadingMsg: "Loading your assignments...",
-      noWork: "No active assignments for",
-      completedBanner: "✓ Completed — Awaiting final review",
-      lockedBanner: "⏳ Submitted — Under review by your supervisor",
-      supervisorNote: "Supervisor Note:",
-      refImage: "Reference image from supervisor:",
-      yourPhoto: "Your submitted photo",
-      yourComment: "Your submitted comment",
-      photoEvidence: "Photo Evidence *",
-      commentNotes: "Comment / Notes *",
-      submitAssignment: "Submit Assignment",
-      reportTitle: "Report:",
-      location: "Location:",
-      supervisor: "Supervisor:",
-      refImageItem: "Reference image:",
-      uploadPhoto: "Upload Photo Evidence *",
-      commentNote: "Comment / Note *",
-      submitReport: "Submit Report Updates",
-      item: "Item",
-      assigned: "Assigned",
-      completedReport: "✓ Report completed — Awaiting final review",
-      submittedReport: "⏳ Report submitted — Under review by your supervisor",
-      logoutBtn: "Logout",
-      noDescription: "No description provided",
-      untitled: "Untitled",
-      submitSuccess: "Assignment submitted successfully!",
-      submitError: "An error occurred while submitting the task: ",
-      reportSubmitSuccess: "Report submitted successfully!",
-      reportSubmitError: "An error occurred while submitting the report: ",
-      bothRequired: "Both a photo and a comment are required before submitting.",
-      noItemsSubmitted: "No items were submitted. Please ensure you have filled out the required fields for at least one active item."
-    };
-
-    let translatedUI = { ...UI_TEXT };
-
-    // ---------- Translation Engine (Google Translate - FREE, same as dlmplatform/officeplatform) ----------
-    const translationCache = {};
-
-    /**
-     * Translate text from English to target language.
-     * Uses the same Google Translate endpoint as dlmplatform.html and officeplatform.html.
-     * This is FREE with no API key required.
-     */
-    async function translateText(text, targetLangCode) {
-      if (!text || !text.trim()) return text;
-      if (targetLangCode === 'en') return text;
-
-      const cacheKey = `${text}__${targetLangCode}`;
-      if (translationCache[cacheKey]) return translationCache[cacheKey];
-
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const translated = data[0][0][0];
-        translationCache[cacheKey] = translated;
-        return translated;
-      } catch (e) {
-        console.warn("Translation failed:", e);
-        return text;
-      }
-    }
-
-    /**
-     * Translate any text to English (auto-detect source language).
-     * Used for translating team member comments to English for supervisors.
-     */
-    async function translateToEnglish(text) {
-      if (!text || !text.trim()) return text;
-      const cacheKey = `${text}__en`;
-      if (translationCache[cacheKey]) return translationCache[cacheKey];
-
-      try {
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        const translated = data[0][0][0];
-        translationCache[cacheKey] = translated;
-        return translated;
-      } catch (e) {
-        return text;
-      }
-    }
-
-    // ---------- Translate entire UI ----------
-    async function translateUI(targetLangCode) {
-      if (targetLangCode === 'en') {
-        translatedUI = { ...UI_TEXT };
-      } else {
-        translatedUI = {};
-        const keys = Object.keys(UI_TEXT);
-        const promises = keys.map(k => translateText(UI_TEXT[k], targetLangCode));
-        const results = await Promise.all(promises);
-        keys.forEach((k, i) => { translatedUI[k] = results[i]; });
-      }
-      applyUIText();
-    }
-
-    function applyUIText() {
-      // Login screen
-      const titleEl = document.getElementById('loginTitle');
-      if (titleEl) titleEl.innerText = translatedUI.loginTitle;
-
-      const subtitleEl = document.getElementById('loginSubtitle');
-      if (subtitleEl) subtitleEl.innerText = translatedUI.loginSubtitle;
-
-      const loginBtnEl = document.getElementById('loginBtn');
-      if (loginBtnEl) loginBtnEl.innerText = translatedUI.loginBtn;
-
-      const langLabelEl = document.getElementById('langLabel');
-      if (langLabelEl) langLabelEl.innerText = translatedUI.langLabel;
-
-      const wsLangLabelEl = document.getElementById('wsLangLabel');
-      if (wsLangLabelEl) wsLangLabelEl.innerText = translatedUI.langLabel;
-
-      const labelNameEl = document.getElementById('labelName');
-      if (labelNameEl) labelNameEl.innerText = translatedUI.nameLabel;
-
-      const labelPassEl = document.getElementById('labelPassword');
-      if (labelPassEl) labelPassEl.innerText = translatedUI.passwordLabel;
-
-      const loginNameEl = document.getElementById('opLoginName');
-      if (loginNameEl) loginNameEl.placeholder = translatedUI.namePlaceholder;
-
-      const loginPassEl = document.getElementById('opLoginPassword');
-      if (loginPassEl) loginPassEl.placeholder = translatedUI.passwordPlaceholder;
-
-      const loginErrorEl = document.getElementById('loginError');
-      if (loginErrorEl) loginErrorEl.innerText = translatedUI.loginError;
-
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) logoutBtn.innerText = translatedUI.logoutBtn;
-
-      const loadingMsg = document.getElementById('loadingMsg');
-      if (loadingMsg && loadingMsg.style.display !== 'none') {
-        loadingMsg.innerText = translatedUI.loadingMsg;
-      }
-    }
-
-    // ---------- Language Selector Handlers ----------
-    document.getElementById('loginLangSelect').addEventListener('change', async (e) => {
-      currentLangCode = e.target.value;
-      document.getElementById('wsLangSelect').value = currentLangCode;
-      await translateUI(currentLangCode);
-    });
-
-    document.getElementById('wsLangSelect').addEventListener('change', async (e) => {
-      currentLangCode = e.target.value;
-      document.getElementById('loginLangSelect').value = currentLangCode;
-      await translateUI(currentLangCode);
-      window.renderAllWork();
-    });
-
-    // ---------- Branding ----------
-    onValue(ref(db, 'branding'), (snapshot) => {
-      const data = snapshot.val();
-      if (!data) return;
-
-      if (data.businessName) {
-        document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-        document.title = `${data.businessName} - Team Member Workspace`;
-      }
-
-      if (data.footerText) {
-        document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
-      }
-
-      if (data.logo) {
-        const loginLogo = document.getElementById('loginLogo');
-        const headerLogo = document.getElementById('headerLogo');
-        if (loginLogo) { loginLogo.src = data.logo; loginLogo.style.display = 'block'; }
-        if (headerLogo) { headerLogo.src = data.logo; headerLogo.style.display = 'block'; }
-      }
-
-      if (data.primaryColor) document.documentElement.style.setProperty('--accent', data.primaryColor);
-      if (data.secondaryColor) document.documentElement.style.setProperty('--success', data.secondaryColor);
-    });
-
-    // ---------- Login Handler ----------
-    document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const name = document.getElementById('opLoginName').value.trim();
-      const pwd = document.getElementById('opLoginPassword').value;
-      const errEl = document.getElementById('loginError');
-      errEl.style.display = 'none';
-
-      if (!name || !pwd) {
-        errEl.style.display = 'block';
-        return;
-      }
-
-      try {
-        const snap = await get(ref(db, 'operatives'));
-        const ops = snap.val() || {};
-        const match = Object.values(ops).find(o =>
-          o.name && o.name.toLowerCase() === name.toLowerCase() && o.password === pwd
-        );
-
-        if (!match) {
-          errEl.style.display = 'block';
-          return;
-        }
-
-        currentOp = match.name;
-        document.getElementById('loginOverlay').style.display = 'none';
-        document.getElementById('mainContainer').style.display = 'flex';
-        document.getElementById('opDisplayName').innerText = currentOp;
-        window.renderAllWork();
-      } catch (err) {
-        console.error("Login error:", err);
-        errEl.innerText = "Connection error. Please try again.";
-        errEl.style.display = 'block';
-      }
-    });
-
-    // ---------- Logout Handler ----------
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      currentOp = "";
-      document.getElementById('mainContainer').style.display = 'none';
-      document.getElementById('loginOverlay').style.display = 'flex';
-      document.getElementById('opLoginForm').reset();
-      document.getElementById('loginError').style.display = 'none';
-      document.getElementById('tasksContainer').innerHTML = `<div class="empty-state" id="loadingMsg">${translatedUI.loadingMsg}</div>`;
-    });
-
-    // ---------- Render All Work ----------
-    window.renderAllWork = async function() {
-      if (!currentOp) return;
-
-      const container = document.getElementById('tasksContainer');
-      container.innerHTML = `<div class="empty-state">${translatedUI.loadingMsg}</div>`;
-
-      let loadedCount = 0;
-      let tasksData = {}, reportsData = {};
-
-      function checkAndDisplay() {
-        loadedCount++;
-        if (loadedCount < 2) return;
-
-        container.innerHTML = '';
-        let hasWork = false;
-
-        for (const key of Object.keys(tasksData)) {
-          const task = tasksData[key];
-          if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase()) {
-            hasWork = true;
-            renderTaskCard(key, task, container);
-          }
-        }
-
-        for (const key of Object.keys(reportsData)) {
-          const rep = reportsData[key];
-          let isAssigned = false;
-          if (rep.assignedTo) {
-            if (Array.isArray(rep.assignedTo)) isAssigned = rep.assignedTo.some(n => n.toLowerCase() === currentOp.toLowerCase());
-            else if (typeof rep.assignedTo === 'object') isAssigned = Object.values(rep.assignedTo).some(n => n.toLowerCase() === currentOp.toLowerCase());
-            else if (typeof rep.assignedTo === 'string') isAssigned = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
-          }
-          if (isAssigned) {
-            hasWork = true;
-            renderReportCard(key, rep, container);
-          }
-        }
-
-        if (!hasWork) {
-          container.innerHTML = `<div class="empty-state">${translatedUI.noWork} ${currentOp}.</div>`;
-        }
-      }
-
-      onValue(ref(db, 'tasks'), (s) => { tasksData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
-      onValue(ref(db, 'reports'), (s) => { reportsData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
-    };
-
-    // ---------- Render Task Card ----------
-    async function renderTaskCard(key, task, container) {
-      const translatedDetails = await translateText(task.details || '', currentLangCode);
-      const isLocked = task.status === 'Submitted' || task.status === 'Accepted' || task.status === 'Approved';
-      const isCompleted = task.status === 'Accepted' || task.status === 'Approved';
-
-      let bannerHTML = '';
-      if (isCompleted) bannerHTML = `<div class="completed-banner">${translatedUI.completedBanner}</div>`;
-      else if (task.status === 'Submitted') bannerHTML = `<div class="locked-banner">${translatedUI.lockedBanner}</div>`;
-
-      let returnNoteHTML = '';
-      if (task.returnNote) {
-        const tNote = await translateText(task.returnNote, currentLangCode);
-        returnNoteHTML = `<div class="return-note-desc"><strong>${translatedUI.supervisorNote}</strong><br>${tNote}</div>`;
-      }
-
-      let dlmPhotoHTML = '';
-      if (task.dlmPhoto) {
-        const safeSrc = task.dlmPhoto.replace(/'/g, "\\'");
-        dlmPhotoHTML = `<div class="dlm-ref-photo"><small>${translatedUI.refImage}</small><img src="${task.dlmPhoto}" class="thumb-img" onclick="openModal('${safeSrc}')"></div>`;
-      }
-
-      let formHTML = '';
-      if (isLocked) {
-        if (task.photo || task.operativePhoto) {
-          const opPhoto = task.operativePhoto || task.photo;
-          const safeSrc = opPhoto.replace(/'/g, "\\'");
-          formHTML += `<div class="form-group"><label>${translatedUI.yourPhoto}</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${safeSrc}')"></div>`;
-        }
-        if (task.comment) {
-          const tc = await translateText(task.comment, currentLangCode);
-          formHTML += `<div class="form-group"><label>${translatedUI.yourComment}</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
-        }
-      } else {
-        formHTML = `
-          <form onsubmit="submitTask(event, '${key}')" novalidate>
-            <div class="form-group">
-              <label>${translatedUI.photoEvidence}</label>
-              <input type="file" id="photo_${key}" accept="image/*" capture="environment" required>
-            </div>
-            <div class="form-group">
-              <label>${translatedUI.commentNotes}</label>
-              <textarea id="comment_${key}" rows="3" required placeholder="Describe what you have done..."></textarea>
-            </div>
-            <button type="submit">${translatedUI.submitAssignment}</button>
-          </form>`;
-      }
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="task-title">
-          <span>${translatedUI.assigned} ${task.status ? `(${task.status})` : ''}</span>
-          <span class="task-ref">Ref: ${task.refNumber || key.substring(0,8)}</span>
+  <!-- ===== UPDATED: Branding Panel now includes Logo + 2 Colours ===== -->
+  <div class="card" style="border: 2px solid var(--accent);">
+    <div class="card-title">Global Branding & Footer Configuration</div>
+    <form id="brandingForm">
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Company / Brand Name (displayed centrally)</label>
+          <input type="text" id="brandNameInput" required>
         </div>
-        <div class="task-desc">${translatedDetails || translatedUI.noDescription}</div>
-        ${dlmPhotoHTML}
-        ${bannerHTML}
-        ${returnNoteHTML}
-        ${formHTML}
-      `;
-      container.appendChild(card);
-    }
-
-    // ---------- Render Report Card ----------
-    async function renderReportCard(key, rep, container) {
-      const rawItems = rep.items;
-      const itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-      const isReportLocked = rep.status === 'Submitted' || rep.status === 'Accepted' || rep.status === 'Approved';
-      const isReportCompleted = rep.status === 'Accepted' || rep.status === 'Approved';
-
-      let bannerHTML = '';
-      if (isReportCompleted) bannerHTML = `<div class="completed-banner">${translatedUI.completedReport}</div>`;
-      else if (rep.status === 'Submitted') bannerHTML = `<div class="locked-banner">${translatedUI.submittedReport}</div>`;
-
-      let returnNoteHTML = '';
-      if (rep.returnNote) {
-        const tNote = await translateText(rep.returnNote, currentLangCode);
-        returnNoteHTML = `<div class="return-note-desc"><strong>${translatedUI.supervisorNote}</strong><br>${tNote}</div>`;
-      }
-
-      let itemsHtml = '';
-      for (let i = 0; i < itemsArray.length; i++) {
-        const item = itemsArray[i];
-        const itemText = item.description || item.title || item.details || `${translatedUI.item} ${i + 1}`;
-        const translatedItem = await translateText(itemText, currentLangCode);
-        const itemLocked = item.status === 'Submitted' || item.status === 'Accepted' || isReportLocked;
-
-        let dlmPhotoHtml = '';
-        if (item.photo) {
-          const safeSrc = item.photo.replace(/'/g, "\\'");
-          dlmPhotoHtml = `<div class="dlm-ref-photo"><small>${translatedUI.refImageItem}</small><img src="${item.photo}" class="thumb-img" onclick="openModal('${safeSrc}')"></div>`;
-        }
-
-        let itemFormHtml = '';
-        if (itemLocked) {
-          if (item.submittedPhoto || item.operativePhoto) {
-            const opPhoto = item.submittedPhoto || item.operativePhoto;
-            const safeSrc = opPhoto.replace(/'/g, "\\'");
-            itemFormHtml += `<div class="form-group"><label>${translatedUI.yourPhoto}</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${safeSrc}')"></div>`;
-          }
-          if (item.comment) {
-            const tc = await translateText(item.comment, currentLangCode);
-            itemFormHtml += `<div class="form-group"><label>${translatedUI.yourComment}</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
-          }
-        } else {
-          itemFormHtml = `
-            <div class="form-group"><label>${translatedUI.uploadPhoto}</label><input type="file" id="report_photo_${key}_${i}" accept="image/*" capture="environment" required></div>
-            <div class="form-group"><label>${translatedUI.commentNote}</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress..."></textarea></div>
-          `;
-        }
-
-        itemsHtml += `
-          <div class="item-box">
-            <strong>${translatedUI.item} ${i + 1}:</strong> ${translatedItem} <small style="color:var(--text-muted);">(${item.status || translatedUI.assigned})</small>
-            ${dlmPhotoHtml}
-            ${itemFormHtml}
+        <div class="form-group">
+          <label>Footer Custom Text (displayed centrally)</label>
+          <input type="text" id="footerTextInput" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Logo (placed on top-left of all interfaces)</label>
+        <input type="file" id="logoInput" accept="image/*">
+        <img id="logoPreview" class="logo-preview" alt="Logo preview">
+      </div>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Primary Brand Colour</label>
+          <input type="color" id="primaryColorInput" value="#3b82f6">
+          <div class="color-preview">
+            <div class="color-swatch" id="primarySwatch" style="background:#3b82f6;"></div>
+            <span id="primaryHex">#3b82f6</span>
           </div>
-        `;
-      }
+        </div>
+        <div class="form-group">
+          <label>Secondary Brand Colour</label>
+          <input type="color" id="secondaryColorInput" value="#10b981">
+          <div class="color-preview">
+            <div class="color-swatch" id="secondarySwatch" style="background:#10b981;"></div>
+            <span id="secondaryHex">#10b981</span>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success">Apply Branding to All Interfaces</button>
+    </form>
+  </div>
 
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="task-title">
-          <span>${translatedUI.reportTitle} ${rep.title || translatedUI.untitled} (${rep.status || translatedUI.assigned})</span>
-          <span class="task-ref">Ref: ${rep.refNumber || key.substring(0,8)}</span>
-        </div>
-        <div class="task-desc">
-          <strong>${translatedUI.location}</strong> ${rep.site || 'N/A'}<br>
-          <strong>${translatedUI.supervisor}</strong> ${rep.dlm || 'N/A'}
-        </div>
-        ${bannerHTML}
-        ${returnNoteHTML}
-        <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})" novalidate>
-          ${itemsHtml}
-          ${!isReportLocked ? `<button type="submit">${translatedUI.submitReport}</button>` : ''}
-        </form>
-      `;
-      container.appendChild(card);
+  <div class="dynamic-footer">Office Management Dashboard</div>
+</div>
+
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="Zoom">
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+  authDomain: "lingua-site-franca.firebaseapp.com",
+  databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lingua-site-franca",
+  storageBucket: "lingua-site-franca.firebasestorage.app",
+  messagingSenderId: "737514168886",
+  appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+async function translateToEnglish(text) {
+  if (!text) return 'None';
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    return data[0][0][0];
+  } catch (e) {
+    return text;
+  }
+}
+
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function formatHistory(historyArr) {
+  if (!historyArr || historyArr.length === 0) return 'No history';
+  return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+}
+
+let currentFilter = 'ALL';
+function applyFilter() {
+  currentFilter = document.getElementById('siteFilter').value;
+  renderAll();
+}
+window.applyFilter = applyFilter;
+
+function matchesFilter(siteName) {
+  if (currentFilter === 'ALL') return true;
+  return siteName && siteName.toLowerCase() === currentFilter.toLowerCase();
+}
+
+function renderAll() {
+  renderSites();
+  renderOperatives();
+  renderReports();
+  renderTasks();
+}
+
+// ===== NEW: Logo + Branding State =====
+let currentLogoBase64 = null;
+
+// ===== NEW: Branding Sync (loads logo + colours from Firebase) =====
+onValue(ref(db, 'branding'), (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    if (data.businessName) {
+      document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
+      document.title = `${data.businessName} - Office Dashboard`;
+      const brandInput = document.getElementById('brandNameInput');
+      if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
     }
+    if (data.footerText) {
+      document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+      const footerInput = document.getElementById('footerTextInput');
+      if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
+    }
+    // ===== NEW: Logo =====
+    if (data.logo) {
+      document.getElementById('headerLogo').src = data.logo;
+      document.getElementById('headerLogo').style.display = 'block';
+      document.getElementById('logoPreview').src = data.logo;
+      document.getElementById('logoPreview').style.display = 'block';
+      currentLogoBase64 = data.logo;
+    }
+    // ===== NEW: Primary Colour =====
+    if (data.primaryColor) {
+      document.documentElement.style.setProperty('--accent', data.primaryColor);
+      document.getElementById('primaryColorInput').value = data.primaryColor;
+      document.getElementById('primarySwatch').style.background = data.primaryColor;
+      document.getElementById('primaryHex').innerText = data.primaryColor;
+    }
+    // ===== NEW: Secondary Colour =====
+    if (data.secondaryColor) {
+      document.documentElement.style.setProperty('--success', data.secondaryColor);
+      document.getElementById('secondaryColorInput').value = data.secondaryColor;
+      document.getElementById('secondarySwatch').style.background = data.secondaryColor;
+      document.getElementById('secondaryHex').innerText = data.secondaryColor;
+    }
+  }
+});
 
-    // ---------- Image Modal ----------
-    window.openModal = (src) => {
-      document.getElementById('modalImg').src = src;
-      document.getElementById('imgModal').style.display = 'flex';
-    };
+// ===== NEW: Live colour swatch updates =====
+document.getElementById('primaryColorInput').addEventListener('input', (e) => {
+  document.getElementById('primarySwatch').style.background = e.target.value;
+  document.getElementById('primaryHex').innerText = e.target.value;
+});
+document.getElementById('secondaryColorInput').addEventListener('input', (e) => {
+  document.getElementById('secondarySwatch').style.background = e.target.value;
+  document.getElementById('secondaryHex').innerText = e.target.value;
+});
 
-    // ---------- Submit Task ----------
-    window.submitTask = async (e, key) => {
-      e.preventDefault();
-      try {
-        const comment = document.getElementById(`comment_${key}`).value.trim();
-        const fileInput = document.getElementById(`photo_${key}`);
+// ===== NEW: Logo file reader =====
+document.getElementById('logoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    currentLogoBase64 = reader.result;
+    document.getElementById('logoPreview').src = reader.result;
+    document.getElementById('logoPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
 
-        if (!comment || fileInput.files.length === 0) {
-          return alert(translatedUI.bothRequired);
-        }
+// ===== UPDATED: Branding form now saves logo + colours too =====
+document.getElementById('brandingForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const businessName = document.getElementById('brandNameInput').value.trim();
+  const footerText = document.getElementById('footerTextInput').value.trim();
+  const primaryColor = document.getElementById('primaryColorInput').value;
+  const secondaryColor = document.getElementById('secondaryColorInput').value;
+  set(ref(db, 'branding'), {
+    businessName,
+    footerText,
+    logo: currentLogoBase64 || '',
+    primaryColor,
+    secondaryColor
+  }).then(() => {
+    alert('Global branding, logo and colours updated across all interfaces!');
+  });
+});
 
-        const photoData = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.readAsDataURL(fileInput.files[0]);
-        });
+document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const name = document.getElementById('siteName').value.trim();
+  const location = document.getElementById('siteLocation').value.trim();
+  push(ref(db, 'sites'), { name, location }).then(() => {
+    document.getElementById('registerSiteForm').reset();
+    alert('Site registered successfully!');
+  });
+});
 
-        const now = new Date().toISOString();
-        const snapshot = await get(ref(db, `tasks/${key}`));
-        const existing = snapshot.val() || {};
-        const history = existing.history || [];
-        history.push({ action: 'Submitted by team member', timestamp: now, comment });
+document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const site = document.getElementById('managerSiteSelect').value;
+  const manager = document.getElementById('dlmManagerName').value.trim();
+  const password = document.getElementById('dlmManagerPassword').value;
+  push(ref(db, 'dlmAccounts'), { 
+    name: manager, 
+    password: password,
+    assignedSite: site,
+    createdAt: new Date().toISOString() 
+  }).then(() => {
+    document.getElementById('assignManagerForm').reset();
+    alert('DLM Manager account created successfully!');
+  });
+});
 
-        await update(ref(db, `tasks/${key}`), {
-          status: 'Submitted',
-          comment: comment,
-          operativePhoto: photoData,
-          photo: photoData,
-          submittedAt: now,
-          history: history
-        });
+onValue(ref(db, 'sites'), (snapshot) => {
+  const data = snapshot.val() || {};
+  const filterSelect = document.getElementById('siteFilter');
+  const managerSelect = document.getElementById('managerSiteSelect');
+  const currentFilterVal = filterSelect.value;
+  
+  filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
+  managerSelect.innerHTML = '<option value="">-- Select Site --</option>';
+  
+  Object.keys(data).forEach(key => {
+    const site = data[key];
+    filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+    managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+  });
+  
+  filterSelect.value = currentFilterVal || 'ALL';
+  renderAll();
+});
 
-        alert(translatedUI.submitSuccess);
-        window.renderAllWork();
-      } catch (error) {
-        console.error("Error in submitTask:", error);
-        alert(translatedUI.submitError + error.message);
-      }
-    };
+let allDlmAccounts = {};
+onValue(ref(db, 'dlmAccounts'), (snapshot) => {
+  allDlmAccounts = snapshot.val() || {};
+  renderSites();
+});
 
-    // ---------- Submit Report ----------
-    window.submitReport = async (e, key, itemCount) => {
-      e.preventDefault();
-      try {
-        const snapshot = await get(ref(db, `reports/${key}`));
-        const rep = snapshot.val();
-        if (!rep) return alert('Report not found in database.');
-
-        let rawItems = rep.items;
-        let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-        const now = new Date().toISOString();
-        let anyChanges = false;
-        const totalItems = Number(itemCount);
-
-        for (let i = 0; i < totalItems; i++) {
-          const commentEl = document.getElementById(`report_comment_${key}_${i}`);
-          const fileEl = document.getElementById(`report_photo_${key}_${i}`);
-
-          if (!commentEl || !fileEl) continue;
-
-          const comment = commentEl.value.trim();
-          if (!comment || fileEl.files.length === 0) {
-            alert(`${translatedUI.item} ${i+1}: Both photo and comment are required.`);
-            return;
-          }
-
-          const photoData = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(fileEl.files[0]);
-          });
-
-          if (itemsArray[i]) {
-            const itemHistory = itemsArray[i].history || [];
-            itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
-            itemsArray[i].comment = comment;
-            itemsArray[i].status = 'Submitted';
-            itemsArray[i].submittedPhoto = photoData;
-            itemsArray[i].operativePhoto = photoData;
-            itemsArray[i].submittedAt = now;
-            itemsArray[i].history = itemHistory;
-            anyChanges = true;
-          }
-        }
-
-        if (!anyChanges) {
-          return alert(translatedUI.noItemsSubmitted);
-        }
-
-        const reportHistory = rep.history || [];
-        reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
-
-        await update(ref(db, `reports/${key}`), {
-          status: 'Submitted',
-          items: itemsArray,
-          submittedAt: now,
-          history: reportHistory
-        });
-
-        alert(translatedUI.reportSubmitSuccess);
-        window.renderAllWork();
-      } catch (error) {
-        console.error("Error in submitReport:", error);
-        alert(translatedUI.reportSubmitError + error.message);
-      }
-    };
-
-    // ---------- ESC closes modal ----------
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        document.getElementById('imgModal').style.display = 'none';
-      }
+function renderSites() {
+  onValue(ref(db, 'sites'), (siteSnapshot) => {
+    const sitesData = siteSnapshot.val() || {};
+    const tbody = document.getElementById('sitesTableBody');
+    tbody.innerHTML = '';
+    Object.keys(sitesData).forEach(siteKey => {
+      const site = sitesData[siteKey];
+      if (!matchesFilter(site.name)) return;
+      const managerEntry = Object.values(allDlmAccounts).find(a => a.assignedSite === site.name);
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${site.name}</strong></td>
+          <td>${site.location}</td>
+          <td>${managerEntry ? managerEntry.name : 'Unassigned'}</td>
+          <td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
+        </tr>
+      `;
     });
+  }, { onlyOnce: true });
+}
 
-    // ---------- Initial UI apply ----------
-    applyUIText();
-  </script>
+window.deleteSite = (key) => {
+  if (confirm('Remove this site?')) {
+    remove(ref(db, `sites/${key}`));
+  }
+};
+
+function renderOperatives() {
+  onValue(ref(db, 'operatives'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('masterOperativesTableBody');
+    tbody.innerHTML = '';
+    const today = new Date().toISOString().split('T')[0];
+    Object.keys(data).forEach(key => {
+      const op = data[key];
+      if (!matchesFilter(op.assignedSite)) return;
+      const isExpired = op.expiry && op.expiry < today;
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${op.name}</strong></td>
+          <td>${op.employer || 'N/A'}</td>
+          <td>${op.assignedSite}</td>
+          <td>${op.qualification}</td>
+          <td>${op.expiry}</td>
+          <td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="editOperative('${key}')">Edit</button>
+              <button class="btn-danger" onclick="deleteOperative('${key}')">Remove</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+  }, { onlyOnce: true });
+}
+
+window.editOperative = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `operatives/${key}`), resolve, { onlyOnce: true }));
+  const op = snap.val();
+  if (!op) return;
+  const newName = prompt('Name:', op.name); if (newName === null) return;
+  const newPwd = prompt('Password:', op.password || ''); if (newPwd === null) return;
+  const newEmp = prompt('Employer:', op.employer || ''); if (newEmp === null) return;
+  const newQual = prompt('Certification:', op.qualification || ''); if (newQual === null) return;
+  const newExp = prompt('Expiry date (YYYY-MM-DD):', op.expiry || ''); if (newExp === null) return;
+  await update(ref(db, `operatives/${key}`), {
+    name: newName.trim(), password: newPwd, employer: newEmp.trim(),
+    qualification: newQual.trim(), expiry: newExp.trim()
+  });
+  alert('Member updated.');
+};
+
+window.deleteOperative = (key) => {
+  if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
+};
+
+function renderReports() {
+  onValue(ref(db, 'reports'), async (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('masterReportsTableBody');
+    tbody.innerHTML = '';
+    const keys = Object.keys(data);
+    for (const key of keys) {
+      const rep = data[key];
+      if (!matchesFilter(rep.site)) continue;
+      let assignedNames = 'None';
+      if (rep.assignedTo) {
+        if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+        else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+        else assignedNames = rep.assignedTo;
+      }
+      let badgeClass = 'badge-assigned';
+      if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
+      else if (rep.status === 'Returned') badgeClass = 'badge-expired';
+      else if (rep.status === 'Submitted') badgeClass = 'badge-assigned';
+      const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
+      tbody.innerHTML += `
+        <tr>
+          <td>${reportDate}</td>
+          <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+          <td>${rep.title || 'Untitled'}</td>
+          <td>${rep.site || 'N/A'}</td>
+          <td>${rep.dlm || 'N/A'}</td>
+          <td>${assignedNames}</td>
+          <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewReport('${key}')">View</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptReport('${key}')">Accept</button>
+              <button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnReport('${key}')">Return</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
+              <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  }, { onlyOnce: true });
+}
+
+window.viewReport = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snap.val();
+  if (!rep) return alert('Report not found.');
+  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+  let itemsHtml = '';
+  if (rep.items) {
+    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const translatedComment = await translateToEnglish(item.comment || '');
+      itemsHtml += `\n  Item ${i+1}: ${item.description} | Status: ${item.status || 'Assigned'} | Comment (EN): ${translatedComment}`;
+    }
+  }
+  alert(`Report: ${rep.title}\nRef: ${rep.refNumber || key.substring(0,8)}\nStatus: ${rep.status}\nAssigned to: ${assignedNames}\n\nItems:${itemsHtml}`);
+};
+
+window.acceptReport = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snap.val();
+  const history = rep.history || [];
+  history.push({ action: 'Report accepted by office', timestamp: new Date().toISOString() });
+  await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
+  alert('Report accepted!');
+};
+
+window.returnReport = async (key) => {
+  const note = prompt('Enter reason for returning:');
+  if (!note) return;
+  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snap.val();
+  const history = rep.history || [];
+  history.push({ action: 'Report returned by office', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
+  alert('Report returned!');
+};
+
+window.exportSingleReportCsv = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const rep = snap.val();
+  if (!rep) return alert('Report not found.');
+  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
+  const history = formatHistory(rep.history || []);
+  csv += [
+    `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(rep.title || '').replace(/"/g, '""')}"`,
+    `"${(rep.site || '').replace(/"/g, '""')}"`,
+    `"${(rep.dlm || '').replace(/"/g, '""')}"`,
+    `"${assignedNames.replace(/"/g, '""')}"`,
+    `"${(rep.status || '').replace(/"/g, '""')}"`,
+    `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+  if (rep.items) {
+    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+    csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const translatedComment = await translateToEnglish(item.comment || '');
+      const itemHistory = formatHistory(item.history || []);
+      csv += [
+        `"${i+1}"`,
+        `"${(item.description || '').replace(/"/g, '""')}"`,
+        `"${(item.status || '').replace(/"/g, '""')}"`,
+        `"${translatedComment.replace(/"/g, '""')}"`,
+        `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+        `"${itemHistory.replace(/"/g, '""')}"`
+      ].join(",") + "\n";
+    }
+  }
+  downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+window.exportSingleReportPdf = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+  const report = snap.val();
+  if (!report) return alert('Report not found.');
+  const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+  let itemsHtml = '';
+  if (report.items) {
+    const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+      const opPhoto = item.submittedPhoto || item.operativePhoto;
+      const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+      const translatedComment = await translateToEnglish(item.comment || '');
+      const itemHistory = item.history || [];
+      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+      itemsHtml += `
+        <tr>
+          <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
+          <td>${item.description}<br><br><strong>Supervisor's photo:</strong><br>${dlmPhotoTag}<br><br><strong>Member's comment (translated):</strong><br>${translatedComment}<br><br><strong>Member's photo:</strong><br>${opPhotoTag}<br><br><small>Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
+          <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
+        </tr>`;
+    }
+  }
+  const reportHistory = report.history || [];
+  const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+  const printWindow = window.open('', '', 'height=900,width=900');
+  printWindow.document.write(`
+<html><head><title>${report.title}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Report — ${report.title}</h2>
+<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | Supervisor: ${report.dlm} | Assigned to: ${assignedNames} | Status: <strong>${report.status}</strong></div>
+<h3>Items</h3>
+<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+<h3 style="margin-top:20px;">Report Timeline</h3>
+<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
+<div class="footer">Generated on ${new Date().toLocaleString()}</div>
+</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 700);
+};
+
+window.deleteReport = (key) => {
+  if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
+};
+
+function renderTasks() {
+  onValue(ref(db, 'tasks'), async (snapshot) => {
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById('masterTasksTableBody');
+    tbody.innerHTML = '';
+    const keys = Object.keys(data);
+    for (const key of keys) {
+      const task = data[key];
+      if (!matchesFilter(task.site)) continue;
+      let badgeClass = 'badge-assigned';
+      if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
+      else if (task.status === 'Returned') badgeClass = 'badge-expired';
+      else if (task.status === 'Submitted') badgeClass = 'badge-assigned';
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
+          <td>${task.site || 'N/A'}</td>
+          <td>${task.dlm || 'N/A'}</td>
+          <td>${task.operative || 'N/A'}</td>
+          <td style="max-width:200px;">${task.details || ''}</td>
+          <td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewTask('${key}')">View</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptTask('${key}')">Accept</button>
+              <button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnTask('${key}')">Return</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
+              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
+              <button class="btn-danger" onclick="deleteTask('${key}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  }, { onlyOnce: true });
+}
+
+window.viewTask = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const history = formatHistory(task.history || []);
+  alert(`Task: ${task.refNumber || key.substring(0,8)}\nStatus: ${task.status}\nAssigned to: ${task.operative}\n\nDescription: ${task.details}\n\nComment (EN): ${translatedComment}\nSubmitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}\n\nTimeline:\n  ${history}`);
+};
+
+window.acceptTask = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  const history = task.history || [];
+  history.push({ action: 'Task accepted by office', timestamp: new Date().toISOString() });
+  await update(ref(db, `tasks/${key}`), { status: 'Accepted', history });
+  alert('Task accepted!');
+};
+
+window.returnTask = async (key) => {
+  const note = prompt('Enter reason for returning:');
+  if (!note) return;
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  const history = task.history || [];
+  history.push({ action: 'Task returned by office', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `tasks/${key}`), { status: 'Returned', returnNote: note, history });
+  alert('Task returned!');
+};
+
+window.exportTaskCsv = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const history = formatHistory(task.history || []);
+  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
+  csv += [
+    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(task.site || '').replace(/"/g, '""')}"`,
+    `"${(task.dlm || '').replace(/"/g, '""')}"`,
+    `"${(task.operative || '').replace(/"/g, '""')}"`,
+    `"${(task.details || '').replace(/"/g, '""')}"`,
+    `"${(task.status || '').replace(/"/g, '""')}"`,
+    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+    `"${translatedComment.replace(/"/g, '""')}"`,
+    `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+  downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+window.exportTaskPdf = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const opPhoto = task.operativePhoto || task.photo;
+  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
+  const history = task.history || [];
+  const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+  const printWindow = window.open('', '', 'height=900,width=900');
+  printWindow.document.write(`
+<html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+.section { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.section h3 { margin: 0 0 10px 0; color: #334155; font-size: 1rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
+<div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
+<div class="section"><h3>Supervisor's Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
+<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence:</strong><br>${opPhotoTag}</p><p><small>Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
+<div class="section"><h3>Activity Timeline</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
+<div class="footer">Generated on ${new Date().toLocaleString()}</div>
+</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 700);
+};
+
+window.deleteTask = (key) => {
+  if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
+};
+
+window.openModal = (src) => {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imgModal').style.display = 'flex';
+};
+</script>
 </body>
 </html>
