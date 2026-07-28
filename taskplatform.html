@@ -3,80 +3,122 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Operative Task Portal</title>
+<title>Team Member Workspace</title>
 <style>
 :root {
---bg: #0f172a;
---card-bg: #1e293b;
---accent: #3b82f6;
---text: #f8fafc;
---text-muted: #94a3b8;
---border: #334155;
---success: #10b981;
---danger: #ef4444;
---warning: #f59e0b;
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-body { background-color: var(--bg); color: var(--text); padding: 20px; }
-.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-.container { width: 95%; max-width: 1400px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
-.lang-container { display: flex; align-items: center; gap: 10px; }
-.lang-input { padding: 9px 14px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.95rem; width: 240px; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
+body { padding: clamp(10px, 2vw, 20px); }
+
+/* Login */
+.login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
+.login-card { width: 100%; max-width: 420px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; }
+.login-card h2 { color: var(--accent); margin-bottom: 8px; font-size: 1.4rem; }
+.login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
+.login-logo { max-width: 120px; max-height: 80px; margin: 0 auto 15px; display: none; }
+
+/* Container */
+.container { width: 100%; max-width: 1400px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
+
+/* Header */
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 12px; }
+.header-brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; display: none; }
+.header-title { font-size: clamp(1rem, 2.5vw, 1.3rem); font-weight: 700; color: #fff; }
+.lang-container { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lang-input { padding: 9px 12px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.9rem; width: 100%; min-width: 180px; max-width: 260px; }
 .lang-input:focus { outline: none; border-color: var(--accent); }
-.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
-.task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
-.task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent); }
-.return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
-.item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+
+/* Cards */
+.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: clamp(15px, 2vw, 25px); margin-bottom: 18px; }
+.task-title { font-size: clamp(1rem, 2vw, 1.2rem); font-weight: 700; color: var(--accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.task-ref { font-size: 0.75rem; color: var(--text-muted); font-weight: 400; }
+.task-desc { font-size: 1rem; line-height: 1.5; margin-bottom: 15px; color: #fff; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; border-left: 4px solid var(--accent); word-wrap: break-word; }
+.return-note-desc { font-size: 1rem; line-height: 1.5; margin-bottom: 15px; color: #fff; background: rgba(239,68,68,0.1); padding: 14px; border-radius: 6px; border-left: 4px solid var(--danger); word-wrap: break-word; }
+.locked-banner { background: rgba(245,158,11,0.15); border: 1px solid var(--warning); color: var(--warning); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600; text-align: center; }
+.completed-banner { background: rgba(16,185,129,0.15); border: 1px solid var(--success); color: var(--success); padding: 12px; border-radius: 6px; margin-bottom: 15px; font-size: 0.9rem; font-weight: 600; text-align: center; }
+
+.item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 14px; margin-bottom: 12px; }
 .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); margin-top: 8px; display: block; }
-.thumb-img:hover { transform: scale(1.05); }
-.form-group { margin-bottom: 15px; }
-label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
-textarea, input[type="file"], input[type="text"] { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; }
-input:focus { outline: none; border-color: var(--accent); }
-button { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem; }
-button:hover { opacity: 0.9; }
+.thumb-img:hover { transform: scale(1.05); transition: transform 0.2s; }
+.dlm-ref-photo { margin-top: 10px; }
+.dlm-ref-photo small { color: var(--text-muted); font-size: 0.8rem; display: block; margin-bottom: 4px; }
+
+.form-group { margin-bottom: 14px; }
+label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left; }
+textarea, input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.95rem; }
+input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+button { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: opacity 0.2s; }
+button:hover:not(:disabled) { opacity: 0.9; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-login { background: var(--accent); margin-top: 10px; }
-.empty-state { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 1.1rem; }
-.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
-.modal { display: none; position: fixed; z-index: 3000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
-.modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+.empty-state { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 1rem; }
+.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+.modal { display: none; position: fixed; z-index: 3000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
+.modal img { max-width: 100%; max-height: 100%; border-radius: 8px; border: 2px solid var(--border); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .header-title { font-size: 1rem; }
+  .lang-input { min-width: 140px; }
+  .thumb-img { width: 60px; height: 60px; }
+}
 </style>
 </head>
 <body>
+
 <!-- Login Overlay -->
 <div id="loginOverlay" class="login-overlay">
-<div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-<h2 style="margin-bottom: 20px; color: var(--accent);" data-translate="operative_login">Operative Login</h2>
-<form id="opLoginForm">
-<div class="form-group">
-<input type="text" id="opLoginName" placeholder="" data-placeholder="enter_name" required>
-</div>
-<button type="submit" class="btn-login" data-translate="access_tasks">Access Tasks & Reports</button>
-</form>
-</div>
+  <div class="login-card">
+    <img id="loginLogo" class="login-logo" src="" alt="Logo">
+    <h2 id="loginTitle">Team Member Login</h2>
+    <p>Enter your credentials provided by your Site Supervisor</p>
+    <form id="opLoginForm">
+      <div class="form-group">
+        <input type="text" id="opLoginName" placeholder="Your Name" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <input type="password" id="opLoginPassword" placeholder="Password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-login">Access Workspace</button>
+    </form>
+    <p id="loginError" style="color: var(--danger); margin-top: 12px; font-size: 0.85rem; display: none;"></p>
+  </div>
 </div>
 
 <div class="container" id="mainContainer">
-<header>
-<h2><span class="brand-name">LinguaSiteFranca</span> — <span id="opDisplayName">Operative</span>'s <span data-translate="workspace">Workspace</span></h2>
-<div class="lang-container">
-<label for="langInput" style="font-size: 0.9rem; color: var(--text-muted);" data-translate="spoken_language">Spoken Language:</label>
-<input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()">
-<datalist id="languagesList"></datalist>
-</div>
-</header>
+  <header>
+    <div class="header-brand">
+      <img id="headerLogo" class="header-logo" src="" alt="Logo">
+      <div class="header-title"><span class="brand-name">Workspace</span> — <span id="opDisplayName">Team Member</span></div>
+    </div>
+    <div class="lang-container">
+      <label for="langInput" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Language:</label>
+      <input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()" placeholder="English">
+      <datalist id="languagesList"></datalist>
+    </div>
+  </header>
 
-<div id="tasksContainer">
-<div class="empty-state" data-translate="loading_work">Loading assigned tasks and reports...</div>
-</div>
+  <div id="tasksContainer">
+    <div class="empty-state">Loading your assignments...</div>
+  </div>
 
-<div class="dynamic-footer"></div>
+  <div class="dynamic-footer"></div>
 </div>
 
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
-<img id="modalImg" src="" alt="Zoom">
+  <img id="modalImg" src="" alt="Zoom">
 </div>
 
 <script type="module">
@@ -84,471 +126,375 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-authDomain: "lingua-site-franca.firebaseapp.com",
-databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-projectId: "lingua-site-franca",
-storageBucket: "lingua-site-franca.firebasestorage.app",
-messagingSenderId: "737514168886",
-appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+  apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+  authDomain: "lingua-site-franca.firebaseapp.com",
+  databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lingua-site-franca",
+  storageBucket: "lingua-site-franca.firebasestorage.app",
+  messagingSenderId: "737514168886",
+  appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let currentOp = "";
-let currentLang = 'en';
+let currentOpPassword = "";
 
-// UI Translations Dictionary
-const uiTranslations = {
-'en': {
-'operative_login': 'Operative Login',
-'enter_name': 'Enter your registered Name',
-'access_tasks': 'Access Tasks & Reports',
-'workspace': 'Workspace',
-'spoken_language': 'Spoken Language:',
-'loading_work': 'Loading assigned tasks and reports...',
-'no_work': 'No active tasks or reports assigned to',
-'legacy_task': 'Legacy Task',
-'master_report': 'Master Report',
-'site': 'Site',
-'dlm': 'DLM',
-'return_note': 'Return Note',
-'photo_evidence': 'Photo Evidence',
-'comments_notes': 'Comments / Notes',
-'submit_task': 'Submit Task',
-'dlm_reference_photo': 'DLM Reference Photo',
-'upload_new_photo': 'Upload New Photo Evidence',
-'comment_note_for_item': 'Comment / Note for Item',
-'submit_report_updates': 'Submit Report Updates',
-'assigned': 'Assigned',
-'returned': 'Returned',
-'submitted': 'Submitted',
-'accepted': 'Accepted'
-},
-'es': {
-'operative_login': 'Inicio de Sesión de Operario',
-'enter_name': 'Ingrese su Nombre Registrado',
-'access_tasks': 'Acceder a Tareas e Informes',
-'workspace': 'Espacio de Trabajo',
-'spoken_language': 'Idioma Hablado:',
-'loading_work': 'Cargando tareas e informes asignados...',
-'no_work': 'No hay tareas o informes activos asignados a',
-'legacy_task': 'Tarea Anterior',
-'master_report': 'Informe Maestro',
-'site': 'Sitio',
-'dlm': 'DLM',
-'return_note': 'Nota de Devolución',
-'photo_evidence': 'Evidencia Fotográfica',
-'comments_notes': 'Comentarios / Notas',
-'submit_task': 'Enviar Tarea',
-'dlm_reference_photo': 'Foto de Referencia DLM',
-'upload_new_photo': 'Subir Nueva Evidencia Fotográfica',
-'comment_note_for_item': 'Comentario / Nota para el Elemento',
-'submit_report_updates': 'Enviar Actualizaciones del Informe',
-'assigned': 'Asignado',
-'returned': 'Devolvido',
-'submitted': 'Enviado',
-'accepted': 'Aceptado'
-},
-'fr': {
-'operative_login': 'Connexion Opérateur',
-'enter_name': 'Entrez votre Nom Enregistré',
-'access_tasks': 'Accéder aux Tâches et Rapports',
-'workspace': 'Espace de Travail',
-'spoken_language': 'Langue Parlée:',
-'loading_work': 'Chargement des tâches et rapports assignés...',
-'no_work': 'Aucune tâche ou rapport actif assigné à',
-'legacy_task': 'Tâche Antérieure',
-'master_report': 'Rapport Principal',
-'site': 'Site',
-'dlm': 'DLM',
-'return_note': 'Note de Retour',
-'photo_evidence': 'Preuve Photo',
-'comments_notes': 'Commentaires / Notes',
-'submit_task': 'Soumettre la Tâche',
-'dlm_reference_photo': 'Photo de Référence DLM',
-'upload_new_photo': 'Télécharger Nouvelle Preuve Photo',
-'comment_note_for_item': 'Commentaire / Note pour l\'Élément',
-'submit_report_updates': 'Soumettre les Mises à Jour du Rapport',
-'assigned': 'Assigné',
-'returned': 'Renvoyé',
-'submitted': 'Soumis',
-'accepted': 'Accepté'
-},
-'ro': {
-'operative_login': 'Autentificare Operator',
-'enter_name': 'Introduceți Numele Înregistrat',
-'access_tasks': 'Acces Sarcini și Rapoarte',
-'workspace': 'Spațiu de Lucru',
-'spoken_language': 'Limba Vorbită:',
-'loading_work': 'Se încarcă sarcinile și rapoartele atribuite...',
-'no_work': 'Nu există sarcini sau rapoarte active atribuite lui',
-'legacy_task': 'Sarcină Veche',
-'master_report': 'Raport Principal',
-'site': 'Șantier',
-'dlm': 'DLM',
-'return_note': 'Notă de Returnare',
-'photo_evidence': 'Dovadă Foto',
-'comments_notes': 'Comentarii / Note',
-'submit_task': 'Trimite Sarcina',
-'dlm_reference_photo': 'Foto Referință DLM',
-'upload_new_photo': 'Încarcă Dovadă Foto Nouă',
-'comment_note_for_item': 'Comentariu / Notă pentru Elementul',
-'submit_report_updates': 'Trimite Actualizări Raport',
-'assigned': 'Atribuit',
-'returned': 'Returnat',
-'submitted': 'Trimis',
-'accepted': 'Acceptat'
-},
-'pl': {
-'operative_login': 'Logowanie Pracownika',
-'enter_name': 'Wprowadź Zarejestrowane Imię',
-'access_tasks': 'Dostęp do Zadań i Raportów',
-'workspace': 'Przestrzeń Robocza',
-'spoken_language': 'Mówiony Język:',
-'loading_work': 'Ładowanie przypisanych zadań i raportów...',
-'no_work': 'Brak aktywnych zadań lub raportów przypisanych do',
-'legacy_task': 'Zadanie Starszego Typu',
-'master_report': 'Raport Główny',
-'site': 'Miejsce',
-'dlm': 'DLM',
-'return_note': 'Notatka Zwrotna',
-'photo_evidence': 'Dowód Fotograficzny',
-'comments_notes': 'Komentarze / Notatki',
-'submit_task': 'Prześlij Zadanie',
-'dlm_reference_photo': 'Zdjęcie Referencyjne DLM',
-'upload_new_photo': 'Prześlij Nowy Dowód Fotograficzny',
-'comment_note_for_item': 'Komentarz / Notatka dla Elementu',
-'submit_report_updates': 'Prześlij Aktualizacje Raportu',
-'assigned': 'Przypisany',
-'returned': 'Zwrócony',
-'submitted': 'Przesłany',
-'accepted': 'Zaakceptowany'
-}
-};
+// ====== BRANDING ======
+onValue(ref(db, 'branding'), (snapshot) => {
+  const data = snapshot.val();
+  if (!data) return;
+  if (data.businessName) {
+    document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
+    document.title = `${data.businessName} - Team Member Workspace`;
+    document.getElementById('loginTitle').innerText = `${data.businessName} — Login`;
+  }
+  if (data.footerText) {
+    document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+  }
+  if (data.logo) {
+    document.getElementById('loginLogo').src = data.logo;
+    document.getElementById('loginLogo').style.display = 'block';
+    document.getElementById('headerLogo').src = data.logo;
+    document.getElementById('headerLogo').style.display = 'block';
+  }
+  if (data.primaryColor) document.documentElement.style.setProperty('--accent', data.primaryColor);
+  if (data.secondaryColor) document.documentElement.style.setProperty('--success', data.secondaryColor);
+});
 
-// Language code mapping
+// ====== LANGUAGE MAP ======
 const LANG_MAP = {
-"afrikaans": "af", "albanian": "sq", "amharic": "am", "arabic": "ar", "armenian": "hy",
-"azerbaijani": "az", "basque": "eu", "belarusian": "be", "bengali": "bn", "bosnian": "bs",
-"bulgarian": "bg", "catalan": "ca", "cebuano": "ceb", "chinese": "zh-CN", "corsican": "co",
-"croatian": "hr", "czech": "cs", "danish": "da", "dutch": "nl", "english": "en",
-"esperanto": "eo", "estonian": "et", "finnish": "fi", "french": "fr", "frisian": "fy",
-"galician": "gl", "georgian": "ka", "german": "de", "greek": "el", "gujarati": "gu",
-"haitian creole": "ht", "hausa": "ha", "hawaiian": "haw", "hebrew": "he", "hindi": "hi",
-"hmong": "hmn", "hungarian": "hu", "icelandic": "is", "igbo": "ig", "indonesian": "id",
-"irish": "ga", "italian": "it", "japanese": "ja", "javanese": "jw", "kannada": "kn",
-"kazakh": "kk", "khmer": "km", "korean": "ko", "kurdish": "ku", "kyrgyz": "ky",
-"lao": "lo", "latin": "la", "latvian": "lv", "lithuanian": "lt", "luxembourgish": "lb",
-"macedonian": "mk", "malagasy": "mg", "malay": "ms", "malayalam": "ml", "maltese": "mt",
-"maori": "mi", "marathi": "mr", "mongolian": "mn", "myanmar": "my", "nepali": "ne",
-"norwegian": "no", "nyanja": "ny", "pashto": "ps", "persian": "fa", "polish": "pl",
-"portuguese": "pt", "punjabi": "pa", "romanian": "ro", "russian": "ru", "samoan": "sm",
-"scots gaelic": "gd", "serbian": "sr", "sesotho": "st", "shona": "sn", "sindhi": "sd",
-"sinhala": "si", "slovak": "sk", "slovenian": "sl", "somali": "so", "spanish": "es",
-"sundanese": "su", "swahili": "sw", "swedish": "sv", "tagalog": "tl", "tajik": "tg",
-"tamil": "ta", "tatar": "tt", "telugu": "te", "thai": "th", "turkish": "tr",
-"turkmen": "tk", "ukrainian": "uk", "urdu": "ur", "uyghur": "ug", "uzbek": "uz",
-"vietnamese": "vi", "welsh": "cy", "xhosa": "xh", "yiddish": "yi", "yoruba": "yo", "zulu": "zu"
+  "afrikaans":"af","albanian":"sq","amharic":"am","arabic":"ar","armenian":"hy",
+  "azerbaijani":"az","basque":"eu","belarusian":"be","bengali":"bn","bosnian":"bs",
+  "bulgarian":"bg","catalan":"ca","cebuano":"ceb","chinese":"zh-CN","corsican":"co",
+  "croatian":"hr","czech":"cs","danish":"da","dutch":"nl","english":"en",
+  "esperanto":"eo","estonian":"et","finnish":"fi","french":"fr","frisian":"fy",
+  "galician":"gl","georgian":"ka","german":"de","greek":"el","gujarati":"gu",
+  "haitian creole":"ht","hausa":"ha","hawaiian":"haw","hebrew":"he","hindi":"hi",
+  "hmong":"hmn","hungarian":"hu","icelandic":"is","igbo":"ig","indonesian":"id",
+  "irish":"ga","italian":"it","japanese":"ja","javanese":"jw","kannada":"kn",
+"kazakh":"kk","khmer":"km","korean":"ko","kurdish":"ku","kyrgyz":"ky",
+"lao":"lo","latin":"la","latvian":"lv","lithuanian":"lt","luxembourgish":"lb",
+"macedonian":"mk","malagasy":"mg","malay":"ms","malayalam":"ml","maltese":"mt",
+"maori":"mi","marathi":"mr","mongolian":"mn","myanmar":"my","nepali":"ne",
+"norwegian":"no","nyanja":"ny","pashto":"ps","persian":"fa","polish":"pl",
+"portuguese":"pt","punjabi":"pa","romanian":"ro","russian":"ru","samoan":"sm",
+"scots gaelic":"gd","serbian":"sr","sesotho":"st","shona":"sn","sindhi":"sd",
+"sinhala":"si","slovak":"sk","slovenian":"sl","somali":"so","spanish":"es",
+"sundanese":"su","swahili":"sw","swedish":"sv","tagalog":"tl","tajik":"tg",
+"tamil":"ta","tatar":"tt","telugu":"te","thai":"th","turkish":"tr",
+"turkmen":"tk","ukrainian":"uk","urdu":"ur","uyghur":"ug","uzbek":"uz",
+"vietnamese":"vi","welsh":"cy","xhosa":"xh","yiddish":"yi","yoruba":"yo","zulu":"zu"
 };
-
-// Populate language datalist
 const datalist = document.getElementById('languagesList');
 Object.keys(LANG_MAP).forEach(langName => {
-const opt = document.createElement('option');
-opt.value = langName.charAt(0).toUpperCase() + langName.slice(1);
-datalist.appendChild(opt);
+  const opt = document.createElement('option');
+  opt.value = langName.charAt(0).toUpperCase() + langName.slice(1);
+  datalist.appendChild(opt);
 });
-
-// Login handler
-document.getElementById('opLoginForm').addEventListener('submit', (e) => {
-e.preventDefault();
-currentOp = document.getElementById('opLoginName').value.trim();
-document.getElementById('loginOverlay').style.display = 'none';
-document.getElementById('mainContainer').style.display = 'flex';
-document.getElementById('opDisplayName').innerText = currentOp;
-updatePageLanguage();
-renderAllWork();
-});
-
-// Branding sync
-onValue(ref(db, 'branding'), (snapshot) => {
-const data = snapshot.val();
-if (data) {
-if (data.businessName) {
-document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-document.title = `${data.businessName} - Operative Workspace`;
-}
-if (data.footerText) {
-document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
-}
-}
-});
-
-// Resolve language code from input
 function resolveLanguageCode(input) {
-if (!input) return 'en';
-const clean = input.trim().toLowerCase();
-if (LANG_MAP[clean]) return LANG_MAP[clean];
-if (clean.length === 2) return clean;
-const found = Object.keys(LANG_MAP).find(k => k.includes(clean) || clean.includes(k));
-return found ? LANG_MAP[found] : 'en';
+  if (!input) return 'en';
+  const clean = input.trim().toLowerCase();
+  if (LANG_MAP[clean]) return LANG_MAP[clean];
+  if (clean.length === 2) return clean;
+  const found = Object.keys(LANG_MAP).find(k => k.includes(clean) || clean.includes(k));
+  return found ? LANG_MAP[found] : 'en';
 }
-
-// Translate text using Google Translate API
 async function translateText(text, targetLangCode) {
-if (!text || targetLangCode === 'en') return text;
-try {
-const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`);
-const data = await res.json();
-return data[0][0][0];
-} catch (e) {
-return text;
-}
+  if (!text) return '';
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    return data[0][0][0];
+  } catch (e) { return text; }
 }
 
-// Update UI language
-async function updatePageLanguage() {
-const langInput = document.getElementById('langInput').value;
-currentLang = resolveLanguageCode(langInput);
-const translations = uiTranslations[currentLang] || uiTranslations['en'];
+// ====== LOGIN ======
+document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = document.getElementById('opLoginName').value.trim();
+  const pwd = document.getElementById('opLoginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
 
-// Translate all elements with data-translate attribute
-document.querySelectorAll('[data-translate]').forEach(el => {
-const key = el.getAttribute('data-translate');
-if (translations[key]) {
-el.innerText = translations[key];
-}
+  // Verify credentials against Firebase
+  const snap = await new Promise(resolve => onValue(ref(db, 'operatives'), resolve, { onlyOnce: true }));
+  const ops = snap.val() || {};
+  const match = Object.values(ops).find(o =>
+    o.name && o.name.toLowerCase() === name.toLowerCase() && o.password === pwd
+  );
+  if (!match) {
+    errEl.innerText = 'Invalid name or password. Please check your credentials.';
+    errEl.style.display = 'block';
+    return;
+  }
+  currentOp = match.name;
+  currentOpPassword = pwd;
+  document.getElementById('loginOverlay').style.display = 'none';
+  document.getElementById('mainContainer').style.display = 'flex';
+  document.getElementById('opDisplayName').innerText = currentOp;
+  renderAllWork();
 });
 
-// Translate all placeholders with data-placeholder attribute
-document.querySelectorAll('[data-placeholder]').forEach(el => {
-const key = el.getAttribute('data-placeholder');
-if (translations[key]) {
-el.placeholder = translations[key];
-}
-});
-}
-
-// Main render function
+// ====== RENDER ======
 window.renderAllWork = async function() {
-if (!currentOp) return;
+  if (!currentOp) return;
+  const userInput = document.getElementById('langInput').value;
+  const langCode = resolveLanguageCode(userInput);
+  const container = document.getElementById('tasksContainer');
+  container.innerHTML = '<div class="empty-state">Loading your assignments...</div>';
 
-await updatePageLanguage();
+  let loadedCount = 0;
+  let tasksData = {}, reportsData = {};
 
-const container = document.getElementById('tasksContainer');
-container.innerHTML = `<div class="empty-state" data-translate="loading_work">Loading assigned tasks and reports...</div>`;
+  function checkAndDisplay() {
+    loadedCount++;
+    if (loadedCount < 2) return;
+    container.innerHTML = '';
+    let hasWork = false;
 
-let loadedCount = 0;
-let tasksData = {};
-let reportsData = {};
+    // Legacy Tasks
+    for (const key of Object.keys(tasksData)) {
+      const task = tasksData[key];
+      if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase()) {
+        hasWork = true;
+        renderTaskCard(key, task, langCode, container);
+      }
+    }
 
-function checkAndDisplay() {
-loadedCount++;
-if (loadedCount < 2) return;
+    // Reports
+    for (const key of Object.keys(reportsData)) {
+      const rep = reportsData[key];
+      let isAssigned = false;
+      if (rep.assignedTo) {
+        if (Array.isArray(rep.assignedTo)) isAssigned = rep.assignedTo.some(n => n.toLowerCase() === currentOp.toLowerCase());
+        else if (typeof rep.assignedTo === 'object') isAssigned = Object.values(rep.assignedTo).some(n => n.toLowerCase() === currentOp.toLowerCase());
+        else if (typeof rep.assignedTo === 'string') isAssigned = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
+      }
+      if (isAssigned) {
+        hasWork = true;
+        renderReportCard(key, rep, langCode, container);
+      }
+    }
 
-displayWork();
-}
+    if (!hasWork) {
+      container.innerHTML = `<div class="empty-state">No active assignments for ${currentOp}.</div>`;
+    }
+  }
 
-async function displayWork() {
-container.innerHTML = '';
-let hasWork = false;
-const translations = uiTranslations[currentLang] || uiTranslations['en'];
-
-// 1. Render Legacy Tasks
-for (const key of Object.keys(tasksData)) {
-const task = tasksData[key];
-if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase() && 
-(task.status === 'Assigned' || task.status === 'Returned')) {
-hasWork = true;
-
-const translatedDetails = await translateText(task.details || '', currentLang);
-const statusText = translations[task.status.toLowerCase()] || task.status;
-
-let returnNoteHTML = '';
-if (task.returnNote) {
-const translatedReturnNote = await translateText(task.returnNote, currentLang);
-returnNoteHTML = `<div class="return-note-desc" id="return_note_${key}"><strong>${translations['return_note']}:</strong><br>${translatedReturnNote}</div>`;
-}
-
-const card = document.createElement('div');
-card.className = 'card';
-card.innerHTML = `
-<div class="task-title">${translations['legacy_task']} (${statusText})</div>
-<div class="task-desc">${translatedDetails}</div>
-${returnNoteHTML}
-<form onsubmit="submitTask(event, '${key}')">
-<div class="form-group">
-<label data-translate="photo_evidence">${translations['photo_evidence']}</label>
-<input type="file" id="photo_${key}" accept="image/*" capture="environment">
-</div>
-<div class="form-group">
-<label data-translate="comments_notes">${translations['comments_notes']}</label>
-<textarea id="comment_${key}" rows="3"></textarea>
-</div>
-<button type="submit" data-translate="submit_task">${translations['submit_task']}</button>
-</form>
-`;
-container.appendChild(card);
-}
-}
-
-// 2. Render Multi-Task Reports assigned to Operative
-for (const key of Object.keys(reportsData)) {
-const rep = reportsData[key];
-let isAssignedToOp = false;
-
-if (rep.assignedTo) {
-if (Array.isArray(rep.assignedTo)) {
-isAssignedToOp = rep.assignedTo.some(name => name.toLowerCase() === currentOp.toLowerCase());
-} else if (typeof rep.assignedTo === 'object') {
-isAssignedToOp = Object.values(rep.assignedTo).some(name => name.toLowerCase() === currentOp.toLowerCase());
-} else if (typeof rep.assignedTo === 'string') {
-isAssignedToOp = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
-}
-}
-
-if (isAssignedToOp) {
-hasWork = true;
-
-const translatedTitle = await translateText(rep.title || 'Untitled Report', currentLang);
-const translatedSite = await translateText(rep.site || 'N/A', currentLang);
-const statusText = translations[rep.status?.toLowerCase()] || rep.status || translations['assigned'];
-
-const rawItems = rep.items;
-const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
-
-let itemsHtml = '';
-for (let index = 0; index < itemsArray.length; index++) {
-const item = itemsArray[index];
-const itemText = item.title || item.details || item.description || `Task Item ${index + 1}`;
-const translatedItemText = await translateText(itemText, currentLang);
-const itemStatus = translations[item.status?.toLowerCase()] || item.status || translations['assigned'];
-
-const dlmPhotoHtml = item.photo ? 
-`<div style="margin-top:8px;"><small style="color:var(--text-muted);">${translations['dlm_reference_photo']}:</small><br>
-<img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
-
-itemsHtml += `
-<div class="item-box">
-<strong>${translations['master_report'].split(' ')[0]} ${index + 1}:</strong> ${translatedItemText} (${itemStatus})
-${dlmPhotoHtml}
-<div class="form-group" style="margin-top: 12px;">
-<label data-translate="upload_new_photo">${translations['upload_new_photo']}</label>
-<input type="file" id="report_photo_${key}_${index}" accept="image/*" capture="environment">
-</div>
-<div class="form-group">
-<label>${translations['comment_note_for_item']} ${index + 1}</label>
-<textarea id="report_comment_${key}_${index}" rows="2">${item.comment || ''}</textarea>
-</div>
-</div>
-`;
-}
-
-const card = document.createElement('div');
-card.className = 'card';
-card.innerHTML = `
-<div class="task-title">${translations['master_report']}: ${translatedTitle} (${statusText})</div>
-<div class="task-desc">
-<strong>${translations['site']}:</strong> ${translatedSite}<br>
-<strong>${translations['dlm']}:</strong> ${rep.dlm || 'N/A'}
-</div>
-<form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
-${itemsHtml}
-<button type="submit" data-translate="submit_report_updates">${translations['submit_report_updates']}</button>
-</form>
-`;
-container.appendChild(card);
-}
-}
-
-if (!hasWork) {
-const trans = uiTranslations[currentLang] || uiTranslations['en'];
-container.innerHTML = `<div class="empty-state">${trans['no_work']} ${currentOp}.</div>`;
-}
-}
-
-onValue(ref(db, 'tasks'), (snapshot) => {
-tasksData = snapshot.val() || {};
-checkAndDisplay();
-}, { onlyOnce: true });
-
-onValue(ref(db, 'reports'), (snapshot) => {
-reportsData = snapshot.val() || {};
-checkAndDisplay();
-}, { onlyOnce: true });
+  onValue(ref(db, 'tasks'), (s) => { tasksData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
+  onValue(ref(db, 'reports'), (s) => { reportsData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
 };
 
+async function renderTaskCard(key, task, langCode, container) {
+  const translatedDetails = await translateText(task.details || '', langCode);
+  const isLocked = task.status === 'Submitted' || task.status === 'Accepted' || task.status === 'Approved';
+  const isCompleted = task.status === 'Accepted' || task.status === 'Approved';
+
+  let bannerHTML = '';
+  if (isCompleted) bannerHTML = `<div class="completed-banner">✓ Completed — Awaiting final review</div>`;
+  else if (task.status === 'Submitted') bannerHTML = `<div class="locked-banner">⏳ Submitted — Under review by your supervisor</div>`;
+
+  let returnNoteHTML = '';
+  if (task.returnNote) {
+    const tNote = await translateText(task.returnNote, langCode);
+    returnNoteHTML = `<div class="return-note-desc"><strong>Supervisor Note:</strong><br>${tNote}</div>`;
+  }
+
+  let dlmPhotoHTML = '';
+  if (task.dlmPhoto) {
+    dlmPhotoHTML = `<div class="dlm-ref-photo"><small>Reference image from supervisor:</small><img src="${task.dlmPhoto}" class="thumb-img" onclick="openModal('${task.dlmPhoto}')"></div>`;
+  }
+
+  let formHTML = '';
+  if (isLocked) {
+    // Show submitted info
+    if (task.photo) {
+      formHTML += `<div class="form-group"><label>Your submitted photo</label><img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')"></div>`;
+    }
+    if (task.comment) {
+      const tc = await translateText(task.comment, langCode);
+      formHTML += `<div class="form-group"><label>Your submitted comment</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
+    }
+  } else {
+    formHTML = `
+      <form onsubmit="submitTask(event, '${key}')">
+        <div class="form-group">
+          <label>Photo Evidence *</label>
+          <input type="file" id="photo_${key}" accept="image/*" capture="environment" required>
+        </div>
+        <div class="form-group">
+          <label>Comment / Notes *</label>
+          <textarea id="comment_${key}" rows="3" required placeholder="Describe what you have done..."></textarea>
+        </div>
+        <button type="submit">Submit Assignment</button>
+      </form>
+    `;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="task-title">
+      <span>Assignment ${task.status ? `(${task.status})` : ''}</span>
+      <span class="task-ref">Ref: ${task.refNumber || key.substring(0,8)}</span>
+    </div>
+    <div class="task-desc">${translatedDetails || 'No description provided'}</div>
+    ${dlmPhotoHTML}
+    ${bannerHTML}
+    ${returnNoteHTML}
+    ${formHTML}
+  `;
+  container.appendChild(card);
+}
+
+async function renderReportCard(key, rep, langCode, container) {
+  const rawItems = rep.items;
+  const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
+  const isReportLocked = rep.status === 'Submitted' || rep.status === 'Accepted' || rep.status === 'Approved';
+  const isReportCompleted = rep.status === 'Accepted' || rep.status === 'Approved';
+
+  let bannerHTML = '';
+  if (isReportCompleted) bannerHTML = `<div class="completed-banner">✓ Report completed — Awaiting final review</div>`;
+  else if (rep.status === 'Submitted') bannerHTML = `<div class="locked-banner">⏳ Report submitted — Under review by your supervisor</div>`;
+
+  let returnNoteHTML = '';
+  if (rep.returnNote) {
+    const tNote = await translateText(rep.returnNote, langCode);
+    returnNoteHTML = `<div class="return-note-desc"><strong>Supervisor Note:</strong><br>${tNote}</div>`;
+  }
+
+  let itemsHtml = '';
+  for (let i = 0; i < itemsArray.length; i++) {
+    const item = itemsArray[i];
+    const itemText = item.title || item.description || item.details || `Item ${i + 1}`;
+    const translatedItem = await translateText(itemText, langCode);
+    const itemLocked = item.status === 'Submitted' || isReportLocked;
+
+    let dlmPhotoHtml = item.photo ? `<div class="dlm-ref-photo"><small>Reference image:</small><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
+
+    let itemFormHtml = '';
+    if (itemLocked) {
+      if (item.submittedPhoto) itemFormHtml += `<div class="form-group"><label>Your submitted photo</label><img src="${item.submittedPhoto}" class="thumb-img" onclick="openModal('${item.submittedPhoto}')"></div>`;
+      if (item.comment) {
+        const tc = await translateText(item.comment, langCode);
+        itemFormHtml += `<div class="form-group"><label>Your submitted comment</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
+      }
+    } else {
+      itemFormHtml = `
+        <div class="form-group"><label>Upload Photo Evidence *</label><input type="file" id="report_photo_${key}_${i}" accept="image/*" capture="environment" required></div>
+        <div class="form-group"><label>Comment / Note *</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress...">${item.comment || ''}</textarea></div>
+      `;
+    }
+
+    itemsHtml += `
+      <div class="item-box">
+        <strong>Item ${i + 1}:</strong> ${translatedItem} <small style="color:var(--text-muted);">(${item.status || 'Assigned'})</small>
+        ${dlmPhotoHtml}
+        ${itemFormHtml}
+      </div>
+    `;
+  }
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="task-title">
+      <span>Report: ${rep.title || 'Untitled'} (${rep.status || 'Assigned'})</span>
+      <span class="task-ref">Ref: ${rep.refNumber || key.substring(0,8)}</span>
+    </div>
+    <div class="task-desc">
+      <strong>Location:</strong> ${rep.site || 'N/A'}<br>
+      <strong>Supervisor:</strong> ${rep.dlm || 'N/A'}
+    </div>
+    ${bannerHTML}
+    ${returnNoteHTML}
+    <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
+      ${itemsHtml}
+      ${!isReportLocked ? `<button type="submit">Submit Report Updates</button>` : ''}
+    </form>
+  `;
+  container.appendChild(card);
+}
+
 window.openModal = (src) => {
-document.getElementById('modalImg').src = src;
-document.getElementById('imgModal').style.display = 'flex';
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imgModal').style.display = 'flex';
 };
 
 window.submitTask = async (e, key) => {
-e.preventDefault();
-const comment = document.getElementById(`comment_${key}`).value.trim();
-const fileInput = document.getElementById(`photo_${key}`);
-let photoData = null;
-
-if (fileInput.files.length > 0) {
-const file = fileInput.files[0];
-photoData = await new Promise((resolve) => {
-const reader = new FileReader();
-reader.onloadend = () => resolve(reader.result);
-reader.readAsDataURL(file);
-});
-}
-
-update(ref(db, `tasks/${key}`), {
-status: 'Submitted',
-comment: comment,
-photo: photoData,
-submittedAt: new Date().toISOString()
-}).then(() => {
-alert('Task submitted successfully!');
-renderAllWork();
-});
+  e.preventDefault();
+  const comment = document.getElementById(`comment_${key}`).value.trim();
+  const fileInput = document.getElementById(`photo_${key}`);
+  if (!comment || fileInput.files.length === 0) {
+    return alert('Both a photo and a comment are required before submitting.');
+  }
+  const file = fileInput.files[0];
+  const photoData = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+  const now = new Date().toISOString();
+  onValue(ref(db, `tasks/${key}`), async (snap) => {
+    const existing = snap.val() || {};
+    const history = existing.history || [];
+    history.push({ action: 'Submitted by team member', timestamp: now, comment });
+    await update(ref(db, `tasks/${key}`), {
+      status: 'Submitted',
+      comment: comment,
+      operativePhoto: photoData,
+      photo: photoData,
+      submittedAt: now,
+      history: history
+    });
+    alert('Assignment submitted successfully!');
+    renderAllWork();
+  }, { onlyOnce: true });
 };
 
 window.submitReport = async (e, key, itemCount) => {
-e.preventDefault();
-onValue(ref(db, `reports/${key}`), async (snapshot) => {
-const rep = snapshot.val();
-if (!rep) return alert('Report not found');
-
-let rawItems = rep.items;
-let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-
-for (let i = 0; i < itemCount; i++) {
-const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
-const fileInput = document.getElementById(`report_photo_${key}_${i}`);
-
-if (itemsArray[i]) {
-itemsArray[i].comment = comment;
-itemsArray[i].status = 'Submitted';
-
-if (fileInput.files.length > 0) {
-const file = fileInput.files[0];
-const photoData = await new Promise((resolve) => {
-const reader = new FileReader();
-reader.onloadend = () => resolve(reader.result);
-reader.readAsDataURL(file);
-});
-itemsArray[i].photo = photoData;
-}
-}
-}
-
-update(ref(db, `reports/${key}`), {
-status: 'Submitted',
-items: itemsArray,
-submittedAt: new Date().toISOString()
-}).then(() => {
-alert('Report submitted successfully!');
-renderAllWork();
-});
-}, { onlyOnce: true });
+  e.preventDefault();
+  onValue(ref(db, `reports/${key}`), async (snap) => {
+    const rep = snap.val();
+    if (!rep) return alert('Report not found');
+    let rawItems = rep.items;
+    let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
+    const now = new Date().toISOString();
+    for (let i = 0; i < itemCount; i++) {
+      const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
+      const fileInput = document.getElementById(`report_photo_${key}_${i}`);
+      if (!comment || fileInput.files.length === 0) {
+        return alert(`Item ${i+1}: Both photo and comment are required.`);
+      }
+      const file = fileInput.files[0];
+      const photoData = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+      if (itemsArray[i]) {
+        const itemHistory = itemsArray[i].history || [];
+        itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
+        itemsArray[i].comment = comment;
+        itemsArray[i].status = 'Submitted';
+        itemsArray[i].submittedPhoto = photoData;
+        itemsArray[i].operativePhoto = photoData;
+        itemsArray[i].submittedAt = now;
+        itemsArray[i].history = itemHistory;
+      }
+    }
+    const reportHistory = rep.history || [];
+    reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
+    await update(ref(db, `reports/${key}`), {
+      status: 'Submitted',
+      items: itemsArray,
+      submittedAt: now,
+      history: reportHistory
+    });
+    alert('Report submitted successfully!');
+    renderAllWork();
+  }, { onlyOnce: true });
 };
 </script>
 </body>
