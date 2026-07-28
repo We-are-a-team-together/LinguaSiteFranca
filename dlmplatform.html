@@ -5,71 +5,113 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Direct Line Manager Platform</title>
 <style>
-:root { --bg: #0f172a; --card-bg: #1e293b; --accent: #3b82f6; --accent-hover: #2563eb; --text: #f8fafc; --text-muted: #94a3b8; --border: #334155; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+:root {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
+  --text: #f8fafc;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
 html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
 body { padding: clamp(10px, 2vw, 20px); }
+
+/* Login */
 .login-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; padding: 20px; }
 .login-card { width: 100%; max-width: 420px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; }
 .login-card h2 { color: var(--accent); margin-bottom: 8px; font-size: 1.4rem; }
 .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px; }
 .login-logo { max-width: 120px; max-height: 80px; margin: 0 auto 15px; display: none; }
+
 .container { width: 100%; max-width: 1800px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
 .header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .header-logo { width: 44px; height: 44px; object-fit: contain; border-radius: 6px; display: none; }
 h1 { font-size: clamp(1.1rem, 2.5vw, 1.5rem); font-weight: 700; color: #fff; }
 .dlm-badge { background: var(--card-bg); border: 1px solid var(--border); padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; color: var(--text-muted); }
+
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 18px; margin-bottom: 20px; }
 .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: clamp(15px, 2vw, 22px); margin-bottom: 20px; }
 .card-title { font-size: 1.05rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+
 .form-group { margin-bottom: 14px; }
 label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
 input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+input[type="file"] { padding: 8px; font-size: 0.85rem; }
+
 .checkbox-group { max-height: 160px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
 .checkbox-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #fff; cursor: pointer; font-size: 0.9rem; }
 .checkbox-label input { width: auto; margin: 0; }
+
 .btn { padding: 10px 16px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s, opacity 0.2s; font-size: 0.88rem; display: inline-flex; justify-content: center; align-items: center; gap: 6px; }
 .btn-auto { width: auto; }
 .btn-full { width: 100%; }
 .btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
 .btn-success { background: var(--success); color: white; }
+.btn-success:hover { opacity: 0.9; }
 .btn-danger { background: var(--danger); color: white; }
 .btn-warning { background: var(--warning); color: white; }
 .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
 .btn-sm { padding: 6px 10px; font-size: 0.78rem; border-radius: 4px; }
+
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.85rem; vertical-align: middle; word-wrap: break-word; }
 th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
 .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
 .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
 .badge-open { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
 .badge-submitted { background: rgba(59, 130, 246, 0.2); color: var(--accent); }
+
 .thumb-img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
+.thumb-img:hover { transform: scale(1.05); transition: transform 0.2s; }
+
 .report-item-box { background: var(--bg); border: 1px dashed var(--border); padding: 14px; border-radius: 6px; margin-bottom: 12px; position: relative; }
 .remove-item-btn { position: absolute; top: 8px; right: 8px; background: transparent; color: var(--danger); border: none; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
+
 .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.8rem; color: var(--text-muted); }
+
 .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
 .modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
 .modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
 .modal img.zoom-img { max-width: 100%; max-height: 80vh; border-radius: 8px; border: 2px solid var(--border); margin: auto; display: block; }
+
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
+.history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+
+@media (max-width: 600px) {
+  .header-left { width: 100%; }
+  h1 { font-size: 1.05rem; }
+  th, td { padding: 8px 6px; font-size: 0.78rem; }
+  .thumb-img { width: 44px; height: 44px; }
+}
 </style>
 </head>
 <body>
 
+<!-- Login -->
 <div id="loginOverlay" class="login-overlay">
   <div class="login-card">
     <img id="loginLogo" class="login-logo" src="" alt="Logo">
     <h2 id="loginTitle">Direct Line Manager Login</h2>
     <p>Enter credentials assigned by the Office</p>
     <form id="dlmLoginForm">
-      <div class="form-group"><input type="text" id="dlmLoginName" placeholder="Your Name" required autocomplete="username"></div>
-      <div class="form-group"><input type="password" id="dlmLoginPassword" placeholder="Password" required autocomplete="current-password"></div>
+      <div class="form-group">
+        <input type="text" id="dlmLoginName" placeholder="Your Name" required autocomplete="username">
+      </div>
+      <div class="form-group">
+        <input type="password" id="dlmLoginPassword" placeholder="Password" required autocomplete="current-password">
+      </div>
       <button type="submit" class="btn btn-primary btn-full">Access Platform</button>
     </form>
     <p id="loginError" style="color: var(--danger); margin-top: 12px; font-size: 0.85rem; display: none;"></p>
@@ -86,15 +128,16 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
     <div class="dlm-badge" id="dlmBadgeInfo">Loading...</div>
   </header>
 
+  <!-- DASHBOARD -->
   <div id="mainDashboardView">
     <div class="grid-2">
       <div class="card">
         <div class="card-title">Register Team Member</div>
         <form id="registerOpForm">
           <div class="form-group"><label>Full Name</label><input type="text" id="opName" required></div>
-          <div class="form-group"><label>Password (for their login)</label><input type="text" id="opPassword" required></div>
+          <div class="form-group"><label>Password (for their login)</label><input type="text" id="opPassword" required placeholder="Set a password for this member"></div>
           <div class="form-group"><label>Employer / Organisation</label><input type="text" id="opEmployer" required></div>
-          <div class="form-group"><label>Certification / Role</label><input type="text" id="opQual" required></div>
+          <div class="form-group"><label>Certification / Role</label><input type="text" id="opQual" placeholder="e.g. Certified Technician" required></div>
           <div class="form-group"><label>Certification Expiry Date</label><input type="date" id="opExpiry" required></div>
           <button type="submit" class="btn btn-primary btn-full">Register Member</button>
         </form>
@@ -103,12 +146,13 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
         <div class="card-title">Assign Task</div>
         <form id="assignTaskForm">
           <div class="form-group"><label>Select Team Member</label><select id="taskOpSelect" required></select></div>
-          <div class="form-group"><label>Task Description (English)</label><textarea id="taskDetails" rows="4" required></textarea></div>
+          <div class="form-group"><label>Task Description (English)</label><textarea id="taskDetails" rows="4" placeholder="Describe the task clearly..." required></textarea></div>
           <div class="form-group"><label>Reference Photo (optional)</label><input type="file" id="taskPhoto" accept="image/*"></div>
           <button type="submit" class="btn btn-success btn-full">Dispatch Task</button>
         </form>
       </div>
     </div>
+
     <div class="card">
       <div class="card-title">Team Members Directory</div>
       <div class="table-wrap">
@@ -118,6 +162,7 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
         </table>
       </div>
     </div>
+
     <div class="card">
       <div class="card-title">
         <span>Task Tracking & Submissions</span>
@@ -132,12 +177,13 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
     </div>
   </div>
 
+  <!-- REPORTS -->
   <div id="reportsView" style="display: none;">
     <div class="card">
       <div class="card-title">Create New Report (Multi-Task / Inspection)</div>
       <form id="createReportForm">
         <div class="grid-2">
-          <div class="form-group"><label>Report Title</label><input type="text" id="reportTitle" required></div>
+          <div class="form-group"><label>Report Title</label><input type="text" id="reportTitle" placeholder="e.g. Area A Inspection Report" required></div>
           <div class="form-group">
             <label>Assign To (select at least one member)</label>
             <div id="reportOperativesList" class="checkbox-group"><span style="color: var(--text-muted); font-size: 0.85rem;">Loading...</span></div>
@@ -167,35 +213,51 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
   <div class="dynamic-footer"></div>
 </div>
 
-<!-- Modals remain structurally the same -->
-<div class="modal" id="imgModal" onclick="this.style.display='none'"><img id="modalImg" class="zoom-img" src="" alt="Zoom"></div>
+<!-- Image Modal -->
+<div class="modal" id="imgModal" onclick="this.style.display='none'">
+  <img id="modalImg" class="zoom-img" src="" alt="Zoom">
+</div>
+
+<!-- Report Detail Modal -->
 <div class="modal" id="reportViewModal">
   <div class="modal-content">
     <button class="modal-close-btn" onclick="document.getElementById('reportViewModal').style.display='none'">✕</button>
     <h2 id="viewReportTitle" style="color: var(--accent); margin-bottom: 5px;">Report</h2>
     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-      <strong>Ref:</strong> <span id="viewReportRef"></span><br><strong>Assigned to:</strong> <span id="viewReportOps"></span><br><strong>Status:</strong> <span id="viewReportStatus" class="badge"></span>
+      <strong>Ref:</strong> <span id="viewReportRef"></span><br>
+      <strong>Assigned to:</strong> <span id="viewReportOps"></span><br>
+      <strong>Status:</strong> <span id="viewReportStatus" class="badge"></span>
     </p>
     <div id="reportActionArea" style="display: none; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
+      <label style="color: var(--warning);">Report submitted. Review and take action:</label>
       <input type="text" id="reportReturnNote" placeholder="Reason if returning..." style="margin: 10px 0;">
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button class="btn btn-success btn-auto" id="btnAcceptReport">Accept (Complete)</button>
         <button class="btn btn-warning btn-auto" id="btnReturnReport">Return for Revision</button>
       </div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>#</th><th>Description</th><th>Reference Photo</th><th>Submission (Photo + Comment EN)</th></tr></thead><tbody id="viewReportItemsBody"></tbody></table></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Description</th><th>Reference Photo</th><th>Submission (Photo + Comment EN)</th></tr></thead>
+        <tbody id="viewReportItemsBody"></tbody>
+      </table>
+    </div>
     <div id="reportHistoryBox" class="history-box" style="display:none;"></div>
   </div>
 </div>
 
+<!-- Task Detail Modal -->
 <div class="modal" id="taskViewModal">
   <div class="modal-content">
     <button class="modal-close-btn" onclick="document.getElementById('taskViewModal').style.display='none'">✕</button>
     <h2 id="viewTaskTitle" style="color: var(--accent); margin-bottom: 5px;">Task Details</h2>
     <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-      <strong>Ref:</strong> <span id="viewTaskRef"></span><br><strong>Assigned to:</strong> <span id="viewTaskOp"></span><br><strong>Status:</strong> <span id="viewTaskStatus" class="badge"></span>
+      <strong>Ref:</strong> <span id="viewTaskRef"></span><br>
+      <strong>Assigned to:</strong> <span id="viewTaskOp"></span><br>
+      <strong>Status:</strong> <span id="viewTaskStatus" class="badge"></span>
     </p>
     <div id="taskActionArea" style="display: none; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
+      <label style="color: var(--warning);">Task submitted. Review and take action:</label>
       <input type="text" id="taskReturnNote" placeholder="Reason if returning..." style="margin: 10px 0;">
       <div style="display: flex; gap: 8px; flex-wrap: wrap;">
         <button class="btn btn-success btn-auto" id="btnAcceptTask">Accept (Complete)</button>
@@ -224,25 +286,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 let currentDlm = "";
-let currentDlmKey = "";
+let currentDlmKey = ""; // keep the account key so we can detect deletion
 let currentSite = "";
-
-// Caching to prevent API bottleneck
-const translationCache = {};
-async function injectTranslation(text, elementId) {
-  if (!text) { document.getElementById(elementId).innerText = 'None'; return; }
-  if (translationCache[text]) { document.getElementById(elementId).innerText = translationCache[text]; return; }
-  try {
-    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
-    const data = await res.json();
-    translationCache[text] = data[0][0][0];
-    const el = document.getElementById(elementId);
-    if(el) el.innerText = translationCache[text];
-  } catch (e) {
-    const el = document.getElementById(elementId);
-    if(el) el.innerText = text;
-  }
-}
 
 // ====== BRANDING ======
 onValue(ref(db, 'branding'), (snapshot) => {
@@ -251,6 +296,7 @@ onValue(ref(db, 'branding'), (snapshot) => {
   if (data.businessName) {
     document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
     document.title = `${data.businessName} - Direct Line Manager Platform`;
+    document.getElementById('loginTitle').innerText = `${data.businessName} — DLM Login`;
   }
   if (data.footerText) document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
   if (data.logo) {
@@ -263,7 +309,7 @@ onValue(ref(db, 'branding'), (snapshot) => {
   if (data.secondaryColor) document.documentElement.style.setProperty('--success', data.secondaryColor);
 });
 
-// ====== LOGIN ======
+// ====== LOGIN (DLM name + password from office) ======
 document.getElementById('dlmLoginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('dlmLoginName').value.trim();
@@ -273,116 +319,720 @@ document.getElementById('dlmLoginForm').addEventListener('submit', async (e) => 
 
   const snap = await new Promise(resolve => onValue(ref(db, 'dlmAccounts'), resolve, { onlyOnce: true }));
   const accounts = snap.val() || {};
-  let matchKey = null; let match = null;
+  let matchKey = null;
+  let match = null;
   for (const k of Object.keys(accounts)) {
     const a = accounts[k];
     if (a.name && a.name.toLowerCase() === name.toLowerCase() && a.password === pwd) {
       matchKey = k; match = a; break;
     }
   }
-  if (!match) { errEl.innerText = 'Invalid name or password.'; errEl.style.display = 'block'; return; }
-  currentDlm = match.name; currentDlmKey = matchKey; currentSite = match.assignedSite || 'Unassigned';
+  if (!match) {
+    errEl.innerText = 'Invalid name or password. If your account was removed by the Office, please contact them.';
+    errEl.style.display = 'block';
+    return;
+  }
+  currentDlm = match.name;
+  currentDlmKey = matchKey;
+  currentSite = match.assignedSite || 'Unassigned';
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('mainContainer').style.display = 'flex';
   document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Location: ${currentSite}`;
+
+  // Watch for account deletion in real time
+  onValue(ref(db, `dlmAccounts/${currentDlmKey}`), (s) => {
+    if (!s.exists()) {
+      alert('Your account has been removed by the Office. You will be logged out.');
+      window.location.reload();
+    }
+  });
+
   loadDashboard();
 });
 
-// View Toggle
+// ====== TRANSLATE ======
+async function translateToEnglish(text) {
+  if (!text) return 'None';
+  try {
+    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+    const data = await res.json();
+    return data[0][0][0];
+  } catch (e) { return text; }
+}
+
+// ====== VIEW TOGGLE ======
 const toggleBtn = document.getElementById('navToggleBtn');
 const mainView = document.getElementById('mainDashboardView');
 const reportsView = document.getElementById('reportsView');
 toggleBtn.addEventListener('click', () => {
   if (mainView.style.display !== 'none') {
-    mainView.style.display = 'none'; reportsView.style.display = 'block';
-    toggleBtn.innerText = 'Back to Dashboard'; toggleBtn.classList.replace('btn-outline', 'btn-warning');
+    mainView.style.display = 'none';
+    reportsView.style.display = 'block';
+    toggleBtn.innerText = 'Back to Dashboard';
+    toggleBtn.classList.replace('btn-outline', 'btn-warning');
   } else {
-    mainView.style.display = 'block'; reportsView.style.display = 'none';
-    toggleBtn.innerText = 'Open Reports View'; toggleBtn.classList.replace('btn-warning', 'btn-outline');
+    mainView.style.display = 'block';
+    reportsView.style.display = 'none';
+    toggleBtn.innerText = 'Open Reports View';
+    toggleBtn.classList.replace('btn-warning', 'btn-outline');
   }
 });
 
+// ====== DASHBOARD LOGIC ======
 function loadDashboard() {
+  // Register operative
   document.getElementById('registerOpForm').addEventListener('submit', (e) => {
     e.preventDefault();
+    const name = document.getElementById('opName').value.trim();
+    const password = document.getElementById('opPassword').value;
+    const employer = document.getElementById('opEmployer').value.trim();
+    const qualification = document.getElementById('opQual').value.trim();
+    const expiry = document.getElementById('opExpiry').value;
     push(ref(db, 'operatives'), {
-      name: document.getElementById('opName').value.trim(),
-      password: document.getElementById('opPassword').value,
-      employer: document.getElementById('opEmployer').value.trim(),
-      qualification: document.getElementById('opQual').value.trim(),
-      expiry: document.getElementById('opExpiry').value,
-      assignedSite: currentSite, registeredBy: currentDlm, createdAt: new Date().toISOString()
-    }).then(() => { document.getElementById('registerOpForm').reset(); alert('Registered successfully!'); });
+      name, password, employer, qualification, expiry,
+      assignedSite: currentSite,
+      registeredBy: currentDlm,
+      createdAt: new Date().toISOString()
+    }).then(() => {
+      document.getElementById('registerOpForm').reset();
+      alert('Team member registered successfully!');
+    });
   });
 
-  // Optimize Operatives Rendering
+  // Load operatives
   onValue(ref(db, 'operatives'), (snapshot) => {
     const data = snapshot.val() || {};
-    let opsHtml = ''; let selectHtml = '<option value="">-- Select Member --</option>'; let checkboxesHtml = '';
-    let siteOpCount = 0;
+    const tbody = document.getElementById('operativesTableBody');
+    const select = document.getElementById('taskOpSelect');
+    const reportCheckboxes = document.getElementById('reportOperativesList');
+    tbody.innerHTML = '';
+    select.innerHTML = '<option value="">-- Select Member --</option>';
+    reportCheckboxes.innerHTML = '';
     const today = new Date().toISOString().split('T')[0];
-    
+    let siteOpCount = 0;
     Object.keys(data).forEach(key => {
       const op = data[key];
       if (op.assignedSite && op.assignedSite.toLowerCase() === currentSite.toLowerCase()) {
         siteOpCount++;
         const isExpired = op.expiry && op.expiry < today;
-        selectHtml += `<option value="${op.name}">${op.name}</option>`;
-        checkboxesHtml += `<label class="checkbox-label"><input type="checkbox" class="report-op-checkbox" value="${op.name}"> ${op.name}</label>`;
-        opsHtml += `<tr><td><strong>${op.name}</strong></td><td>${op.employer || 'N/A'}</td><td>${op.assignedSite}</td><td>${op.qualification}</td><td>${op.expiry}</td><td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td><td><div class="action-row"><button class="btn btn-danger btn-sm" onclick="deleteOperative('${key}')">Delete</button></div></td></tr>`;
+        const opt = document.createElement('option');
+        opt.value = op.name; opt.textContent = op.name;
+        select.appendChild(opt);
+        reportCheckboxes.innerHTML += `<label class="checkbox-label"><input type="checkbox" class="report-op-checkbox" value="${op.name}"> ${op.name}</label>`;
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${op.name}</strong></td>
+            <td>${op.employer || 'N/A'}</td>
+            <td>${op.assignedSite}</td>
+            <td>${op.qualification}</td>
+            <td>${op.expiry}</td>
+            <td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
+            <td>
+              <div class="action-row">
+                <button class="btn btn-primary btn-sm" onclick="editOperative('${key}')">Edit</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteOperative('${key}')">Delete</button>
+              </div>
+            </td>
+          </tr>`;
       }
     });
-    document.getElementById('operativesTableBody').innerHTML = opsHtml;
-    document.getElementById('taskOpSelect').innerHTML = selectHtml;
-    document.getElementById('reportOperativesList').innerHTML = siteOpCount > 0 ? checkboxesHtml : '<span style="color:var(--danger); font-size:0.85rem;">No members registered yet.</span>';
+    if (siteOpCount === 0) reportCheckboxes.innerHTML = '<span style="color:var(--danger); font-size:0.85rem;">No members registered for this location yet.</span>';
   });
 
-  window.deleteOperative = (key) => { if (confirm('Delete this team member?')) remove(ref(db, `operatives/${key}`)); };
+  window.editOperative = async (key) => {
+    const snap = await new Promise(resolve => onValue(ref(db, `operatives/${key}`), resolve, { onlyOnce: true }));
+    const op = snap.val();
+    if (!op) return;
+    const newName = prompt('Name:', op.name); if (newName === null) return;
+    const newPwd = prompt('Password:', op.password || ''); if (newPwd === null) return;
+    const newEmp = prompt('Employer:', op.employer || ''); if (newEmp === null) return;
+    const newQual = prompt('Certification:', op.qualification || ''); if (newQual === null) return;
+    const newExp = prompt('Expiry date (YYYY-MM-DD):', op.expiry || ''); if (newExp === null) return;
+    await update(ref(db, `operatives/${key}`), {
+      name: newName.trim(), password: newPwd, employer: newEmp.trim(),
+      qualification: newQual.trim(), expiry: newExp.trim()
+    });
+    alert('Member updated.');
+  };
+  window.deleteOperative = (key) => {
+    if (confirm('Delete this team member?')) remove(ref(db, `operatives/${key}`));
+  };
 
-  // Task Assignment
+  // Assign task
   document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const operative = document.getElementById('taskOpSelect').value;
+    const details = document.getElementById('taskDetails').value.trim();
     const fileInput = document.getElementById('taskPhoto');
+    if (!operative) return alert('Please select a team member.');
     let dlmPhoto = null;
-    if (fileInput.files.length > 0) dlmPhoto = await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(fileInput.files[0]); });
+    if (fileInput.files.length > 0) {
+      dlmPhoto = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(fileInput.files[0]);
+      });
+    }
     const now = new Date().toISOString();
+    const refNum = 'T-' + Date.now().toString().slice(-8);
     push(ref(db, 'tasks'), {
-      refNumber: 'T-' + Date.now().toString().slice(-8), site: currentSite, dlm: currentDlm,
-      operative: document.getElementById('taskOpSelect').value, details: document.getElementById('taskDetails').value.trim(),
-      dlmPhoto, status: 'Assigned', createdAt: now, history: [{ action: 'Task created', timestamp: now }]
-    }).then(() => { document.getElementById('assignTaskForm').reset(); alert('Task dispatched!'); });
+      refNumber: refNum,
+      site: currentSite, dlm: currentDlm, operative, details,
+      dlmPhoto: dlmPhoto,
+      status: 'Assigned',
+      createdAt: now,
+      history: [{ action: 'Task created by DLM', timestamp: now }]
+    }).then(() => {
+      document.getElementById('assignTaskForm').reset();
+      alert('Task dispatched successfully!');
+    });
   });
 
-  // Optimize Tasks Rendering
-  onValue(ref(db, 'tasks'), (snapshot) => {
+  // Tasks table (with translated comments)
+  onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
-    let tasksHtml = '';
-    const asyncQueue = [];
-    
-    Object.keys(data).forEach(key => {
+    const tbody = document.getElementById('tasksTableBody');
+    tbody.innerHTML = '';
+    for (const key of Object.keys(data)) {
       const task = data[key];
       if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
-        let badgeClass = task.status === 'Accepted' || task.status === 'Approved' ? 'badge-valid' : task.status === 'Returned' ? 'badge-expired' : task.status === 'Submitted' ? 'badge-submitted' : 'badge-open';
+        const refNum = task.refNumber || key.substring(0,8);
+        let badgeClass = 'badge-open';
+        if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
+        else if (task.status === 'Returned') badgeClass = 'badge-expired';
+        else if (task.status === 'Submitted') badgeClass = 'badge-submitted';
+        const translatedComment = await translateToEnglish(task.comment || '');
         const opPhoto = task.operativePhoto || task.photo;
-        const photoThumb = opPhoto ? `<img src="${opPhoto}" class="thumb-img" onclick="openImageModal('${opPhoto}')"><br><small style="color:var(--text-muted);">Comment (EN): <span id="tcomment-${key}">Translating...</span></small>` : `<small style="color:var(--text-muted);">Comment (EN): <span id="tcomment-${key}">Translating...</span></small>`;
-        
-        tasksHtml += `<tr><td><strong>${task.refNumber || key.substring(0,8)}</strong></td><td>${task.operative}</td><td style="max-width:200px;">${task.details}</td><td><span class="badge ${badgeClass}">${task.status}</span></td><td>${photoThumb}<br><small style="color:var(--text-muted);">${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></td><td><div class="action-row"><button class="btn btn-primary btn-sm" onclick="openTaskView('${key}')">View</button><button class="btn btn-danger btn-sm" onclick="deleteTask('${key}')">Delete</button></div></td></tr>`;
-        
-        asyncQueue.push({ text: task.comment || '', id: `tcomment-${key}` });
+        const photoThumb = opPhoto ? `<img src="${opPhoto}" class="thumb-img" onclick="openImageModal('${opPhoto}')"><br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small>` : `<small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small>`;
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${refNum}</strong></td>
+            <td>${task.operative}</td>
+            <td style="max-width:200px;">${task.details}</td>
+            <td><span class="badge ${badgeClass}">${task.status}</span></td>
+            <td>${photoThumb}<br><small style="color:var(--text-muted);">${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></td>
+            <td>
+              <div class="action-row">
+                <button class="btn btn-primary btn-sm" onclick="openTaskView('${key}')">View</button>
+                <button class="btn btn-success btn-sm" onclick="exportTaskPDF('${key}')">PDF</button>
+                <button class="btn btn-success btn-sm" onclick="exportTaskCSV('${key}')">CSV</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteTask('${key}')">Delete</button>
+              </div>
+            </td>
+          </tr>`;
       }
-    });
-    
-    document.getElementById('tasksTableBody').innerHTML = tasksHtml;
-    // Process translations asynchronously after DOM update
-    asyncQueue.forEach(item => injectTranslation(item.text, item.id));
+    }
   });
 
-  window.deleteTask = (key) => { if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`)); };
+  window.deleteTask = (key) => {
+    if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
+  };
 }
 
-// Provide basic stubs for missing generic functions strictly present in HTML calls
-window.openImageModal = (src) => { document.getElementById('modalImg').src = src; document.getElementById('imgModal').style.display = 'flex'; };
+// ====== TASK VIEW MODAL ======
+let currentTaskKey = null;
+window.openTaskView = async (key) => {
+  currentTaskKey = key;
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return;
+  document.getElementById('viewTaskTitle').innerText = `Task: ${task.details ? task.details.substring(0, 60) : ''}...`;
+  document.getElementById('viewTaskRef').innerText = task.refNumber || key.substring(0,8);
+  document.getElementById('viewTaskOp').innerText = task.operative;
+  const statusEl = document.getElementById('viewTaskStatus');
+  statusEl.innerText = task.status;
+  statusEl.className = 'badge';
+  if (task.status === 'Accepted' || task.status === 'Approved') statusEl.classList.add('badge-valid');
+  else if (task.status === 'Returned') statusEl.classList.add('badge-expired');
+  else if (task.status === 'Submitted') statusEl.classList.add('badge-submitted');
+  else statusEl.classList.add('badge-open');
 
+  const actionArea = document.getElementById('taskActionArea');
+  if (task.status === 'Submitted') {
+    actionArea.style.display = 'block';
+    document.getElementById('taskReturnNote').value = '';
+  } else actionArea.style.display = 'none';
+
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const opPhoto = task.operativePhoto || task.photo;
+  const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${opPhoto}')">` : 'No photo';
+  const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${task.dlmPhoto}')">` : 'No reference photo';
+
+  document.getElementById('viewTaskDetails').innerHTML = `
+    <div class="card" style="margin-bottom:10px;">
+      <strong>DLM Description:</strong>
+      <div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
+    </div>
+    <div class="card">
+      <strong>Team Member's Response:</strong>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
+    </div>
+  `;
+
+  const history = task.history || [];
+  const historyBox = document.getElementById('taskHistoryBox');
+  if (history.length > 0) {
+    historyBox.style.display = 'block';
+    historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+  } else historyBox.style.display = 'none';
+
+  document.getElementById('taskViewModal').style.display = 'flex';
+};
+
+document.getElementById('btnAcceptTask').addEventListener('click', async () => {
+  if (!currentTaskKey) return;
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  const history = task.history || [];
+  history.push({ action: 'Accepted by DLM', timestamp: new Date().toISOString() });
+  await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Accepted', history });
+  document.getElementById('taskViewModal').style.display = 'none';
+});
+document.getElementById('btnReturnTask').addEventListener('click', async () => {
+  if (!currentTaskKey) return;
+  const note = document.getElementById('taskReturnNote').value.trim();
+  if (!note) return alert('Please provide a reason for returning.');
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  const history = task.history || [];
+  history.push({ action: 'Returned by DLM', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Returned', returnNote: note, history });
+  document.getElementById('taskViewModal').style.display = 'none';
+});
+
+// ====== REPORTS MODULE ======
+const reportItemsContainer = document.getElementById('reportItemsContainer');
+document.getElementById('addReportItemBtn').addEventListener('click', () => {
+  const div = document.createElement('div');
+  div.className = 'report-item-box';
+  div.innerHTML = `
+    <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">✕</button>
+    <div class="form-group"><label>Item Description</label><textarea class="report-desc-input" rows="2" placeholder="Describe the item..." required></textarea></div>
+    <div class="form-group"><label>Reference Photo (optional)</label><input type="file" class="report-photo-input" accept="image/*"></div>
+  `;
+  reportItemsContainer.appendChild(div);
+});
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = () => resolve(reader.result);
+  reader.onerror = error => reject(error);
+});
+
+document.getElementById('createReportForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = document.getElementById('reportTitle').value.trim();
+  const checkedOps = Array.from(document.querySelectorAll('.report-op-checkbox:checked')).map(cb => cb.value);
+  if (checkedOps.length === 0) return alert('Please assign this report to at least one member.');
+  const items = [];
+  const itemBoxes = document.querySelectorAll('.report-item-box');
+  if (itemBoxes.length === 0) return alert('Please add at least one item.');
+  for (let box of itemBoxes) {
+    const desc = box.querySelector('.report-desc-input').value.trim();
+    const fileInput = box.querySelector('.report-photo-input');
+    let base64Photo = null;
+    if (fileInput.files.length > 0) base64Photo = await fileToBase64(fileInput.files[0]);
+    items.push({ description: desc, photo: base64Photo });
+  }
+  const now = new Date().toISOString();
+  const refNum = 'R-' + Date.now().toString().slice(-8);
+  push(ref(db, 'reports'), {
+    refNumber: refNum,
+    site: currentSite, dlm: currentDlm, title,
+    assignedTo: checkedOps, items,
+    status: 'Assigned', createdAt: now,
+    history: [{ action: 'Report created by DLM', timestamp: now }]
+  }).then(() => {
+    document.getElementById('createReportForm').reset();
+    reportItemsContainer.innerHTML = '';
+    document.querySelectorAll('.report-op-checkbox').forEach(cb => cb.checked = false);
+    alert('Report created and assigned successfully!');
+  });
+});
+
+// ====== REPORTS TABLE — SHOWS ALL REPORTS WITH FULL MANAGEMENT ======
+let allReportsData = {};
+let currentActiveReportKey = null;
+onValue(ref(db, 'reports'), (snapshot) => {
+  allReportsData = snapshot.val() || {};
+  const tbody = document.getElementById('reportsTableBody');
+  tbody.innerHTML = '';
+  let count = 0;
+  Object.keys(allReportsData).reverse().forEach(key => {
+    const rep = allReportsData[key];
+    if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+      count++;
+      const date = new Date(rep.createdAt).toLocaleDateString();
+      let badgeClass = 'badge-open';
+      if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
+      else if (rep.status === 'Returned') badgeClass = 'badge-expired';
+      else if (rep.status === 'Submitted') badgeClass = 'badge-submitted';
+      const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+      tbody.innerHTML += `
+        <tr>
+          <td>${date}</td>
+          <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+          <td>${rep.title}</td>
+          <td>${assignedNames}</td>
+          <td><span class="badge ${badgeClass}">${rep.status}</span></td>
+          <td>
+            <div class="action-row">
+              <button class="btn btn-primary btn-sm" onclick="openReportView('${key}')">View</button>
+              <button class="btn btn-success btn-sm" onclick="acceptReport('${key}')">Accept</button>
+              <button class="btn btn-warning btn-sm" onclick="returnReport('${key}')">Return</button>
+              <button class="btn btn-success btn-sm" onclick="exportReportPDF('${key}')">PDF</button>
+              <button class="btn btn-success btn-sm" onclick="exportReportCSV('${key}')">CSV</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteReport('${key}')">Delete</button>
+            </div>
+          </td>
+        </tr>`;
+    }
+  });
+  if (count === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">No reports yet. Create one above.</td></tr>`;
+  }
+  if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
+    openReportView(currentActiveReportKey);
+  }
+});
+
+window.deleteReport = (key) => {
+  if (confirm('Delete this entire report?')) remove(ref(db, `reports/${key}`));
+};
+
+window.acceptReport = async (key) => {
+  const rep = allReportsData[key];
+  if (!rep) return;
+  const history = rep.history || [];
+  history.push({ action: 'Report accepted by DLM', timestamp: new Date().toISOString() });
+  await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
+  alert('Report accepted!');
+};
+
+window.returnReport = async (key) => {
+  const note = prompt('Enter reason for returning:');
+  if (!note) return;
+  const rep = allReportsData[key];
+  if (!rep) return;
+  const history = rep.history || [];
+  history.push({ action: 'Report returned by DLM', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
+  alert('Report returned!');
+};
+
+window.openReportView = async (key) => {
+  const report = allReportsData[key];
+  if (!report) return;
+  currentActiveReportKey = key;
+  document.getElementById('viewReportTitle').innerText = report.title;
+  document.getElementById('viewReportRef').innerText = report.refNumber || key.substring(0,8);
+  const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+  document.getElementById('viewReportOps').innerText = assignedNames;
+  const statusBadge = document.getElementById('viewReportStatus');
+  statusBadge.innerText = report.status;
+  statusBadge.className = 'badge';
+  if (report.status === 'Accepted' || report.status === 'Approved') statusBadge.classList.add('badge-valid');
+  else if (report.status === 'Returned') statusBadge.classList.add('badge-expired');
+  else if (report.status === 'Submitted') statusBadge.classList.add('badge-submitted');
+  else statusBadge.classList.add('badge-open');
+
+  const actionArea = document.getElementById('reportActionArea');
+  if (report.status === 'Submitted') {
+    actionArea.style.display = 'block';
+    document.getElementById('reportReturnNote').value = '';
+  } else actionArea.style.display = 'none';
+
+  const itemsBody = document.getElementById('viewReportItemsBody');
+  itemsBody.innerHTML = '';
+  if (report.items) {
+    const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const photoTag = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openImageModal('${item.photo}')" />` : '<span style="color:var(--text-muted); font-size:0.75rem;">No photo</span>';
+      const opPhoto = item.submittedPhoto || item.operativePhoto;
+      const opPhotoTag = opPhoto ? `<img src="${opPhoto}" class="thumb-img" onclick="openImageModal('${opPhoto}')" />` : '—';
+      const translatedComment = await translateToEnglish(item.comment || '');
+      itemsBody.innerHTML += `
+        <tr>
+          <td><strong>${i + 1}</strong></td>
+          <td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small></td>
+          <td>${photoTag}</td>
+          <td>${opPhotoTag}<br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small><br><small style="color:var(--text-muted);">${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
+        </tr>`;
+    }
+  }
+
+  const history = report.history || [];
+  const historyBox = document.getElementById('reportHistoryBox');
+  if (history.length > 0) {
+    historyBox.style.display = 'block';
+    historyBox.innerHTML = '<strong>Report Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+  } else historyBox.style.display = 'none';
+
+  document.getElementById('reportViewModal').style.display = 'flex';
+};
+
+document.getElementById('btnAcceptReport').addEventListener('click', async () => {
+  if (!currentActiveReportKey) return;
+  const rep = allReportsData[currentActiveReportKey];
+  const history = rep.history || [];
+  history.push({ action: 'Report accepted by DLM', timestamp: new Date().toISOString() });
+  await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted', history });
+  document.getElementById('reportViewModal').style.display = 'none';
+});
+document.getElementById('btnReturnReport').addEventListener('click', async () => {
+  if (!currentActiveReportKey) return;
+  const note = document.getElementById('reportReturnNote').value.trim();
+  if (!note) return alert('Please provide a reason for returning.');
+  const rep = allReportsData[currentActiveReportKey];
+  const history = rep.history || [];
+  history.push({ action: 'Report returned by DLM', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned', returnNote: note, history });
+  document.getElementById('reportViewModal').style.display = 'none';
+});
+
+window.openImageModal = (src) => {
+  document.getElementById('modalImg').src = src;
+  document.getElementById('imgModal').style.display = 'flex';
+};
+
+// ====== CSV HELPER ======
+function downloadCSV(filename, csvContent) {
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function formatHistory(historyArr) {
+  if (!historyArr || historyArr.length === 0) return 'No history';
+  return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+}
+
+// ====== PDF EXPORT (TASK) ======
+window.exportTaskPDF = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const opPhoto = task.operativePhoto || task.photo;
+  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
+  const history = task.history || [];
+  const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+  const printWindow = window.open('', '', 'height=900,width=900');
+  printWindow.document.write(`
+<html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+.section { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
+.section h3 { margin: 0 0 10px 0; color: #334155; font-size: 1rem; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
+<div class="meta">Location: ${task.site} | DLM: ${task.dlm} | Assigned to: ${task.operative} | Current Status: <strong>${task.status}</strong></div>
+<div class="section"><h3>DLM Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo provided by DLM:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
+<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence provided by operative:</strong><br>${opPhotoTag}</p><p><small>Submitted at: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
+<div class="section"><h3>Activity Timeline (all submissions, returns and re-submissions)</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${task.status}</div>
+</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 700);
+};
+
+// ====== CSV EXPORT (SINGLE TASK) ======
+window.exportTaskCSV = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const history = formatHistory(task.history || []);
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+  csv += [
+    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(task.details || '').replace(/"/g, '""')}"`,
+    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+    `"${translatedComment.replace(/"/g, '""')}"`,
+    `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+    `"${(task.status || '').replace(/"/g, '""')}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+  downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+// ====== PDF EXPORT (REPORT) ======
+window.exportReportPDF = async (key) => {
+  const report = allReportsData[key];
+  if (!report) return alert('Report not found.');
+  const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+  let itemsHtml = '';
+  if (report.items) {
+    const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+      const opPhoto = item.submittedPhoto || item.operativePhoto;
+      const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+      const translatedComment = await translateToEnglish(item.comment || '');
+      const itemHistory = item.history || [];
+      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+      itemsHtml += `
+        <tr>
+          <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
+          <td>
+            <strong>DLM Description:</strong> ${item.description}<br><br>
+            <strong>Photo provided by DLM:</strong><br>${dlmPhotoTag}<br><br>
+            <strong>Operative comment (translated to English):</strong><br>${translatedComment}<br><br>
+            <strong>Photo provided by operative:</strong><br>${opPhotoTag}<br><br>
+            <small>Response submitted at: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small>
+          </td>
+          <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
+        </tr>`;
+    }
+  }
+  const reportHistory = report.history || [];
+  const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+  const printWindow = window.open('', '', 'height=900,width=900');
+  printWindow.document.write(`
+<html><head><title>${report.title}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Report — ${report.title}</h2>
+<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | DLM: ${report.dlm} | Assigned to: ${assignedNames} | Current Status: <strong>${report.status}</strong></div>
+<h3>Items</h3>
+<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+<h3 style="margin-top:20px;">Report Timeline (all returns and re-submissions)</h3>
+<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${report.status}</div>
+</body></html>`);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => printWindow.print(), 700);
+};
+
+// ====== CSV EXPORT (SINGLE REPORT) ======
+window.exportReportCSV = async (key) => {
+  const rep = allReportsData[key];
+  if (!rep) return alert('Report not found.');
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+  const reportHistory = formatHistory(rep.history || []);
+  if (rep.items) {
+    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const translatedComment = await translateToEnglish(item.comment || '');
+      const itemHistory = formatHistory(item.history || []);
+      csv += [
+        `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
+        `"${(item.description || '').replace(/"/g, '""')}"`,
+        `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+        `"${translatedComment.replace(/"/g, '""')}"`,
+        `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+        `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
+        `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
+      ].join(",") + "\n";
+    }
+  } else {
+    csv += [
+      `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+      `"${(rep.title || '').replace(/"/g, '""')}"`,
+      `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+      `"N/A"`,
+      `""`,
+      `"${(rep.status || '').replace(/"/g, '""')}"`,
+      `"${reportHistory.replace(/"/g, '""')}"`
+    ].join(",") + "\n";
+  }
+  downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+// ====== CSV EXPORT (ALL TASKS) ======
+document.getElementById('exportTasksCsvBtn').addEventListener('click', async () => {
+  const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
+  const data = snap.val() || {};
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+  for (const key of Object.keys(data)) {
+    const task = data[key];
+    if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
+      const translatedComment = await translateToEnglish(task.comment || '');
+      const history = formatHistory(task.history || []);
+      csv += [
+        `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+        `"${(task.details || '').replace(/"/g, '""')}"`,
+        `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+        `"${translatedComment.replace(/"/g, '""')}"`,
+        `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+        `"${(task.status || '').replace(/"/g, '""')}"`,
+        `"${history.replace(/"/g, '""')}"`
+      ].join(",") + "\n";
+    }
+  }
+  downloadCSV(`all_tasks_${currentSite}_${Date.now()}.csv`, csv);
+});
+
+// ====== CSV EXPORT (ALL REPORTS) ======
+document.getElementById('exportReportsCsvBtn').addEventListener('click', async () => {
+  let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+  for (const key of Object.keys(allReportsData)) {
+    const rep = allReportsData[key];
+    if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+      const reportHistory = formatHistory(rep.history || []);
+      if (rep.items) {
+        const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+        for (let i = 0; i < itemsArr.length; i++) {
+          const item = itemsArr[i];
+          const translatedComment = await translateToEnglish(item.comment || '');
+          const itemHistory = formatHistory(item.history || []);
+          csv += [
+            `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
+            `"${(item.description || '').replace(/"/g, '""')}"`,
+            `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+            `"${translatedComment.replace(/"/g, '""')}"`,
+            `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+            `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
+            `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
+          ].join(",") + "\n";
+        }
+      } else {
+        csv += [
+          `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+          `"${(rep.title || '').replace(/"/g, '""')}"`,
+          `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+          `"N/A"`,
+          `""`,
+          `"${(rep.status || '').replace(/"/g, '""')}"`,
+          `"${reportHistory.replace(/"/g, '""')}"`
+        ].join(",") + "\n";
+      }
+    }
+  }
+  downloadCSV(`all_reports_${currentSite}_${Date.now()}.csv`, csv);
+});
 </script>
 </body>
 </html>
