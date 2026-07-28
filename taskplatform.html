@@ -68,7 +68,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .modal { display: none; position: fixed; z-index: 3000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
 .modal img { max-width: 100%; max-height: 100%; border-radius: 8px; border: 2px solid var(--border); }
 
-/* Responsive */
 @media (max-width: 600px) {
   .header-title { font-size: 1rem; }
   .lang-input { min-width: 140px; }
@@ -105,7 +104,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     </div>
     <div class="lang-container">
       <label for="langInput" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Language:</label>
-      <input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()" placeholder="English">
+      <input list="languagesList" id="langInput" class="lang-input" placeholder="English">
       <datalist id="languagesList"></datalist>
     </div>
   </header>
@@ -173,18 +172,18 @@ const LANG_MAP = {
   "haitian creole":"ht","hausa":"ha","hawaiian":"haw","hebrew":"he","hindi":"hi",
   "hmong":"hmn","hungarian":"hu","icelandic":"is","igbo":"ig","indonesian":"id",
   "irish":"ga","italian":"it","japanese":"ja","javanese":"jw","kannada":"kn",
-"kazakh":"kk","khmer":"km","korean":"ko","kurdish":"ku","kyrgyz":"ky",
-"lao":"lo","latin":"la","latvian":"lv","lithuanian":"lt","luxembourgish":"lb",
-"macedonian":"mk","malagasy":"mg","malay":"ms","malayalam":"ml","maltese":"mt",
-"maori":"mi","marathi":"mr","mongolian":"mn","myanmar":"my","nepali":"ne",
-"norwegian":"no","nyanja":"ny","pashto":"ps","persian":"fa","polish":"pl",
-"portuguese":"pt","punjabi":"pa","romanian":"ro","russian":"ru","samoan":"sm",
-"scots gaelic":"gd","serbian":"sr","sesotho":"st","shona":"sn","sindhi":"sd",
-"sinhala":"si","slovak":"sk","slovenian":"sl","somali":"so","spanish":"es",
-"sundanese":"su","swahili":"sw","swedish":"sv","tagalog":"tl","tajik":"tg",
-"tamil":"ta","tatar":"tt","telugu":"te","thai":"th","turkish":"tr",
-"turkmen":"tk","ukrainian":"uk","urdu":"ur","uyghur":"ug","uzbek":"uz",
-"vietnamese":"vi","welsh":"cy","xhosa":"xh","yiddish":"yi","yoruba":"yo","zulu":"zu"
+  "kazakh":"kk","khmer":"km","korean":"ko","kurdish":"ku","kyrgyz":"ky",
+  "lao":"lo","latin":"la","latvian":"lv","lithuanian":"lt","luxembourgish":"lb",
+  "macedonian":"mk","malagasy":"mg","malay":"ms","malayalam":"ml","maltese":"mt",
+  "maori":"mi","marathi":"mr","mongolian":"mn","myanmar":"my","nepali":"ne",
+  "norwegian":"no","nyanja":"ny","pashto":"ps","persian":"fa","polish":"pl",
+  "portuguese":"pt","punjabi":"pa","romanian":"ro","russian":"ru","samoan":"sm",
+  "scots gaelic":"gd","serbian":"sr","sesotho":"st","shona":"sn","sindhi":"sd",
+  "sinhala":"si","slovak":"sk","slovenian":"sl","somali":"so","spanish":"es",
+  "sundanese":"su","swahili":"sw","swedish":"sv","tagalog":"tl","tajik":"tg",
+  "tamil":"ta","tatar":"tt","telugu":"te","thai":"th","turkish":"tr",
+  "turkmen":"tk","ukrainian":"uk","urdu":"ur","uyghur":"ug","uzbek":"uz",
+  "vietnamese":"vi","welsh":"cy","xhosa":"xh","yiddish":"yi","yoruba":"yo","zulu":"zu"
 };
 const datalist = document.getElementById('languagesList');
 Object.keys(LANG_MAP).forEach(langName => {
@@ -217,7 +216,6 @@ document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
   const errEl = document.getElementById('loginError');
   errEl.style.display = 'none';
 
-  // Verify credentials against Firebase
   const snap = await new Promise(resolve => onValue(ref(db, 'operatives'), resolve, { onlyOnce: true }));
   const ops = snap.val() || {};
   const match = Object.values(ops).find(o =>
@@ -234,6 +232,17 @@ document.getElementById('opLoginForm').addEventListener('submit', async (e) => {
   document.getElementById('mainContainer').style.display = 'flex';
   document.getElementById('opDisplayName').innerText = currentOp;
   renderAllWork();
+});
+
+// ====== IMMEDIATE LANGUAGE CHANGE WITH DEBOUNCE ======
+let renderTimeout;
+document.getElementById('langInput').addEventListener('input', () => {
+  clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(() => renderAllWork(), 300);
+});
+document.getElementById('langInput').addEventListener('change', () => {
+  clearTimeout(renderTimeout);
+  renderTimeout = setTimeout(() => renderAllWork(), 100);
 });
 
 // ====== RENDER ======
@@ -308,9 +317,9 @@ async function renderTaskCard(key, task, langCode, container) {
 
   let formHTML = '';
   if (isLocked) {
-    // Show submitted info
-    if (task.photo) {
-      formHTML += `<div class="form-group"><label>Your submitted photo</label><img src="${task.photo}" class="thumb-img" onclick="openModal('${task.photo}')"></div>`;
+    if (task.photo || task.operativePhoto) {
+      const opPhoto = task.operativePhoto || task.photo;
+      formHTML += `<div class="form-group"><label>Your submitted photo</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
     }
     if (task.comment) {
       const tc = await translateText(task.comment, langCode);
@@ -369,13 +378,16 @@ async function renderReportCard(key, rep, langCode, container) {
     const item = itemsArray[i];
     const itemText = item.title || item.description || item.details || `Item ${i + 1}`;
     const translatedItem = await translateText(itemText, langCode);
-    const itemLocked = item.status === 'Submitted' || isReportLocked;
+    const itemLocked = item.status === 'Submitted' || item.status === 'Accepted' || isReportLocked;
 
     let dlmPhotoHtml = item.photo ? `<div class="dlm-ref-photo"><small>Reference image:</small><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
 
     let itemFormHtml = '';
     if (itemLocked) {
-      if (item.submittedPhoto) itemFormHtml += `<div class="form-group"><label>Your submitted photo</label><img src="${item.submittedPhoto}" class="thumb-img" onclick="openModal('${item.submittedPhoto}')"></div>`;
+      if (item.submittedPhoto || item.operativePhoto) {
+        const opPhoto = item.submittedPhoto || item.operativePhoto;
+        itemFormHtml += `<div class="form-group"><label>Your submitted photo</label><img src="${opPhoto}" class="thumb-img" onclick="openModal('${opPhoto}')"></div>`;
+      }
       if (item.comment) {
         const tc = await translateText(item.comment, langCode);
         itemFormHtml += `<div class="form-group"><label>Your submitted comment</label><div class="task-desc" style="border-left-color: var(--success);">${tc}</div></div>`;
@@ -383,7 +395,7 @@ async function renderReportCard(key, rep, langCode, container) {
     } else {
       itemFormHtml = `
         <div class="form-group"><label>Upload Photo Evidence *</label><input type="file" id="report_photo_${key}_${i}" accept="image/*" capture="environment" required></div>
-        <div class="form-group"><label>Comment / Note *</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress...">${item.comment || ''}</textarea></div>
+        <div class="form-group"><label>Comment / Note *</label><textarea id="report_comment_${key}_${i}" rows="2" required placeholder="Describe your progress..."></textarea></div>
       `;
     }
 
@@ -455,24 +467,33 @@ window.submitTask = async (e, key) => {
 
 window.submitReport = async (e, key, itemCount) => {
   e.preventDefault();
-  onValue(ref(db, `reports/${key}`), async (snap) => {
-    const rep = snap.val();
+  onValue(ref(db, `reports/${key}`), async (snapshot) => {
+    const rep = snapshot.val();
     if (!rep) return alert('Report not found');
     let rawItems = rep.items;
     let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
     const now = new Date().toISOString();
+    let anyChanges = false;
+
     for (let i = 0; i < itemCount; i++) {
-      const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
-      const fileInput = document.getElementById(`report_photo_${key}_${i}`);
-      if (!comment || fileInput.files.length === 0) {
+      const commentEl = document.getElementById(`report_comment_${key}_${i}`);
+      const fileEl = document.getElementById(`report_photo_${key}_${i}`);
+
+      // Skip locked items (no inputs rendered)
+      if (!commentEl || !fileEl) continue;
+
+      const comment = commentEl.value.trim();
+      if (!comment || fileEl.files.length === 0) {
         return alert(`Item ${i+1}: Both photo and comment are required.`);
       }
-      const file = fileInput.files[0];
+
+      const file = fileEl.files[0];
       const photoData = await new Promise(resolve => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(file);
       });
+
       if (itemsArray[i]) {
         const itemHistory = itemsArray[i].history || [];
         itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
@@ -482,8 +503,14 @@ window.submitReport = async (e, key, itemCount) => {
         itemsArray[i].operativePhoto = photoData;
         itemsArray[i].submittedAt = now;
         itemsArray[i].history = itemHistory;
+        anyChanges = true;
       }
     }
+
+    if (!anyChanges) {
+      return alert('No items to submit. All items appear to be already submitted.');
+    }
+
     const reportHistory = rep.history || [];
     reportHistory.push({ action: 'Report submitted by team member', timestamp: now });
     await update(ref(db, `reports/${key}`), {
