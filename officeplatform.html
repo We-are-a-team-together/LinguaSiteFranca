@@ -21,6 +21,8 @@
 body { background-color: var(--bg); color: var(--text); padding: 20px; }
 .container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+.header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; display: none; }
 h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
 .btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
 .btn-primary { background: var(--accent); color: white; }
@@ -38,6 +40,8 @@ h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
 label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
 input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
 input:focus, select:focus { outline: none; border-color: var(--accent); }
+input[type="file"] { padding: 8px; font-size: 0.85rem; }
+input[type="color"] { height: 50px; cursor: pointer; padding: 4px; }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
 th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
 th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
@@ -52,19 +56,25 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 
-/* ===== NEW: Filter Bar Styles ===== */
 .filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .filter-bar label { margin: 0; color: #fff; font-weight: 600; }
 .filter-bar select { max-width: 300px; }
+
+/* ===== NEW: Branding Preview Styles ===== */
+.color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+.color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
+.logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1><span class="brand-name">Office</span> — Management Dashboard</h1>
+    <div class="header-left">
+      <img id="headerLogo" class="header-logo" src="" alt="Logo">
+      <h1><span class="brand-name">Office</span> — Management Dashboard</h1>
+    </div>
   </header>
 
-  <!-- ===== NEW: Location Filter Dropdown ===== -->
   <div class="filter-bar">
     <label for="siteFilter">Filter by Location:</label>
     <select id="siteFilter" onchange="applyFilter()">
@@ -185,18 +195,44 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
     </div>
   </div>
 
-  <div class="card">
+  <!-- ===== UPDATED: Branding Panel now includes Logo + 2 Colours ===== -->
+  <div class="card" style="border: 2px solid var(--accent);">
     <div class="card-title">Global Branding & Footer Configuration</div>
     <form id="brandingForm">
-      <div class="form-group">
-        <label>Company / Brand Name</label>
-        <input type="text" id="brandNameInput" required>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Company / Brand Name (displayed centrally)</label>
+          <input type="text" id="brandNameInput" required>
+        </div>
+        <div class="form-group">
+          <label>Footer Custom Text (displayed centrally)</label>
+          <input type="text" id="footerTextInput" required>
+        </div>
       </div>
       <div class="form-group">
-        <label>Footer Custom Text</label>
-        <input type="text" id="footerTextInput" required>
+        <label>Logo (placed on top-left of all interfaces)</label>
+        <input type="file" id="logoInput" accept="image/*">
+        <img id="logoPreview" class="logo-preview" alt="Logo preview">
       </div>
-      <button type="submit" class="btn btn-success">Update Branding Panel</button>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Primary Brand Colour</label>
+          <input type="color" id="primaryColorInput" value="#3b82f6">
+          <div class="color-preview">
+            <div class="color-swatch" id="primarySwatch" style="background:#3b82f6;"></div>
+            <span id="primaryHex">#3b82f6</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Secondary Brand Colour</label>
+          <input type="color" id="secondaryColorInput" value="#10b981">
+          <div class="color-preview">
+            <div class="color-swatch" id="secondarySwatch" style="background:#10b981;"></div>
+            <span id="secondaryHex">#10b981</span>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-success">Apply Branding to All Interfaces</button>
     </form>
   </div>
 
@@ -251,9 +287,7 @@ function formatHistory(historyArr) {
   return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
 }
 
-// ===== NEW: Filter Logic =====
 let currentFilter = 'ALL';
-
 function applyFilter() {
   currentFilter = document.getElementById('siteFilter').value;
   renderAll();
@@ -272,6 +306,10 @@ function renderAll() {
   renderTasks();
 }
 
+// ===== NEW: Logo + Branding State =====
+let currentLogoBase64 = null;
+
+// ===== NEW: Branding Sync (loads logo + colours from Firebase) =====
 onValue(ref(db, 'branding'), (snapshot) => {
   const data = snapshot.val();
   if (data) {
@@ -286,15 +324,69 @@ onValue(ref(db, 'branding'), (snapshot) => {
       const footerInput = document.getElementById('footerTextInput');
       if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
     }
+    // ===== NEW: Logo =====
+    if (data.logo) {
+      document.getElementById('headerLogo').src = data.logo;
+      document.getElementById('headerLogo').style.display = 'block';
+      document.getElementById('logoPreview').src = data.logo;
+      document.getElementById('logoPreview').style.display = 'block';
+      currentLogoBase64 = data.logo;
+    }
+    // ===== NEW: Primary Colour =====
+    if (data.primaryColor) {
+      document.documentElement.style.setProperty('--accent', data.primaryColor);
+      document.getElementById('primaryColorInput').value = data.primaryColor;
+      document.getElementById('primarySwatch').style.background = data.primaryColor;
+      document.getElementById('primaryHex').innerText = data.primaryColor;
+    }
+    // ===== NEW: Secondary Colour =====
+    if (data.secondaryColor) {
+      document.documentElement.style.setProperty('--success', data.secondaryColor);
+      document.getElementById('secondaryColorInput').value = data.secondaryColor;
+      document.getElementById('secondarySwatch').style.background = data.secondaryColor;
+      document.getElementById('secondaryHex').innerText = data.secondaryColor;
+    }
   }
 });
 
+// ===== NEW: Live colour swatch updates =====
+document.getElementById('primaryColorInput').addEventListener('input', (e) => {
+  document.getElementById('primarySwatch').style.background = e.target.value;
+  document.getElementById('primaryHex').innerText = e.target.value;
+});
+document.getElementById('secondaryColorInput').addEventListener('input', (e) => {
+  document.getElementById('secondarySwatch').style.background = e.target.value;
+  document.getElementById('secondaryHex').innerText = e.target.value;
+});
+
+// ===== NEW: Logo file reader =====
+document.getElementById('logoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    currentLogoBase64 = reader.result;
+    document.getElementById('logoPreview').src = reader.result;
+    document.getElementById('logoPreview').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+});
+
+// ===== UPDATED: Branding form now saves logo + colours too =====
 document.getElementById('brandingForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const businessName = document.getElementById('brandNameInput').value.trim();
   const footerText = document.getElementById('footerTextInput').value.trim();
-  set(ref(db, 'branding'), { businessName, footerText }).then(() => {
-    alert('Global branding and footer updated successfully!');
+  const primaryColor = document.getElementById('primaryColorInput').value;
+  const secondaryColor = document.getElementById('secondaryColorInput').value;
+  set(ref(db, 'branding'), {
+    businessName,
+    footerText,
+    logo: currentLogoBase64 || '',
+    primaryColor,
+    secondaryColor
+  }).then(() => {
+    alert('Global branding, logo and colours updated across all interfaces!');
   });
 });
 
@@ -324,7 +416,6 @@ document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
   });
 });
 
-// ===== UPDATED: Sites dropdown now also populates the filter =====
 onValue(ref(db, 'sites'), (snapshot) => {
   const data = snapshot.val() || {};
   const filterSelect = document.getElementById('siteFilter');
@@ -344,7 +435,6 @@ onValue(ref(db, 'sites'), (snapshot) => {
   renderAll();
 });
 
-// ===== UPDATED: Sites table uses filter =====
 let allDlmAccounts = {};
 onValue(ref(db, 'dlmAccounts'), (snapshot) => {
   allDlmAccounts = snapshot.val() || {};
@@ -378,7 +468,6 @@ window.deleteSite = (key) => {
   }
 };
 
-// ===== UPDATED: Operatives table uses filter =====
 function renderOperatives() {
   onValue(ref(db, 'operatives'), (snapshot) => {
     const data = snapshot.val() || {};
@@ -429,7 +518,6 @@ window.deleteOperative = (key) => {
   if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
 };
 
-// ===== UPDATED: Reports table uses filter =====
 function renderReports() {
   onValue(ref(db, 'reports'), async (snapshot) => {
     const data = snapshot.val() || {};
@@ -605,7 +693,6 @@ window.deleteReport = (key) => {
   if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
 };
 
-// ===== UPDATED: Tasks table uses filter =====
 function renderTasks() {
   onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
