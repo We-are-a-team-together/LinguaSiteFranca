@@ -75,6 +75,15 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
 .history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+/* ====== NOTIFICATION ANIMATIONS ====== */
+@keyframes slideInNotif {
+  from { transform: translateY(-120%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slideOutNotif {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-120%); opacity: 0; }
+}
 @media (max-width: 600px) {
 .header-left { width: 100%; }
 h1 { font-size: 1.05rem; }
@@ -246,7 +255,7 @@ th, td { padding: 8px 6px; font-size: 0.78rem; }
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 const firebaseConfig = {
 apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
 authDomain: "lingua-site-franca.firebaseapp.com",
@@ -258,6 +267,71 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+// ====== NOTIFICATION SYSTEM ======
+const notifiedSubmissions = new Set();
+let tasksInitialLoad = false;
+let reportsInitialLoad = false;
+
+function playNotificationSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.3);
+  } catch (e) {
+    console.warn('Audio notification failed:', e);
+  }
+}
+
+function showNotification(title, message, onClick) {
+  let container = document.getElementById('notificationContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'notificationContainer';
+    container.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:600px; width:90%; pointer-events:none;';
+    document.body.appendChild(container);
+  }
+  const notif = document.createElement('div');
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
+  const success = getComputedStyle(document.documentElement).getPropertyValue('--success').trim() || '#10b981';
+  notif.style.cssText = `background:linear-gradient(135deg, ${accent}, ${success}); color:white; padding:18px 24px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5); cursor:pointer; animation:slideInNotif 0.4s ease-out; font-family:system-ui,sans-serif; pointer-events:auto; border-left:4px solid rgba(255,255,255,0.3); position:relative;`;
+  notif.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px;">
+      <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <span style="font-size:1.4rem;">🔔</span>
+          <strong style="font-size:1rem; font-weight:700;">${title}</strong>
+        </div>
+        <div style="font-size:0.9rem; opacity:0.95; line-height:1.5;">${message}</div>
+      </div>
+      <button class="notif-close-btn" style="background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1.2rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">×</button>
+    </div>
+  `;
+  notif.className = 'notification-item';
+  const closeBtn = notif.querySelector('.notif-close-btn');
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
+    setTimeout(() => notif.remove(), 300);
+  });
+  notif.addEventListener('click', (e) => {
+    if (e.target.closest('.notif-close-btn')) return;
+    if (onClick) onClick();
+    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
+    setTimeout(() => notif.remove(), 300);
+  });
+  container.appendChild(notif);
+}
+// ====== END NOTIFICATION SYSTEM ======
+
 let currentDlm = "";
 let currentDlmKey = "";
 let currentSite = "";
@@ -342,69 +416,8 @@ toggleBtn.innerText = 'Open Reports View';
 toggleBtn.classList.replace('btn-warning', 'btn-outline');
 }
 });
-
-// ============================================================
-// ===== FIX: Dedicated async reports table renderer ==========
-// This is called BOTH from the onValue listener AND manually
-// after report creation to guarantee the table always updates.
-// ============================================================
-async function refreshReportsTable(reportsData) {
-  const tbody = document.getElementById('reportsTableBody');
-  if (!tbody) return;
-  tbody.innerHTML = '';
-  let count = 0;
-  const keys = Object.keys(reportsData).reverse();
-  for (const key of keys) {
-    try {
-      const rep = reportsData[key];
-      if (!rep || !rep.site) continue;
-      if (rep.site.toLowerCase() !== currentSite.toLowerCase()) continue;
-      count++;
-      const date = new Date(rep.createdAt).toLocaleDateString();
-      let badgeClass = 'badge-open';
-      if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
-      else if (rep.status === 'Returned') badgeClass = 'badge-expired';
-      else if (rep.status === 'Submitted') badgeClass = 'badge-submitted';
-      let assignedNames = 'N/A';
-      if (rep.assignedTo) {
-        if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-        else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-        else assignedNames = String(rep.assignedTo);
-      }
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${date}</td>
-        <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
-        <td>${rep.title || ''}</td>
-        <td>${assignedNames}</td>
-        <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
-        <td>
-          <div class="action-row">
-            <button class="btn btn-primary btn-sm" onclick="openReportView('${key}')">View</button>
-            <button class="btn btn-success btn-sm" onclick="acceptReport('${key}')">Accept</button>
-            <button class="btn btn-warning btn-sm" onclick="returnReport('${key}')">Return</button>
-            <button class="btn btn-success btn-sm" onclick="exportReportPDF('${key}')">PDF</button>
-            <button class="btn btn-success btn-sm" onclick="exportReportCSV('${key}')">CSV</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteReport('${key}')">Delete</button>
-          </div>
-        </td>`;
-      tbody.appendChild(row);
-    } catch (err) {
-      console.error('Error rendering report row', key, err);
-    }
-  }
-  if (count === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">No reports yet. Create one above.</td></tr>`;
-  }
-  // Refresh modal if it's currently open
-  if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
-    try { await openReportView(currentActiveReportKey); } catch(e) {}
-  }
-}
-
 // ====== DASHBOARD LOGIC ======
 function loadDashboard() {
-// Register operative
 document.getElementById('registerOpForm').addEventListener('submit', (e) => {
 e.preventDefault();
 const name = document.getElementById('opName').value.trim();
@@ -422,7 +435,6 @@ document.getElementById('registerOpForm').reset();
 alert('Team member registered successfully!');
 });
 });
-// Load operatives
 onValue(ref(db, 'operatives'), (snapshot) => {
 const data = snapshot.val() || {};
 const tbody = document.getElementById('operativesTableBody');
@@ -479,7 +491,6 @@ alert('Member updated.');
 window.deleteOperative = (key) => {
 if (confirm('Delete this team member?')) remove(ref(db, `operatives/${key}`));
 };
-// Assign task
 document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const operative = document.getElementById('taskOpSelect').value;
@@ -508,9 +519,35 @@ document.getElementById('assignTaskForm').reset();
 alert('Task dispatched successfully!');
 });
 });
-// Tasks table (with translated comments)
+// Tasks table (with notifications)
 onValue(ref(db, 'tasks'), async (snapshot) => {
 const data = snapshot.val() || {};
+// ====== NOTIFICATION LOGIC ======
+Object.keys(data).forEach(key => {
+const task = data[key];
+if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
+const subKey = 'task-' + key;
+if (task.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
+if (tasksInitialLoad) {
+notifiedSubmissions.add(subKey);
+playNotificationSound();
+const preview = task.details ? (task.details.length > 80 ? task.details.substring(0,80) + '...' : task.details) : '';
+showNotification(
+'📋 New Task Submission',
+`<strong>${task.operative}</strong> submitted task <strong>${task.refNumber || key.substring(0,8)}</strong>${preview ? '<br><small style="opacity:0.9;">' + preview + '</small>' : ''}`,
+() => openTaskView(key)
+);
+} else {
+notifiedSubmissions.add(subKey);
+}
+}
+if (task.status !== 'Submitted') {
+notifiedSubmissions.delete(subKey);
+}
+}
+});
+if (!tasksInitialLoad) tasksInitialLoad = true;
+// ====== END NOTIFICATION LOGIC ======
 const tbody = document.getElementById('tasksTableBody');
 tbody.innerHTML = '';
 for (const key of Object.keys(data)) {
@@ -546,16 +583,7 @@ tbody.innerHTML += `
 window.deleteTask = (key) => {
 if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
 };
-
-// ===== FIX: Reports listener now uses refreshReportsTable() =====
-// Persistent listener that calls our dedicated renderer on every change
-onValue(ref(db, 'reports'), (snapshot) => {
-  allReportsData = snapshot.val() || {};
-  refreshReportsTable(allReportsData);
-});
-
 }
-
 // ====== TASK VIEW MODAL ======
 let currentTaskKey = null;
 window.openTaskView = async (key) => {
@@ -665,19 +693,83 @@ site: currentSite, dlm: currentDlm, title,
 assignedTo: checkedOps, items,
 status: 'Assigned', createdAt: now,
 history: [{ action: 'Report created by DLM', timestamp: now }]
-}).then(async () => {
+}).then(() => {
 document.getElementById('createReportForm').reset();
 reportItemsContainer.innerHTML = '';
 document.querySelectorAll('.report-op-checkbox').forEach(cb => cb.checked = false);
-// ===== FIX: Manually refresh the reports table after creation =====
-// This guarantees the newly created report appears immediately
-await refreshReportsTable(allReportsData);
 alert('Report created and assigned successfully!');
 });
 });
-// ====== REPORTS TABLE MANAGEMENT ======
 let allReportsData = {};
 let currentActiveReportKey = null;
+onValue(ref(db, 'reports'), (snapshot) => {
+allReportsData = snapshot.val() || {};
+// ====== NOTIFICATION LOGIC ======
+Object.keys(allReportsData).forEach(key => {
+const rep = allReportsData[key];
+if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+const subKey = 'report-' + key;
+if (rep.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
+if (reportsInitialLoad) {
+notifiedSubmissions.add(subKey);
+playNotificationSound();
+const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+showNotification(
+'📄 New Report Submission',
+`<strong>${rep.title}</strong><br><small style="opacity:0.9;">Assigned to: ${assignedNames}</small>`,
+() => openReportView(key)
+);
+} else {
+notifiedSubmissions.add(subKey);
+}
+}
+if (rep.status !== 'Submitted') {
+notifiedSubmissions.delete(subKey);
+}
+}
+});
+if (!reportsInitialLoad) reportsInitialLoad = true;
+// ====== END NOTIFICATION LOGIC ======
+const tbody = document.getElementById('reportsTableBody');
+tbody.innerHTML = '';
+let count = 0;
+Object.keys(allReportsData).reverse().forEach(key => {
+const rep = allReportsData[key];
+if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+count++;
+const date = new Date(rep.createdAt).toLocaleDateString();
+let badgeClass = 'badge-open';
+if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
+else if (rep.status === 'Returned') badgeClass = 'badge-expired';
+else if (rep.status === 'Submitted') badgeClass = 'badge-submitted';
+const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+tbody.innerHTML += `
+<tr>
+<td>${date}</td>
+<td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+<td>${rep.title}</td>
+<td>${assignedNames}</td>
+<td><span class="badge ${badgeClass}">${rep.status}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-primary btn-sm" onclick="openReportView('${key}')">View</button>
+<button class="btn btn-success btn-sm" onclick="acceptReport('${key}')">Accept</button>
+<button class="btn btn-warning btn-sm" onclick="returnReport('${key}')">Return</button>
+<button class="btn btn-success btn-sm" onclick="exportReportPDF('${key}')">PDF</button>
+<button class="btn btn-success btn-sm" onclick="exportReportCSV('${key}')">CSV</button>
+<button class="btn btn-danger btn-sm" onclick="deleteReport('${key}')">Delete</button>
+</div>
+</td>
+</tr>`;
+}
+});
+if (count === 0) {
+tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color: var(--text-muted); padding: 30px;">No reports yet. Create one above.</td></tr>`;
+}
+if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
+openReportView(currentActiveReportKey);
+}
+});
 window.deleteReport = (key) => {
 if (confirm('Delete this entire report?')) remove(ref(db, `reports/${key}`));
 };
