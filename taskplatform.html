@@ -1,389 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Operative Task Portal</title>
-  <style>
-    :root {
-      --bg: #0f172a;
-      --card-bg: #1e293b;
-      --accent: #3b82f6;
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --border: #334155;
-      --success: #10b981;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 20px; }
-    
-    .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-    
-    .container { width: 95%; max-width: 1400px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
-
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
-    
-    .lang-container { display: flex; align-items: center; gap: 10px; }
-    .lang-input { padding: 9px 14px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.95rem; width: 240px; }
-    .lang-input:focus { outline: none; border-color: var(--accent); }
-
-    .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
-    .task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
-    .task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent); }
-    
-    .return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
-
-    .item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
-    .thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); margin-top: 8px; display: block; }
-    .thumb-img:hover { transform: scale(1.05); }
-
-    .form-group { margin-bottom: 15px; }
-    label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
-    textarea, input[type="file"], input[type="text"] { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; }
-    input:focus { outline: none; border-color: var(--accent); }
-
-    button { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem; }
-    button:hover { opacity: 0.9; }
-    
-    .btn-login { background: var(--accent); margin-top: 10px; }
-
-    .empty-state { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 1.1rem; }
-    .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
-    
-    .modal { display: none; position: fixed; z-index: 3000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
-    .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operative Task Portal</title>
+<style>
+:root {
+--bg: #0f172a;
+--card-bg: #1e293b;
+--accent: #3b82f6;
+--text: #f8fafc;
+--text-muted: #94a3b8;
+--border: #334155;
+--success: #10b981;
+--danger: #ef4444;
+--warning: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background-color: var(--bg); color: var(--text); padding: 20px; }
+.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+.container { width: 95%; max-width: 1400px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
+header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; flex-wrap: wrap; gap: 15px; }
+.lang-container { display: flex; align-items: center; gap: 10px; }
+.lang-input { padding: 9px 14px; background: var(--card-bg); border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.95rem; width: 240px; }
+.lang-input:focus { outline: none; border-color: var(--accent); }
+.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 25px; margin-bottom: 20px; }
+.task-title { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+.task-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--accent); }
+.return-note-desc { font-size: 1.1rem; line-height: 1.5; margin-bottom: 20px; color: #fff; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; border-left: 4px solid var(--danger); }
+.item-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; padding: 15px; margin-bottom: 15px; }
+.thumb-img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); margin-top: 8px; display: block; }
+.thumb-img:hover { transform: scale(1.05); }
+.form-group { margin-bottom: 15px; }
+label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; text-align: left;}
+textarea, input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; }
+input:focus { outline: none; border-color: var(--accent); }
+button { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 1rem; }
+button:hover { opacity: 0.9; }
+.btn-login { background: var(--accent); margin-top: 10px; }
+.empty-state { text-align: center; color: var(--text-muted); padding: 50px 0; font-size: 1.1rem; }
+.dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
+.modal { display: none; position: fixed; z-index: 3000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+.modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+</style>
 </head>
 <body>
-
 <!-- Login Overlay -->
 <div id="loginOverlay" class="login-overlay">
-  <div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-    <h2 style="margin-bottom: 20px; color: var(--accent);">Operative Login</h2>
-    <form id="opLoginForm">
-      <div class="form-group">
-        <input type="text" id="opLoginName" placeholder="Enter your registered Name" required>
-      </div>
-      <button type="submit" class="btn-login">Access Tasks & Reports</button>
-    </form>
-  </div>
+<div class="card" style="width: 100%; max-width: 400px; text-align: center;">
+<h2 style="margin-bottom: 20px; color: var(--accent);">Operative Login</h2>
+<form id="opLoginForm">
+<div class="form-group">
+<input type="text" id="opLoginName" placeholder="Enter your registered Name" required>
 </div>
-
+<div class="form-group">
+<input type="password" id="opLoginPass" placeholder="Enter your Password" required>
+</div>
+<button type="submit" class="btn-login">Access Tasks & Reports</button>
+</form>
+</div>
+</div>
 <div class="container" id="mainContainer">
-  <header>
-    <h2><span class="brand-name">LinguaSiteFranca</span> — <span id="opDisplayName">Operative</span>'s Workspace</h2>
-    <div class="lang-container">
-      <label for="langInput" style="font-size: 0.9rem; color: var(--text-muted);">Spoken Language:</label>
-      <input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()">
-      <datalist id="languagesList"></datalist>
-    </div>
-  </header>
-
-  <div id="tasksContainer">
-    <div class="empty-state">Loading assigned tasks and reports...</div>
-  </div>
-
-  <div class="dynamic-footer"></div>
+<header>
+<h2><span class="brand-name">LinguaSiteFranca</span> — <span id="opDisplayName">Operative</span>'s Workspace</h2>
+<div style="display: flex; align-items: center; gap: 15px;">
+<div class="lang-container">
+<label for="langInput" style="font-size: 0.9rem; color: var(--text-muted);">Spoken Language:</label>
+<input list="languagesList" id="langInput" class="lang-input" onchange="renderAllWork()">
+<datalist id="languagesList"></datalist>
 </div>
-
+<button id="logoutBtn" style="width: auto; padding: 8px 16px; background: var(--danger); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: none;" onclick="logoutOp()">Logout</button>
+</div>
+</header>
+<div id="tasksContainer">
+<div class="empty-state">Loading assigned tasks and reports...</div>
+</div>
+<div class="dynamic-footer"></div>
+</div>
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
-  <img id="modalImg" src="" alt="Zoom">
+<img id="modalImg" src="" alt="Zoom">
 </div>
-
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = {
+apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+authDomain: "lingua-site-franca.firebaseapp.com",
+databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
+projectId: "lingua-site-franca",
+storageBucket: "lingua-site-franca.firebasestorage.app",
+messagingSenderId: "737514168886",
+appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+let currentOp = "";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-    authDomain: "lingua-site-franca.firebaseapp.com",
-    databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "lingua-site-franca",
-    storageBucket: "lingua-site-franca.firebasestorage.app",
-    messagingSenderId: "737514168886",
-    appId: "1:737514168886:web:08f3abd5816505d3a72e97"
-  };
+window.logoutOp = () => {
+    sessionStorage.removeItem('opSession');
+    window.location.reload();
+};
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  let currentOp = "";
-
-  document.getElementById('opLoginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    currentOp = document.getElementById('opLoginName').value.trim();
+const session = sessionStorage.getItem('opSession');
+if (session) {
+    currentOp = session;
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('mainContainer').style.display = 'flex';
     document.getElementById('opDisplayName').innerText = currentOp;
+    document.getElementById('logoutBtn').style.display = 'inline-block';
     renderAllWork();
-  });
+}
 
-  onValue(ref(db, 'branding'), (snapshot) => {
-    const data = snapshot.val();
-    if (data) {
-      if (data.businessName) {
-        document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-        document.title = `${data.businessName} - Operative Workspace`;
-      }
-      if (data.footerText) {
-        document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
-      }
-    }
-  });
-
-  const LANG_MAP = {
-    "afrikaans": "af", "albanian": "sq", "amharic": "am", "arabic": "ar", "armenian": "hy",
-    "azerbaijani": "az", "basque": "eu", "belarusian": "be", "bengali": "bn", "bosnian": "bs",
-    "bulgarian": "bg", "catalan": "ca", "cebuano": "ceb", "chinese": "zh-CN", "corsican": "co",
-    "croatian": "hr", "czech": "cs", "danish": "da", "dutch": "nl", "english": "en",
-    "esperanto": "eo", "estonian": "et", "finnish": "fi", "french": "fr", "frisian": "fy",
-    "galician": "gl", "georgian": "ka", "german": "de", "greek": "el", "gujarati": "gu",
-    "haitian creole": "ht", "hausa": "ha", "hawaiian": "haw", "hebrew": "he", "hindi": "hi",
-    "hmong": "hmn", "hungarian": "hu", "icelandic": "is", "igbo": "ig", "indonesian": "id",
-    "irish": "ga", "italian": "it", "japanese": "ja", "javanese": "jw", "kannada": "kn",
-    "kazakh": "kk", "khmer": "km", "korean": "ko", "kurdish": "ku", "kyrgyz": "ky",
-    "lao": "lo", "latin": "la", "latvian": "lv", "lithuanian": "lt", "luxembourgish": "lb",
-    "macedonian": "mk", "malagasy": "mg", "malay": "ms", "malayalam": "ml", "maltese": "mt",
-    "maori": "mi", "marathi": "mr", "mongolian": "mn", "myanmar": "my", "nepali": "ne",
-    "norwegian": "no", "nyanja": "ny", "pashto": "ps", "persian": "fa", "polish": "pl",
-    "portuguese": "pt", "punjabi": "pa", "romanian": "ro", "russian": "ru", "samoan": "sm",
-    "scots gaelic": "gd", "serbian": "sr", "sesotho": "st", "shona": "sn", "sindhi": "sd",
-    "sinhala": "si", "slovak": "sk", "slovenian": "sl", "somali": "so", "spanish": "es",
-    "sundanese": "su", "swahili": "sw", "swedish": "sv", "tagalog": "tl", "tajik": "tg",
-    "tamil": "ta", "tatar": "tt", "telugu": "te", "thai": "th", "turkish": "tr",
-    "turkmen": "tk", "ukrainian": "uk", "urdu": "ur", "uyghur": "ug", "uzbek": "uz",
-    "vietnamese": "vi", "welsh": "cy", "xhosa": "xh", "yiddish": "yi", "yoruba": "yo", "zulu": "zu"
-  };
-
-  const datalist = document.getElementById('languagesList');
-  Object.keys(LANG_MAP).forEach(langName => {
-    const opt = document.createElement('option');
-    opt.value = langName.charAt(0).toUpperCase() + langName.slice(1);
-    datalist.appendChild(opt);
-  });
-
-  function resolveLanguageCode(input) {
-    if (!input) return 'en';
-    const clean = input.trim().toLowerCase();
-    if (LANG_MAP[clean]) return LANG_MAP[clean];
-    if (clean.length === 2) return clean;
-    const found = Object.keys(LANG_MAP).find(k => k.includes(clean) || clean.includes(k));
-    return found ? LANG_MAP[found] : 'en';
-  }
-
-  async function translateText(text, targetLangCode) {
-    try {
-      const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`);
-      const data = await res.json();
-      return data[0][0][0];
-    } catch (e) {
-      return text;
-    }
-  }
-
-  window.renderAllWork = function() {
-    if (!currentOp) return;
-    const userInput = document.getElementById('langInput').value;
-    const langCode = resolveLanguageCode(userInput);
-    const container = document.getElementById('tasksContainer');
-    container.innerHTML = '<div class="empty-state">Loading assigned work...</div>';
-
-    let loadedCount = 0;
-    let tasksData = {};
-    let reportsData = {};
-
-    function checkAndDisplay() {
-      loadedCount++;
-      if (loadedCount < 2) return;
-
-      container.innerHTML = '';
-      let hasWork = false;
-
-      // 1. Render Legacy Tasks
-      for (const key of Object.keys(tasksData)) {
-        const task = tasksData[key];
-        if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
-          hasWork = true;
-          translateText(task.details || '', langCode).then(translatedDetails => {
-            let returnNoteHTML = '';
-            if (task.returnNote) {
-              translateText(task.returnNote, langCode).then(translatedReturnNote => {
-                const el = document.getElementById(`return_note_${key}`);
-                if (el) el.innerHTML = `<strong>Return Note:</strong><br>${translatedReturnNote}`;
-              });
-              returnNoteHTML = `<div class="return-note-desc" id="return_note_${key}"><strong>Return Note:</strong><br>Loading...</div>`;
-            }
-
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-              <div class="task-title">Legacy Task (${task.status})</div>
-              <div class="task-desc">${translatedDetails}</div>
-              ${returnNoteHTML}
-              <form onsubmit="submitTask(event, '${key}')">
-                <div class="form-group">
-                  <label>Photo Evidence</label>
-                  <input type="file" id="photo_${key}" accept="image/*" capture="environment">
-                </div>
-                <div class="form-group">
-                  <label>Comments / Notes</label>
-                  <textarea id="comment_${key}" rows="3"></textarea>
-                </div>
-                <button type="submit">Submit Task</button>
-              </form>
-            `;
-            container.appendChild(card);
-          });
-        }
-      }
-
-      // 2. Render Multi-Task Reports assigned to Operative
-      for (const key of Object.keys(reportsData)) {
-        const rep = reportsData[key];
-        let isAssignedToOp = false;
-        if (rep.assignedTo) {
-          if (Array.isArray(rep.assignedTo)) {
-            isAssignedToOp = rep.assignedTo.some(name => name.toLowerCase() === currentOp.toLowerCase());
-          } else if (typeof rep.assignedTo === 'object') {
-            isAssignedToOp = Object.values(rep.assignedTo).some(name => name.toLowerCase() === currentOp.toLowerCase());
-          } else if (typeof rep.assignedTo === 'string') {
-            isAssignedToOp = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
-          }
-        }
-
-        if (isAssignedToOp) {
-          hasWork = true;
-          // Safely map items whether stored as an Array or Object map in Firebase
-          const rawItems = rep.items;
-          const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
-          
-          let itemsHtml = '';
-          itemsArray.forEach((item, index) => {
-            const itemText = item.title || item.details || item.description || `Task Item ${index + 1}`;
-            const dlmPhotoHtml = item.photo ? `<div style="margin-top:8px;"><small style="color:var(--text-muted);">DLM Reference Photo:</small><br><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
-
-            itemsHtml += `
-              <div class="item-box">
-                <strong>Item ${index + 1}:</strong> ${itemText} (${item.status || 'Assigned'})
-                ${dlmPhotoHtml}
-                <div class="form-group" style="margin-top: 12px;">
-                  <label>Upload New Photo Evidence</label>
-                  <input type="file" id="report_photo_${key}_${index}" accept="image/*" capture="environment">
-                </div>
-                <div class="form-group">
-                  <label>Comment / Note for Item ${index + 1}</label>
-                  <textarea id="report_comment_${key}_${index}" rows="2">${item.comment || ''}</textarea>
-                </div>
-              </div>
-            `;
-          });
-
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="task-title">Master Report: ${rep.title || 'Untitled Report'} (${rep.status || 'Assigned'})</div>
-            <div class="task-desc">
-              <strong>Site:</strong> ${rep.site || 'N/A'}<br>
-              <strong>DLM:</strong> ${rep.dlm || 'N/A'}
-            </div>
-            <form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
-              ${itemsHtml}
-              <button type="submit">Submit Report Updates</button>
-            </form>
-          `;
-          container.appendChild(card);
-        }
-      }
-
-      if (!hasWork) {
-        container.innerHTML = `<div class="empty-state">No active tasks or reports assigned to ${currentOp}.</div>`;
-      }
-    }
-
-    onValue(ref(db, 'tasks'), (snapshot) => {
-      tasksData = snapshot.val() || {};
-      checkAndDisplay();
-    }, { onlyOnce: true });
-
-    onValue(ref(db, 'reports'), (snapshot) => {
-      reportsData = snapshot.val() || {};
-      checkAndDisplay();
-    }, { onlyOnce: true });
-  };
-
-  window.openModal = (src) => {
-    document.getElementById('modalImg').src = src;
-    document.getElementById('imgModal').style.display = 'flex';
-  };
-
-  window.submitTask = async (e, key) => {
+document.getElementById('opLoginForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const comment = document.getElementById(`comment_${key}`).value.trim();
-    const fileInput = document.getElementById(`photo_${key}`);
-
-    let photoData = null;
-    if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      photoData = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
-    }
-
-    update(ref(db, `tasks/${key}`), {
-      status: 'Submitted',
-      comment: comment,
-      photo: photoData,
-      submittedAt: new Date().toISOString()
-    }).then(() => {
-      alert('Task submitted successfully!');
-      renderAllWork();
-    });
-  };
-
-  window.submitReport = async (e, key, itemCount) => {
-    e.preventDefault();
+    const name = document.getElementById('opLoginName').value.trim();
+    const pass = document.getElementById('opLoginPass').value.trim();
     
-    onValue(ref(db, `reports/${key}`), async (snapshot) => {
-      const rep = snapshot.val();
-      if (!rep) return alert('Report not found');
-
-      let rawItems = rep.items;
-      let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
-
-      for (let i = 0; i < itemCount; i++) {
-        const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
-        const fileInput = document.getElementById(`report_photo_${key}_${i}`);
-
-        if (itemsArray[i]) {
-          itemsArray[i].comment = comment;
-          itemsArray[i].status = 'Submitted';
-          if (fileInput.files.length > 0) {
-            const file = fileInput.files[0];
-            const photoData = await new Promise((resolve) => {
-              const reader = new FileReader();
-              reader.onloadend = () => resolve(reader.result);
-              reader.readAsDataURL(file);
-            });
-            itemsArray[i].photo = photoData;
-          }
+    onValue(ref(db, 'operatives'), (snapshot) => {
+        const data = snapshot.val() || {};
+        let found = false;
+        let exactName = "";
+        for (const key in data) {
+            if (data[key].name.toLowerCase() === name.toLowerCase() && data[key].password === pass) {
+                exactName = data[key].name;
+                found = true;
+                break;
+            }
         }
-      }
-
-      update(ref(db, `reports/${key}`), {
-        status: 'Submitted',
-        items: itemsArray,
-        submittedAt: new Date().toISOString()
-      }).then(() => {
-        alert('Report submitted successfully!');
-        renderAllWork();
-      });
+        if (found) {
+            currentOp = exactName;
+            sessionStorage.setItem('opSession', currentOp);
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('mainContainer').style.display = 'flex';
+            document.getElementById('opDisplayName').innerText = currentOp;
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            renderAllWork();
+        } else {
+            alert('Invalid Operative Name or Password.');
+        }
     }, { onlyOnce: true });
-  };
+});
+
+onValue(ref(db, 'branding'), (snapshot) => {
+const data = snapshot.val();
+if (data) {
+if (data.businessName) {
+document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
+document.title = `${data.businessName} - Operative Workspace`;
+}
+if (data.footerText) {
+document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+}
+}
+});
+const LANG_MAP = {
+"afrikaans": "af", "albanian": "sq", "amharic": "am", "arabic": "ar", "armenian": "hy",
+"azerbaijani": "az", "basque": "eu", "belarusian": "be", "bengali": "bn", "bosnian": "bs",
+"bulgarian": "bg", "catalan": "ca", "cebuano": "ceb", "chinese": "zh-CN", "corsican": "co",
+"croatian": "hr", "czech": "cs", "danish": "da", "dutch": "nl", "english": "en",
+"esperanto": "eo", "estonian": "et", "finnish": "fi", "french": "fr", "frisian": "fy",
+"galician": "gl", "georgian": "ka", "german": "de", "greek": "el", "gujarati": "gu",
+"haitian creole": "ht", "hausa": "ha", "hawaiian": "haw", "hebrew": "he", "hindi": "hi",
+"hmong": "hmn", "hungarian": "hu", "icelandic": "is", "igbo": "ig", "indonesian": "id",
+"irish": "ga", "italian": "it", "japanese": "ja", "javanese": "jw", "kannada": "kn",
+"kazakh": "kk", "khmer": "km", "korean": "ko", "kurdish": "ku", "kyrgyz": "ky",
+"lao": "lo", "latin": "la", "latvian": "lv", "lithuanian": "lt", "luxembourgish": "lb",
+"macedonian": "mk", "malagasy": "mg", "malay": "ms", "malayalam": "ml", "maltese": "mt",
+"maori": "mi", "marathi": "mr", "mongolian": "mn", "myanmar": "my", "nepali": "ne",
+"norwegian": "no", "nyanja": "ny", "pashto": "ps", "persian": "fa", "polish": "pl",
+"portuguese": "pt", "punjabi": "pa", "romanian": "ro", "russian": "ru", "samoan": "sm",
+"scots gaelic": "gd", "serbian": "sr", "sesotho": "st", "shona": "sn", "sindhi": "sd",
+"sinhala": "si", "slovak": "sk", "slovenian": "sl", "somali": "so", "spanish": "es",
+"sundanese": "su", "swahili": "sw", "swedish": "sv", "tagalog": "tl", "tajik": "tg",
+"tamil": "ta", "tatar": "tt", "telugu": "te", "thai": "th", "turkish": "tr",
+"turkmen": "tk", "ukrainian": "uk", "urdu": "ur", "uyghur": "ug", "uzbek": "uz",
+"vietnamese": "vi", "welsh": "cy", "xhosa": "xh", "yiddish": "yi", "yoruba": "yo", "zulu": "zu"
+};
+const datalist = document.getElementById('languagesList');
+Object.keys(LANG_MAP).forEach(langName => {
+const opt = document.createElement('option');
+opt.value = langName.charAt(0).toUpperCase() + langName.slice(1);
+datalist.appendChild(opt);
+});
+function resolveLanguageCode(input) {
+if (!input) return 'en';
+const clean = input.trim().toLowerCase();
+if (LANG_MAP[clean]) return LANG_MAP[clean];
+if (clean.length === 2) return clean;
+const found = Object.keys(LANG_MAP).find(k => k.includes(clean) || clean.includes(k));
+return found ? LANG_MAP[found] : 'en';
+}
+async function translateText(text, targetLangCode) {
+try {
+const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLangCode}&dt=t&q=${encodeURIComponent(text)}`);
+const data = await res.json();
+return data[0][0][0];
+} catch (e) {
+return text;
+}
+}
+window.renderAllWork = function() {
+if (!currentOp) return;
+const userInput = document.getElementById('langInput').value;
+const langCode = resolveLanguageCode(userInput);
+const container = document.getElementById('tasksContainer');
+container.innerHTML = '<div class="empty-state">Loading assigned work...</div>';
+let loadedCount = 0;
+let tasksData = {};
+let reportsData = {};
+function checkAndDisplay() {
+loadedCount++;
+if (loadedCount < 2) return;
+container.innerHTML = '';
+let hasWork = false;
+// 1. Render Legacy Tasks
+for (const key of Object.keys(tasksData)) {
+const task = tasksData[key];
+if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase() && (task.status === 'Assigned' || task.status === 'Returned')) {
+hasWork = true;
+translateText(task.details || '', langCode).then(translatedDetails => {
+let returnNoteHTML = '';
+if (task.returnNote) {
+translateText(task.returnNote, langCode).then(translatedReturnNote => {
+const el = document.getElementById(`return_note_${key}`);
+if (el) el.innerHTML = `<strong>Return Note:</strong><br>${translatedReturnNote}`;
+});
+returnNoteHTML = `<div class="return-note-desc" id="return_note_${key}"><strong>Return Note:</strong><br>Loading...</div>`;
+}
+const card = document.createElement('div');
+card.className = 'card';
+card.innerHTML = `
+<div class="task-title">Legacy Task (${task.status})</div>
+<div class="task-desc">${translatedDetails}</div>
+${returnNoteHTML}
+<form onsubmit="submitTask(event, '${key}')">
+<div class="form-group">
+<label>Photo Evidence</label>
+<input type="file" id="photo_${key}" accept="image/*" capture="environment">
+</div>
+<div class="form-group">
+<label>Comments / Notes</label>
+<textarea id="comment_${key}" rows="3"></textarea>
+</div>
+<button type="submit">Submit Task</button>
+</form>
+`;
+container.appendChild(card);
+});
+}
+}
+// 2. Render Multi-Task Reports assigned to Operative
+for (const key of Object.keys(reportsData)) {
+const rep = reportsData[key];
+let isAssignedToOp = false;
+if (rep.assignedTo) {
+if (Array.isArray(rep.assignedTo)) {
+isAssignedToOp = rep.assignedTo.some(name => name.toLowerCase() === currentOp.toLowerCase());
+} else if (typeof rep.assignedTo === 'object') {
+isAssignedToOp = Object.values(rep.assignedTo).some(name => name.toLowerCase() === currentOp.toLowerCase());
+} else if (typeof rep.assignedTo === 'string') {
+isAssignedToOp = rep.assignedTo.toLowerCase().includes(currentOp.toLowerCase());
+}
+}
+if (isAssignedToOp) {
+hasWork = true;
+// Safely map items whether stored as an Array or Object map in Firebase
+const rawItems = rep.items;
+const itemsArray = rawItems ? (Array.isArray(rawItems) ? rawItems : Object.values(rawItems)) : [];
+let itemsHtml = '';
+itemsArray.forEach((item, index) => {
+const itemText = item.title || item.details || item.description || `Task Item ${index + 1}`;
+const dlmPhotoHtml = item.photo ? `<div style="margin-top:8px;"><small style="color:var(--text-muted);">DLM Reference Photo:</small><br><img src="${item.photo}" class="thumb-img" onclick="openModal('${item.photo}')"></div>` : '';
+itemsHtml += `
+<div class="item-box">
+<strong>Item ${index + 1}:</strong> ${itemText} (${item.status || 'Assigned'})
+${dlmPhotoHtml}
+<div class="form-group" style="margin-top: 12px;">
+<label>Upload New Photo Evidence</label>
+<input type="file" id="report_photo_${key}_${index}" accept="image/*" capture="environment">
+</div>
+<div class="form-group">
+<label>Comment / Note for Item ${index + 1}</label>
+<textarea id="report_comment_${key}_${index}" rows="2">${item.comment || ''}</textarea>
+</div>
+</div>
+`;
+});
+const card = document.createElement('div');
+card.className = 'card';
+card.innerHTML = `
+<div class="task-title">Master Report: ${rep.title || 'Untitled Report'} (${rep.status || 'Assigned'})</div>
+<div class="task-desc">
+<strong>Site:</strong> ${rep.site || 'N/A'}<br>
+<strong>DLM:</strong> ${rep.dlm || 'N/A'}
+</div>
+<form onsubmit="submitReport(event, '${key}', ${itemsArray.length})">
+${itemsHtml}
+<button type="submit">Submit Report Updates</button>
+</form>
+`;
+container.appendChild(card);
+}
+}
+if (!hasWork) {
+container.innerHTML = `<div class="empty-state">No active tasks or reports assigned to ${currentOp}.</div>`;
+}
+}
+onValue(ref(db, 'tasks'), (snapshot) => {
+tasksData = snapshot.val() || {};
+checkAndDisplay();
+}, { onlyOnce: true });
+onValue(ref(db, 'reports'), (snapshot) => {
+reportsData = snapshot.val() || {};
+checkAndDisplay();
+}, { onlyOnce: true });
+};
+window.openModal = (src) => {
+document.getElementById('modalImg').src = src;
+document.getElementById('imgModal').style.display = 'flex';
+};
+window.submitTask = async (e, key) => {
+e.preventDefault();
+const comment = document.getElementById(`comment_${key}`).value.trim();
+const fileInput = document.getElementById(`photo_${key}`);
+let photoData = null;
+if (fileInput.files.length > 0) {
+const file = fileInput.files[0];
+photoData = await new Promise((resolve) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.readAsDataURL(file);
+});
+}
+update(ref(db, `tasks/${key}`), {
+status: 'Submitted',
+comment: comment,
+photo: photoData,
+submittedAt: new Date().toISOString()
+}).then(() => {
+alert('Task submitted successfully!');
+renderAllWork();
+});
+};
+window.submitReport = async (e, key, itemCount) => {
+e.preventDefault();
+onValue(ref(db, `reports/${key}`), async (snapshot) => {
+const rep = snapshot.val();
+if (!rep) return alert('Report not found');
+let rawItems = rep.items;
+let itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
+for (let i = 0; i < itemCount; i++) {
+const comment = document.getElementById(`report_comment_${key}_${i}`).value.trim();
+const fileInput = document.getElementById(`report_photo_${key}_${i}`);
+if (itemsArray[i]) {
+itemsArray[i].comment = comment;
+itemsArray[i].status = 'Submitted';
+if (fileInput.files.length > 0) {
+const file = fileInput.files[0];
+const photoData = await new Promise((resolve) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.readAsDataURL(file);
+});
+itemsArray[i].photo = photoData;
+}
+}
+}
+update(ref(db, `reports/${key}`), {
+status: 'Submitted',
+items: itemsArray,
+submittedAt: new Date().toISOString()
+}).then(() => {
+alert('Report submitted successfully!');
+renderAllWork();
+});
+}, { onlyOnce: true });
+};
 </script>
 </body>
 </html>
