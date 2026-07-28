@@ -262,7 +262,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getDatabase, ref, get, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -284,18 +284,46 @@
   let currentDlm = urlParams.get('dlm');
   let currentSite = urlParams.get('site');
 
-  if (isReload || !currentDlm || !currentSite) {
-    currentDlm = prompt("Session Logged Out. Please enter Manager Name:");
-    currentSite = prompt("Please enter Assigned Location Name:");
-    if (!currentDlm || !currentSite) {
-      alert("Login cancelled. Reloading login prompt.");
-      window.location.reload();
-    } else {
+  // Strict Authentication Validation against Database Records
+  async function authenticateSession() {
+    const managersSnap = await get(ref(db, 'managers'));
+    const authorizedManagers = managersSnap.exists() ? managersSnap.val() : {};
+    
+    // Check if valid managers list exists in DB. If empty or manager is not authorized, prompt/block
+    const validNames = Object.values(authorizedManagers).map(m => (typeof m === 'object' ? m.name : m));
+
+    let authorized = false;
+    if (currentDlm && (validNames.length === 0 || validNames.some(n => n.toLowerCase() === currentDlm.toLowerCase()))) {
+      authorized = true;
+    }
+
+    if (isReload || !authorized || !currentDlm || !currentSite) {
+      currentDlm = prompt("Access Restricted. Please enter an authorized Manager Name created via Office Interface:");
+      currentSite = prompt("Please enter Assigned Location Name:");
+      
+      if (!currentDlm || !currentSite) {
+        alert("Login cancelled or invalid. Reloading prompt.");
+        window.location.reload();
+        return;
+      }
+
+      // Re-verify against DB
+      const recheckSnap = await get(ref(db, 'managers'));
+      const recheckList = recheckSnap.exists() ? Object.values(recheckSnap.val()).map(m => (typeof m === 'object' ? m.name : m)) : [];
+      
+      if (recheckList.length > 0 && !recheckList.some(n => n.toLowerCase() === currentDlm.toLowerCase())) {
+        alert("Error: This manager account has not been created or authorized in the office interface.");
+        window.location.reload();
+        return;
+      }
+
       window.history.replaceState({}, '', `?dlm=${encodeURIComponent(currentDlm)}&site=${encodeURIComponent(currentSite)}`);
     }
+
+    document.getElementById('dlmBadgeInfo').innerText = `Manager: ${currentDlm} | Location: ${currentSite}`;
   }
 
-  document.getElementById('dlmBadgeInfo').innerText = `Manager: ${currentDlm} | Location: ${currentSite}`;
+  authenticateSession();
 
   async function translateToEnglish(text) {
     if (!text) return 'None';
@@ -509,7 +537,6 @@
     e.preventDefault();
     const title = document.getElementById('reportTitle').value.trim();
     
-    // Grab all checked personnel
     const checkedOps = Array.from(document.querySelectorAll('.report-op-checkbox:checked')).map(cb => cb.value);
     if (checkedOps.length === 0) return alert('Please assign this report to at least one person.');
     
@@ -539,7 +566,6 @@
       document.getElementById('createReportForm').reset();
       reportItemsContainer.innerHTML = '';
       document.querySelector('#createReportForm button[type="submit"]').innerText = 'Save & Assign Report';
-      // Uncheck all checkboxes
       document.querySelectorAll('.report-op-checkbox').forEach(cb => cb.checked = false);
       alert('Report created and assigned successfully!');
     });
@@ -582,13 +608,11 @@
       }
     });
 
-    // If modal is open, refresh its data live
     if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
        openReportView(currentActiveReportKey);
     }
   });
 
-  // Action Logic: View, Delete, Accept, Return Reports
   window.deleteReport = (key) => {
     if (confirm('Are you sure you want to permanently delete this entire report?')) remove(ref(db, `reports/${key}`));
   };
@@ -609,7 +633,6 @@
     else if (report.status === 'Submitted') statusBadge.classList.add('badge-submitted');
     else statusBadge.classList.add('badge-open');
 
-    // Show Action Area only if Submitted
     const actionArea = document.getElementById('reportActionArea');
     if (report.status === 'Submitted') {
       actionArea.style.display = 'block';
@@ -637,7 +660,6 @@
     document.getElementById('reportViewModal').style.display = 'flex';
   };
 
-  // Report Response Buttons
   document.getElementById('btnAcceptReport').addEventListener('click', () => {
     if (currentActiveReportKey) {
       update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted' });
@@ -652,7 +674,6 @@
     }
   });
 
-  // Export PDF Engine
   window.exportReportPDF = (key) => {
     const report = allReportsData[key];
     if (!report) return alert("Report data not found.");
@@ -709,36 +730,31 @@
               <div class="meta-label">Manager / Lead</div>
               <div class="meta-value">${report.dlm}</div>
             </div>
-            <div class="meta-box">
-              <div class="meta-label">Date Created</div>
-              <div class="meta-value">${new Date(report.createdAt).toLocaleString()}</div>
-            </div>
           </div>
-
+          
           <table>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Description</th>
-                <th>Photo Evidence</th>
+                <th>Description / Snag Detail</th>
+                <th>Evidence Photo</th>
               </tr>
             </thead>
             <tbody>
               ${itemsHtml}
             </tbody>
           </table>
-
+          
           <div class="footer">
-            Generated via Operations Console Management Platform
+            Generated via Operations Platform Management Console
           </div>
         </body>
       </html>
     `);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+    setTimeout(() => printWindow.print(), 500);
   };
 </script>
-
 </body>
 </html>
