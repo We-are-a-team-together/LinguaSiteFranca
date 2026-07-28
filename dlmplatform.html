@@ -165,7 +165,7 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
     <div class="card">
       <div class="card-title">
         <span>Task Tracking & Submissions</span>
-        <button class="btn btn-success btn-auto btn-sm" id="exportCsvBtn">Export CSV</button>
+        <button class="btn btn-success btn-auto btn-sm" id="exportTasksCsvBtn">Export Tasks CSV</button>
       </div>
       <div class="table-wrap">
         <table>
@@ -196,10 +196,13 @@ th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: upp
       </form>
     </div>
     <div class="card">
-      <div class="card-title">Reports Archive</div>
+      <div class="card-title">
+        <span>All Reports Management</span>
+        <button class="btn btn-success btn-auto btn-sm" id="exportReportsCsvBtn">Export All Reports CSV</button>
+      </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Date</th><th>Title</th><th>Assigned To</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Date</th><th>Ref</th><th>Title</th><th>Assigned To</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="reportsTableBody"></tbody>
         </table>
       </div>
@@ -471,11 +474,11 @@ function loadDashboard() {
   });
 
   // Tasks table
-  onValue(ref(db, 'tasks'), (snapshot) => {
+  onValue(ref(db, 'tasks'), async (snapshot) => {
     const data = snapshot.val() || {};
     const tbody = document.getElementById('tasksTableBody');
     tbody.innerHTML = '';
-    Object.keys(data).forEach(key => {
+    for (const key of Object.keys(data)) {
       const task = data[key];
       if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
         const refNum = task.refNumber || key.substring(0,8);
@@ -483,7 +486,8 @@ function loadDashboard() {
         if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
         else if (task.status === 'Returned') badgeClass = 'badge-expired';
         else if (task.status === 'Submitted') badgeClass = 'badge-submitted';
-        const photoThumb = (task.operativePhoto || task.photo) ? `<img src="${task.operativePhoto || task.photo}" class="thumb-img" onclick="openImageModal('${task.operativePhoto || task.photo}')">` : '—';
+        const translatedComment = await translateToEnglish(task.comment || '');
+        const photoThumb = (task.operativePhoto || task.photo) ? `<img src="${task.operativePhoto || task.photo}" class="thumb-img" onclick="openImageModal('${task.operativePhoto || task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : '—';
         tbody.innerHTML += `
           <tr>
             <td><strong>${refNum}</strong></td>
@@ -495,12 +499,13 @@ function loadDashboard() {
               <div class="action-row">
                 <button class="btn btn-primary btn-sm" onclick="openTaskView('${key}')">View</button>
                 <button class="btn btn-success btn-sm" onclick="exportTaskPDF('${key}')">PDF</button>
+                <button class="btn btn-success btn-sm" onclick="exportTaskCSV('${key}')">CSV</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteTask('${key}')">Delete</button>
               </div>
             </td>
           </tr>`;
       }
-    });
+    }
   });
 
   window.deleteTask = (key) => {
@@ -652,13 +657,17 @@ onValue(ref(db, 'reports'), (snapshot) => {
       tbody.innerHTML += `
         <tr>
           <td>${date}</td>
-          <td><strong>${rep.title}</strong><br><small style="color:var(--text-muted);">${rep.refNumber || key.substring(0,8)}</small></td>
+          <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+          <td>${rep.title}</td>
           <td>${assignedNames}</td>
           <td><span class="badge ${badgeClass}">${rep.status}</span></td>
           <td>
             <div class="action-row">
               <button class="btn btn-primary btn-sm" onclick="openReportView('${key}')">View</button>
+              <button class="btn btn-success btn-sm" onclick="acceptReport('${key}')">Accept</button>
+              <button class="btn btn-warning btn-sm" onclick="returnReport('${key}')">Return</button>
               <button class="btn btn-success btn-sm" onclick="exportReportPDF('${key}')">PDF</button>
+              <button class="btn btn-success btn-sm" onclick="exportReportCSV('${key}')">CSV</button>
               <button class="btn btn-danger btn-sm" onclick="deleteReport('${key}')">Delete</button>
             </div>
           </td>
@@ -672,6 +681,24 @@ onValue(ref(db, 'reports'), (snapshot) => {
 
 window.deleteReport = (key) => {
   if (confirm('Delete this entire report?')) remove(ref(db, `reports/${key}`));
+};
+
+window.acceptReport = async (key) => {
+  const rep = allReportsData[key];
+  const history = rep.history || [];
+  history.push({ action: 'Report accepted by supervisor', timestamp: new Date().toISOString() });
+  await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
+  alert('Report accepted!');
+};
+
+window.returnReport = async (key) => {
+  const note = prompt('Enter reason for returning:');
+  if (!note) return;
+  const rep = allReportsData[key];
+  const history = rep.history || [];
+  history.push({ action: 'Report returned by supervisor', timestamp: new Date().toISOString(), note });
+  await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
+  alert('Report returned!');
 };
 
 window.openReportView = async (key) => {
@@ -709,7 +736,7 @@ window.openReportView = async (key) => {
       itemsBody.innerHTML += `
         <tr>
           <td><strong>${i + 1}</strong></td>
-          <td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small></td>
+          <td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small><br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small></td>
           <td>${photoTag}</td>
           <td>${opPhotoTag}<br><small style="color:var(--text-muted);">${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}</small></td>
         </tr>`;
@@ -788,6 +815,35 @@ th { background: #f1f5f9; }
   setTimeout(() => printWindow.print(), 700);
 };
 
+// ====== CSV EXPORT (SINGLE TASK) ======
+window.exportTaskCSV = async (key) => {
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return alert('Task not found.');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
+  csv += [
+    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(task.site || '').replace(/"/g, '""')}"`,
+    `"${(task.dlm || '').replace(/"/g, '""')}"`,
+    `"${(task.operative || '').replace(/"/g, '""')}"`,
+    `"${(task.details || '').replace(/"/g, '""')}"`,
+    `"${(task.status || '').replace(/"/g, '""')}"`,
+    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+    `"${translatedComment.replace(/"/g, '""')}"`,
+    `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+  const encodedUri = encodeURI(csv);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 // ====== PDF EXPORT (REPORT) ======
 window.exportReportPDF = async (key) => {
   const report = allReportsData[key];
@@ -803,7 +859,7 @@ window.exportReportPDF = async (key) => {
       const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
       const translatedComment = await translateToEnglish(item.comment || '');
       const itemHistory = item.history || [];
-      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td></tr>`).join('');
+      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
       itemsHtml += `
         <tr>
           <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
@@ -840,37 +896,106 @@ th { background: #f1f5f9; }
   setTimeout(() => printWindow.print(), 700);
 };
 
-// ====== CSV EXPORT ======
-document.getElementById('exportCsvBtn').addEventListener('click', async () => {
-  const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
-  const data = snap.val() || {};
-  let csv = "Reference,Site,Supervisor,Team Member,Task Description,DLM Photo,Status,Created At,Operative Comment (English),Operative Photo,Submitted At,History\n";
-  for (const key of Object.keys(data)) {
-    const task = data[key];
-    if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
-      const translatedComment = await translateToEnglish(task.comment || '');
-      const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
-      const row = [
-        `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-        `"${(task.site || '').replace(/"/g, '""')}"`,
-        `"${(task.dlm || '').replace(/"/g, '""')}"`,
-        `"${(task.operative || '').replace(/"/g, '""')}"`,
-        `"${(task.details || '').replace(/"/g, '""')}"`,
-        task.dlmPhoto ? 'Yes' : 'No',
-        `"${(task.status || '').replace(/"/g, '""')}"`,
-        `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+// ====== CSV EXPORT (SINGLE REPORT) ======
+window.exportReportCSV = async (key) => {
+  const rep = allReportsData[key];
+  if (!rep) return alert('Report not found.');
+  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
+  const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+  csv += [
+    `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(rep.title || '').replace(/"/g, '""')}"`,
+    `"${(rep.site || '').replace(/"/g, '""')}"`,
+    `"${(rep.dlm || '').replace(/"/g, '""')}"`,
+    `"${assignedNames.replace(/"/g, '""')}"`,
+    `"${(rep.status || '').replace(/"/g, '""')}"`,
+    `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+  if (rep.items) {
+    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+    csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
+    for (let i = 0; i < itemsArr.length; i++) {
+      const item = itemsArr[i];
+      const translatedComment = await translateToEnglish(item.comment || '');
+      const itemHistory = (item.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}`).join(' | ');
+      csv += [
+        `"${i+1}"`,
+        `"${(item.description || '').replace(/"/g, '""')}"`,
+        `"${(item.status || '').replace(/"/g, '""')}"`,
         `"${translatedComment.replace(/"/g, '""')}"`,
-        (task.operativePhoto || task.photo) ? 'Yes' : 'No',
-        `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
-        `"${history.replace(/"/g, '""')}"`
-      ];
-      csv += row.join(",") + "\n";
+        `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+        `"${itemHistory.replace(/"/g, '""')}"`
+      ].join(",") + "\n";
     }
   }
   const encodedUri = encodeURI(csv);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
-  link.setAttribute("download", `tasks_${currentSite}_${Date.now()}.csv`);
+  link.setAttribute("download", `report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
+// ====== CSV EXPORT (ALL TASKS) ======
+document.getElementById('exportTasksCsvBtn').addEventListener('click', async () => {
+  const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
+  const data = snap.val() || {};
+  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
+  for (const key of Object.keys(data)) {
+    const task = data[key];
+    if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
+      const translatedComment = await translateToEnglish(task.comment || '');
+      const history = (task.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+      csv += [
+        `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+        `"${(task.site || '').replace(/"/g, '""')}"`,
+        `"${(task.dlm || '').replace(/"/g, '""')}"`,
+        `"${(task.operative || '').replace(/"/g, '""')}"`,
+        `"${(task.details || '').replace(/"/g, '""')}"`,
+        `"${(task.status || '').replace(/"/g, '""')}"`,
+        `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+        `"${translatedComment.replace(/"/g, '""')}"`,
+        `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+        `"${history.replace(/"/g, '""')}"`
+      ].join(",") + "\n";
+    }
+  }
+  const encodedUri = encodeURI(csv);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `all_tasks_${currentSite}_${Date.now()}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+// ====== CSV EXPORT (ALL REPORTS) ======
+document.getElementById('exportReportsCsvBtn').addEventListener('click', async () => {
+  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
+  for (const key of Object.keys(allReportsData)) {
+    const rep = allReportsData[key];
+    if (rep.site && rep.site.toLowerCase() === currentSite.toLowerCase()) {
+      const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+      const history = (rep.history || []).map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+      csv += [
+        `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+        `"${(rep.title || '').replace(/"/g, '""')}"`,
+        `"${(rep.site || '').replace(/"/g, '""')}"`,
+        `"${(rep.dlm || '').replace(/"/g, '""')}"`,
+        `"${assignedNames.replace(/"/g, '""')}"`,
+        `"${(rep.status || '').replace(/"/g, '""')}"`,
+        `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+        `"${history.replace(/"/g, '""')}"`
+      ].join(",") + "\n";
+    }
+  }
+  const encodedUri = encodeURI(csv);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `all_reports_${currentSite}_${Date.now()}.csv`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
