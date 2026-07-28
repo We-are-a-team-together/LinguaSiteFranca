@@ -54,7 +54,7 @@
 <div id="accessDeniedModal" style="display: none;">
   <div class="denied-box">
     <h2>Access Denied</h2>
-    <p>Unauthorized access attempt. The DLM manager handle or site parameters provided in the URL are invalid or not registered in the system. Please verify your credentials through the Office Dashboard.</p>
+    <p>Unauthorized access attempt. Valid DLM credentials (manager name and site) are required to access this console. Please register and launch correctly through the Office Dashboard.</p>
     <a href="officeplatform.html" class="btn btn-primary">Return to Office Dashboard</a>
   </div>
 </div>
@@ -184,10 +184,14 @@
     }
   });
 
-  // Strict Authentication Validation against Firebase managers list
+  // Strict Authentication Validation against Firebase managers list & required parameters
   onValue(ref(db, 'managers'), (snapshot) => {
     const managersData = snapshot.val() || {};
-    const validManager = Object.values(managersData).some(m => 
+    
+    // Check if parameters are missing or empty
+    const hasParams = dlmParam !== '' && siteParam !== '';
+    
+    const validManager = hasParams && Object.values(managersData).some(m => 
       m.manager.trim().toLowerCase() === dlmParam.toLowerCase() && 
       m.site.trim().toLowerCase() === siteParam.toLowerCase()
     );
