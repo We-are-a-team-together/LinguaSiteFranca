@@ -19,8 +19,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 body { background-color: var(--bg); color: var(--text); padding: 20px; }
-.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-.container { width: 96%; max-width: 1800px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
+.container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
 .header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
@@ -33,7 +32,6 @@ label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bot
 input, select, textarea { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 input[type="file"] { padding: 8px; font-size: 0.85rem; }
-/* Custom Checkbox Group for Operatives */
 .checkbox-group { max-height: 150px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); padding: 10px; border-radius: 6px; }
 .checkbox-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; color: #fff; cursor: pointer; font-size: 0.9rem; }
 .checkbox-label input { width: auto; margin: 0; }
@@ -59,7 +57,6 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .report-item-box { background: var(--bg); border: 1px dashed var(--border); padding: 15px; border-radius: 6px; margin-bottom: 15px; position: relative; }
 .remove-item-btn { position: absolute; top: 10px; right: 10px; background: transparent; color: var(--danger); border: none; cursor: pointer; font-weight: bold; font-size: 1.1rem; }
 .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); }
-/* Modals */
 .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
 .modal-content { background: var(--card-bg); padding: 25px; border-radius: 8px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
 .modal-close-btn { position: absolute; top: 15px; right: 15px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
@@ -67,36 +64,15 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </style>
 </head>
 <body>
-
-<!-- SECURE LOGIN OVERLAY -->
-<div id="loginOverlay" class="login-overlay">
-<div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-<h2 style="margin-bottom: 20px; color: var(--accent);">DLM Login</h2>
-<form id="dlmLoginForm">
-<div class="form-group">
-<label>DLM Name</label>
-<input type="text" id="dlmLoginName" required>
-</div>
-<div class="form-group">
-<label>Password</label>
-<input type="password" id="dlmLoginPass" required>
-</div>
-<button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Access Platform</button>
-</form>
-</div>
-</div>
-
-<div class="container" id="mainContainer">
+<div class="container">
 <header>
 <div class="header-left">
 <h1><span class="brand-name">LinguaSiteFranca</span> — DLM Platform</h1>
 <button id="navToggleBtn" class="btn btn-outline btn-auto">Open Reports View</button>
 </div>
-<div style="display: flex; align-items: center; gap: 15px;">
 <div class="dlm-badge" id="dlmBadgeInfo">DLM: Loading... | Site: Loading...</div>
-<button id="logoutBtn" class="btn btn-danger btn-auto" onclick="logoutDlm()" style="display: none;">Logout</button>
-</div>
 </header>
+
 <!-- ==================== MAIN DASHBOARD VIEW ==================== -->
 <div id="mainDashboardView">
 <div class="grid-2">
@@ -109,11 +85,11 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 <div class="form-group">
 <label>Operative Employer</label>
-<input type="text" id="opEmployer" placeholder="e.g. Subcontractor Ltd" required>
+<input type="text" id="opEmployer" required>
 </div>
 <div class="form-group">
 <label>Qualification / Card Type</label>
-<input type="text" id="opQual" placeholder="e.g. CSCS, CPCS" required>
+<input type="text" id="opQual" required>
 </div>
 <div class="form-group">
 <label>Qualification Expiry Date</label>
@@ -130,13 +106,18 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <select id="taskOpSelect" required></select>
 </div>
 <div class="form-group">
-<label>Task Details (English)</label>
-<textarea id="taskDetails" rows="4" placeholder="Describe the task clearly in English..." required></textarea>
+<label>Task Details</label>
+<textarea id="taskDetails" rows="4" required></textarea>
+</div>
+<div class="form-group">
+<label>Attach Photo (Optional)</label>
+<input type="file" id="taskPhoto" accept="image/*">
 </div>
 <button type="submit" class="btn btn-success">Dispatch Task</button>
 </form>
 </div>
 </div>
+
 <div class="card">
 <div class="card-title">Registered Operatives Directory</div>
 <div style="overflow-x: auto;">
@@ -156,6 +137,7 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </table>
 </div>
 </div>
+
 <div class="card">
 <div class="card-title">Task Tracking & Live Submissions</div>
 <div style="overflow-x: auto;">
@@ -174,6 +156,7 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 </div>
 </div>
+
 <!-- ==================== REPORTS MANAGEMENT VIEW ==================== -->
 <div id="reportsView" style="display: none;">
 <div class="card">
@@ -182,11 +165,10 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <div class="grid-2">
 <div class="form-group">
 <label>Report Title</label>
-<input type="text" id="reportTitle" placeholder="e.g. Block A Snagging Report" required>
+<input type="text" id="reportTitle" required>
 </div>
 <div class="form-group">
 <label>Assign To (Select at least one Operative)</label>
-<!-- Checkbox Group for Operatives -->
 <div id="reportOperativesList" class="checkbox-group">
 <span style="color: var(--text-muted); font-size: 0.85rem;">Loading operatives...</span>
 </div>
@@ -219,10 +201,12 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 <div class="dynamic-footer"></div>
 </div>
+
 <!-- Simple Image Zoom Modal -->
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
 <img id="modalImg" class="zoom-img" src="" alt="Zoom">
 </div>
+
 <!-- Detailed Report View/Action Modal -->
 <div class="modal" id="reportViewModal">
 <div class="modal-content">
@@ -232,10 +216,9 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <strong>Assigned to:</strong> <span id="viewReportOps"></span><br>
 <strong>Current Status:</strong> <span id="viewReportStatus" class="badge"></span>
 </p>
-<!-- Interactive action area if report is Submitted -->
 <div id="reportActionArea" style="display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid var(--border);">
 <label style="color: var(--warning);">Operative submitted this report. Review items below and take action:</label>
-<input type="text" id="reportReturnNote" placeholder="Enter reason if returning to operative..." style="margin: 10px 0;">
+<input type="text" id="reportReturnNote" style="margin: 10px 0;">
 <div style="display: flex; gap: 10px;">
 <button class="btn-success btn-auto" id="btnAcceptReport">Accept Report (Close Out)</button>
 <button class="btn-warning btn-auto" id="btnReturnReport">Return for Revision</button>
@@ -255,9 +238,11 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 </div>
 </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 const firebaseConfig = {
 apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
 authDomain: "lingua-site-franca.firebaseapp.com",
@@ -270,53 +255,26 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let currentDlm = "";
-let currentSite = "";
-
-// Session Management
-const session = sessionStorage.getItem('dlmSession');
-if (session) {
-    const parsed = JSON.parse(session);
-    currentDlm = parsed.dlm;
-    currentSite = parsed.site;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('mainContainer').style.display = 'flex';
-    document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Site: ${currentSite}`;
-    document.getElementById('logoutBtn').style.display = 'inline-flex';
+const navEntries = performance.getEntriesByType("navigation");
+const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+let urlParams = new URLSearchParams(window.location.search);
+let currentDlm = urlParams.get('dlm');
+let currentSite = urlParams.get('site');
+if (isReload || !currentDlm || !currentSite) {
+currentDlm = prompt("DLM Session Logged Out. Please enter DLM Name:");
+currentSite = prompt("Please enter Assigned Site Name (e.g. The Monument Court):");
+if (!currentDlm || !currentSite) {
+alert("Login cancelled. Reloading login prompt.");
+window.location.reload();
+} else {
+window.history.replaceState({}, '', `?dlm=${encodeURIComponent(currentDlm)}&site=${encodeURIComponent(currentSite)}`);
 }
+}
+document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Site: ${currentSite}`;
 
-window.logoutDlm = () => {
-    sessionStorage.removeItem('dlmSession');
-    window.location.reload();
-};
-
-document.getElementById('dlmLoginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('dlmLoginName').value.trim();
-    const pass = document.getElementById('dlmLoginPass').value.trim();
-    
-    onValue(ref(db, 'managers'), (snapshot) => {
-        const data = snapshot.val() || {};
-        let found = false;
-        for (const key in data) {
-            if (data[key].manager === name && data[key].password === pass) {
-                currentDlm = name;
-                currentSite = data[key].site;
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            sessionStorage.setItem('dlmSession', JSON.stringify({ dlm: currentDlm, site: currentSite }));
-            window.location.reload();
-        } else {
-            alert('Invalid DLM Name or Password.');
-        }
-    }, { onlyOnce: true });
-});
-
+// IMPROVED translateToEnglish function
 async function translateToEnglish(text) {
-if (!text) return 'None';
+if (!text || text.trim() === '') return 'No comment provided';
 try {
 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
 const data = await res.json();
@@ -325,6 +283,7 @@ return data[0][0][0];
 return text;
 }
 }
+
 onValue(ref(db, 'branding'), (snapshot) => {
 const data = snapshot.val();
 if (data) {
@@ -337,6 +296,7 @@ document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.f
 }
 }
 });
+
 // ========== VIEW TOGGLE LOGIC ==========
 const toggleBtn = document.getElementById('navToggleBtn');
 const mainView = document.getElementById('mainDashboardView');
@@ -354,7 +314,8 @@ toggleBtn.innerText = 'Open Reports View';
 toggleBtn.classList.replace('btn-warning', 'btn-outline');
 }
 });
-// ========== ORIGINAL DASHBOARD LOGIC ==========
+
+// ========== DASHBOARD LOGIC ==========
 document.getElementById('registerOpForm').addEventListener('submit', (e) => {
 e.preventDefault();
 const name = document.getElementById('opName').value.trim();
@@ -368,7 +329,8 @@ document.getElementById('registerOpForm').reset();
 alert('Operative registered successfully!');
 });
 });
-// Load Operatives - Populates both Dropdown AND Checkbox List
+
+// Load Operatives
 onValue(ref(db, 'operatives'), (snapshot) => {
 const data = snapshot.val() || {};
 const tbody = document.getElementById('operativesTableBody');
@@ -384,17 +346,10 @@ const op = data[key];
 if (op.assignedSite && op.assignedSite.toLowerCase() === currentSite.toLowerCase()) {
 siteOpCount++;
 const isExpired = op.expiry && op.expiry < today;
-// Single Task Dropdown
 const opt = document.createElement('option');
 opt.value = op.name; opt.textContent = op.name;
 select.appendChild(opt);
-// Report Checkboxes
-reportCheckboxes.innerHTML += `
-<label class="checkbox-label">
-<input type="checkbox" class="report-op-checkbox" value="${op.name}"> ${op.name}
-</label>
-`;
-// Directory Table
+reportCheckboxes.innerHTML += `<label class="checkbox-label"><input type="checkbox" class="report-op-checkbox" value="${op.name}"> ${op.name}</label>`;
 tbody.innerHTML += `
 <tr>
 <td><strong>${op.name}</strong></td>
@@ -404,36 +359,74 @@ tbody.innerHTML += `
 <td>${op.expiry}</td>
 <td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
 <td><button class="btn-danger" onclick="deleteOperative('${key}')">Delete</button></td>
-</tr>
-`;
+</tr>`;
 }
 });
 if (siteOpCount === 0) reportCheckboxes.innerHTML = '<span style="color:var(--danger); font-size:0.85rem;">No operatives registered for this site yet.</span>';
 });
+
 window.deleteOperative = (key) => {
 if (confirm('Are you sure you want to delete this operative?')) remove(ref(db, `operatives/${key}`));
 };
-document.getElementById('assignTaskForm').addEventListener('submit', (e) => {
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.readAsDataURL(file);
+reader.onload = () => resolve(reader.result);
+reader.onerror = error => reject(error);
+});
+
+// Task assignment WITH photo upload
+document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const operative = document.getElementById('taskOpSelect').value;
 const details = document.getElementById('taskDetails').value.trim();
+const photoInput = document.getElementById('taskPhoto');
+
 if (!operative) return alert('Please select an operative.');
+
+let base64Photo = null;
+if (photoInput.files.length > 0) {
+base64Photo = await fileToBase64(photoInput.files[0]);
+}
+
 push(ref(db, 'tasks'), {
-site: currentSite, dlm: currentDlm, operative, details, status: 'Assigned', createdAt: new Date().toISOString()
+site: currentSite, 
+dlm: currentDlm, 
+operative, 
+details, 
+photo: base64Photo,
+status: 'Assigned', 
+createdAt: new Date().toISOString()
 }).then(() => {
 document.getElementById('assignTaskForm').reset();
 alert('Task dispatched successfully!');
 });
 });
+
+// FIXED: Task tracking with proper comment translation display
 onValue(ref(db, 'tasks'), async (snapshot) => {
 const data = snapshot.val() || {};
 const tbody = document.getElementById('tasksTableBody');
 tbody.innerHTML = '';
+
 for (const key of Object.keys(data)) {
 const task = data[key];
 if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
-const translatedComment = await translateToEnglish(task.comment);
-const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openImageModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : '—';
+// FIX: Better comment handling with translation
+let commentDisplay = 'No comment';
+if (task.comment && task.comment.trim() !== '') {
+try {
+commentDisplay = await translateToEnglish(task.comment);
+} catch (e) {
+commentDisplay = task.comment;
+}
+}
+
+const photoHtml = task.photo ? 
+`<img src="${task.photo}" class="thumb-img" onclick="openImageModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${commentDisplay}</small>` : 
+`<small style="color:var(--text-muted);">Comment: ${commentDisplay}</small>`;
+
 let actionHtml = '';
 if (task.status === 'Submitted') {
 actionHtml = `
@@ -443,11 +436,11 @@ actionHtml = `
 <button class="btn-success btn-auto" onclick="acceptTask('${key}')" style="flex: 1; padding: 6px;">Accept</button>
 <button class="btn-warning btn-auto" onclick="returnTask('${key}')" style="flex: 1; padding: 6px;">Return</button>
 </div>
-</div>
-`;
+</div>`;
 } else if (task.status === 'Accepted') actionHtml = `<span class="badge badge-valid">Completed</span>`;
 else if (task.status === 'Returned') actionHtml = `<span class="badge badge-expired">Returned for revision</span>`;
 else actionHtml = `<span style="color:var(--text-muted);">Awaiting Submission</span>`;
+
 tbody.innerHTML += `
 <tr>
 <td><strong>${task.operative}</strong></td>
@@ -455,11 +448,11 @@ tbody.innerHTML += `
 <td><span class="badge badge-valid">${task.status}</span></td>
 <td>${photoHtml}</td>
 <td>${actionHtml}</td>
-</tr>
-`;
+</tr>`;
 }
 }
 });
+
 window.acceptTask = (key) => update(ref(db, `tasks/${key}`), { status: 'Accepted' });
 window.returnTask = (key) => {
 const note = document.getElementById(`returnNote_${key}`)?.value.trim();
@@ -470,7 +463,8 @@ window.openImageModal = (src) => {
 document.getElementById('modalImg').src = src;
 document.getElementById('imgModal').style.display = 'flex';
 };
-// ========== NEW REPORTS MODULE LOGIC ==========
+
+// ========== REPORTS MODULE LOGIC ==========
 const reportItemsContainer = document.getElementById('reportItemsContainer');
 let itemCounter = 0;
 document.getElementById('addReportItemBtn').addEventListener('click', () => {
@@ -481,26 +475,18 @@ div.innerHTML = `
 <button type="button" class="remove-item-btn" onclick="this.parentElement.remove()">✕</button>
 <div class="form-group">
 <label>Task / Defect Description</label>
-<textarea class="report-desc-input" rows="2" placeholder="Describe the issue or task..." required></textarea>
+<textarea class="report-desc-input" rows="2" required></textarea>
 </div>
 <div class="form-group">
 <label>Attach Photo (Optional)</label>
 <input type="file" class="report-photo-input" accept="image/*">
-</div>
-`;
+</div>`;
 reportItemsContainer.appendChild(div);
 });
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
-const reader = new FileReader();
-reader.readAsDataURL(file);
-reader.onload = () => resolve(reader.result);
-reader.onerror = error => reject(error);
-});
-// Submit Report
+
 document.getElementById('createReportForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const title = document.getElementById('reportTitle').value.trim();
-// Grab all checked operatives
 const checkedOps = Array.from(document.querySelectorAll('.report-op-checkbox:checked')).map(cb => cb.value);
 if (checkedOps.length === 0) return alert('Please assign this report to at least one operative.');
 const items = [];
@@ -515,23 +501,16 @@ if (fileInput.files.length > 0) base64Photo = await fileToBase64(fileInput.files
 items.push({ description: desc, photo: base64Photo });
 }
 push(ref(db, 'reports'), {
-site: currentSite,
-dlm: currentDlm,
-title,
-assignedTo: checkedOps,
-items,
-status: 'Assigned',
-createdAt: new Date().toISOString()
+site: currentSite, dlm: currentDlm, title, assignedTo: checkedOps, items, status: 'Assigned', createdAt: new Date().toISOString()
 }).then(() => {
 document.getElementById('createReportForm').reset();
 reportItemsContainer.innerHTML = '';
 document.querySelector('#createReportForm button[type="submit"]').innerText = 'Save & Assign Report';
-// Uncheck all checkboxes
 document.querySelectorAll('.report-op-checkbox').forEach(cb => cb.checked = false);
 alert('Report created and assigned successfully!');
 });
 });
-// Load Historical Reports & Manage Table View
+
 let allReportsData = {};
 let currentActiveReportKey = null;
 onValue(ref(db, 'reports'), (snapshot) => {
@@ -559,19 +538,18 @@ tbody.innerHTML += `
 <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
 </div>
 </td>
-</tr>
-`;
+</tr>`;
 }
 });
-// If modal is open, refresh its data live
 if (currentActiveReportKey && document.getElementById('reportViewModal').style.display === 'flex') {
 openReportView(currentActiveReportKey);
 }
 });
-// Action Logic: View, Delete, Accept, Return Reports
+
 window.deleteReport = (key) => {
 if (confirm('Are you sure you want to permanently delete this entire report?')) remove(ref(db, `reports/${key}`));
 };
+
 window.openReportView = (key) => {
 const report = allReportsData[key];
 if (!report) return;
@@ -585,7 +563,7 @@ if (report.status === 'Accepted') statusBadge.classList.add('badge-valid');
 else if (report.status === 'Returned') statusBadge.classList.add('badge-expired');
 else if (report.status === 'Submitted') statusBadge.classList.add('badge-submitted');
 else statusBadge.classList.add('badge-open');
-// Show Action Area only if Submitted
+
 const actionArea = document.getElementById('reportActionArea');
 if (report.status === 'Submitted') {
 actionArea.style.display = 'block';
@@ -593,28 +571,22 @@ document.getElementById('reportReturnNote').value = '';
 } else {
 actionArea.style.display = 'none';
 }
+
 const itemsBody = document.getElementById('viewReportItemsBody');
 itemsBody.innerHTML = '';
 if (report.items) {
 report.items.forEach((item, index) => {
 const photoTag = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openImageModal('${item.photo}')" />` : '<span style="color:var(--text-muted); font-size:0.8rem;">No Photo</span>';
-itemsBody.innerHTML += `
-<tr>
-<td><strong>${index + 1}</strong></td>
-<td>${item.description}</td>
-<td>${photoTag}</td>
-</tr>
-`;
+itemsBody.innerHTML += `<tr><td><strong>${index + 1}</strong></td><td>${item.description}</td><td>${photoTag}</td></tr>`;
 });
 }
 document.getElementById('reportViewModal').style.display = 'flex';
 };
-// Report Response Buttons
+
 document.getElementById('btnAcceptReport').addEventListener('click', () => {
-if (currentActiveReportKey) {
-update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted' });
-}
+if (currentActiveReportKey) update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted' });
 });
+
 document.getElementById('btnReturnReport').addEventListener('click', () => {
 if (currentActiveReportKey) {
 const note = document.getElementById('reportReturnNote').value.trim();
@@ -622,7 +594,7 @@ if (!note) return alert('Please provide a reason in the return note field before
 update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned', returnNote: note });
 }
 });
-// Export PDF Engine
+
 window.exportReportPDF = (key) => {
 const report = allReportsData[key];
 if (!report) return alert("Report data not found.");
@@ -630,20 +602,12 @@ let itemsHtml = '';
 if (report.items) {
 report.items.forEach((item, index) => {
 const photoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1; margin-top:10px;" />` : '<i>No photo provided</i>';
-itemsHtml += `
-<tr>
-<td style="width: 5%; text-align: center;"><strong>${index + 1}</strong></td>
-<td style="width: 55%;">${item.description}</td>
-<td style="width: 40%; text-align: center;">${photoTag}</td>
-</tr>
-`;
+itemsHtml += `<tr><td style="width: 5%; text-align: center;"><strong>${index + 1}</strong></td><td style="width: 55%;">${item.description}</td><td style="width: 40%; text-align: center;">${photoTag}</td></tr>`;
 });
 }
 const printWindow = window.open('', '', 'height=900,width=800');
 printWindow.document.write(`
-<html>
-<head>
-<title>${report.title} - PDF Report</title>
+<html><head><title>${report.title} - PDF Report</title>
 <style>
 body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #1e293b; background: #fff; }
 .header { border-bottom: 3px solid #3b82f6; padding-bottom: 15px; margin-bottom: 30px; }
@@ -657,48 +621,17 @@ tr { page-break-inside: avoid; page-break-after: auto; }
 th, td { border: 1px solid #cbd5e1; padding: 15px; text-align: left; vertical-align: top; }
 th { background-color: #f1f5f9; color: #334155; text-transform: uppercase; font-size: 0.85rem; }
 .footer { margin-top: 40px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-</style>
-</head>
-<body>
-<div class="header">
-<h2>${report.title}</h2>
-</div>
+</style></head><body>
+<div class="header"><h2>${report.title}</h2></div>
 <div class="meta-grid">
-<div class="meta-box">
-<div class="meta-label">Site Location</div>
-<div class="meta-value">${report.site}</div>
+<div class="meta-box"><div class="meta-label">Site Location</div><div class="meta-value">${report.site}</div></div>
+<div class="meta-box"><div class="meta-label">Assigned Operative(s)</div><div class="meta-value">${report.assignedTo.join(', ')}</div></div>
+<div class="meta-box"><div class="meta-label">Created By (DLM)</div><div class="meta-value">${report.dlm}</div></div>
+<div class="meta-box"><div class="meta-label">Date Generated</div><div class="meta-value">${new Date(report.createdAt).toLocaleString()}</div></div>
 </div>
-<div class="meta-box">
-<div class="meta-label">Assigned Operative(s)</div>
-<div class="meta-value">${report.assignedTo.join(', ')}</div>
-</div>
-<div class="meta-box">
-<div class="meta-label">Created By (DLM)</div>
-<div class="meta-value">${report.dlm}</div>
-</div>
-<div class="meta-box">
-<div class="meta-label">Date Generated</div>
-<div class="meta-value">${new Date(report.createdAt).toLocaleString()}</div>
-</div>
-</div>
-<table>
-<thead>
-<tr>
-<th>#</th>
-<th>Task / Snag Description</th>
-<th style="text-align: center;">Photographic Evidence</th>
-</tr>
-</thead>
-<tbody>
-${itemsHtml}
-</tbody>
-</table>
-<div class="footer">
-Generated via LinguaSiteFranca DLM Platform • Official Site Record
-</div>
-</body>
-</html>
-`);
+<table><thead><tr><th>#</th><th>Task / Snag Description</th><th style="text-align: center;">Photographic Evidence</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+<div class="footer">Generated via LinguaSiteFranca DLM Platform • Official Site Record</div>
+</body></html>`);
 printWindow.document.close();
 printWindow.focus();
 setTimeout(() => { printWindow.print(); }, 800);
