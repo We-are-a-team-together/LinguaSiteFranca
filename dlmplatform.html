@@ -19,8 +19,7 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 body { background-color: var(--bg); color: var(--text); padding: 20px; }
-.login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 2000; }
-.container { width: 96%; max-width: 1800px; margin: 0 auto; display: none; flex-direction: column; min-height: 95vh; }
+.container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
 .header-left { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
 h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
@@ -65,33 +64,13 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </style>
 </head>
 <body>
-
-<!-- SECURE LOGIN OVERLAY -->
-<div id="loginOverlay" class="login-overlay">
-<div class="card" style="width: 100%; max-width: 400px; text-align: center;">
-<h2 style="margin-bottom: 20px; color: var(--accent);">DLM Login</h2>
-<form id="dlmLoginForm">
-<div class="form-group">
-<input type="text" id="dlmLoginName" required>
-</div>
-<div class="form-group">
-<input type="password" id="dlmLoginPass" required>
-</div>
-<button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Access Platform</button>
-</form>
-</div>
-</div>
-
-<div class="container" id="mainContainer">
+<div class="container">
 <header>
 <div class="header-left">
 <h1><span class="brand-name">LinguaSiteFranca</span> — DLM Platform</h1>
 <button id="navToggleBtn" class="btn btn-outline btn-auto">Open Reports View</button>
 </div>
-<div style="display: flex; align-items: center; gap: 15px;">
 <div class="dlm-badge" id="dlmBadgeInfo">DLM: Loading... | Site: Loading...</div>
-<button id="logoutBtn" class="btn btn-danger btn-auto" onclick="logoutDlm()" style="display: none;">Logout</button>
-</div>
 </header>
 
 <!-- ==================== MAIN DASHBOARD VIEW ==================== -->
@@ -116,10 +95,6 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <label>Qualification Expiry Date</label>
 <input type="date" id="opExpiry" required>
 </div>
-<div class="form-group">
-<label>Operative Password</label>
-<input type="password" id="opPassword" required>
-</div>
 <button type="submit" class="btn btn-primary">Register Operative</button>
 </form>
 </div>
@@ -133,10 +108,6 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <div class="form-group">
 <label>Task Details</label>
 <textarea id="taskDetails" rows="4" required></textarea>
-</div>
-<div class="form-group">
-<label>Attach Photo (Optional)</label>
-<input type="file" id="taskPhoto" accept="image/*">
 </div>
 <button type="submit" class="btn btn-success">Dispatch Task</button>
 </form>
@@ -171,7 +142,6 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <tr>
 <th>Operative</th>
 <th>Task Details</th>
-<th>DLM Photo</th>
 <th>Status</th>
 <th>Submission Photo & Comment (English)</th>
 <th>Action / Return Note</th>
@@ -281,59 +251,37 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-let currentDlm = "";
-let currentSite = "";
-
-// Session Management
-const session = sessionStorage.getItem('dlmSession');
-if (session) {
-    const parsed = JSON.parse(session);
-    currentDlm = parsed.dlm;
-    currentSite = parsed.site;
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('mainContainer').style.display = 'flex';
-    document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Site: ${currentSite}`;
-    document.getElementById('logoutBtn').style.display = 'inline-flex';
+const navEntries = performance.getEntriesByType("navigation");
+const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+let urlParams = new URLSearchParams(window.location.search);
+let currentDlm = urlParams.get('dlm');
+let currentSite = urlParams.get('site');
+if (isReload || !currentDlm || !currentSite) {
+currentDlm = prompt("DLM Session Logged Out. Please enter DLM Name:");
+currentSite = prompt("Please enter Assigned Site Name (e.g. The Monument Court):");
+if (!currentDlm || !currentSite) {
+alert("Login cancelled. Reloading login prompt.");
+window.location.reload();
+} else {
+window.history.replaceState({}, '', `?dlm=${encodeURIComponent(currentDlm)}&site=${encodeURIComponent(currentSite)}`);
 }
+}
+document.getElementById('dlmBadgeInfo').innerText = `DLM: ${currentDlm} | Site: ${currentSite}`;
 
-window.logoutDlm = () => {
-    sessionStorage.removeItem('dlmSession');
-    window.location.reload();
-};
-
-document.getElementById('dlmLoginForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('dlmLoginName').value.trim();
-    const pass = document.getElementById('dlmLoginPass').value.trim();
-    
-    onValue(ref(db, 'managers'), (snapshot) => {
-        const data = snapshot.val() || {};
-        let found = false;
-        for (const key in data) {
-            if (data[key].manager === name && data[key].password === pass) {
-                currentDlm = name;
-                currentSite = data[key].site;
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            sessionStorage.setItem('dlmSession', JSON.stringify({ dlm: currentDlm, site: currentSite }));
-            window.location.reload();
-        } else {
-            alert('Invalid DLM Name or Password.');
-        }
-    }, { onlyOnce: true });
-});
-
+// IMPROVED translateToEnglish function with better error handling
 async function translateToEnglish(text) {
-if (!text) return 'None';
+if (!text || text.trim() === '') return 'No comment provided';
 try {
 const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+if (!res.ok) throw new Error('Translation failed');
 const data = await res.json();
+if (data && data[0] && data[0][0] && data[0][0][0]) {
 return data[0][0][0];
+}
+return text; // Fallback to original if translation fails
 } catch (e) {
-return text;
+console.error('Translation error:', e);
+return text; // Return original text on error
 }
 }
 
@@ -375,16 +323,15 @@ const name = document.getElementById('opName').value.trim();
 const employer = document.getElementById('opEmployer').value.trim();
 const qualification = document.getElementById('opQual').value.trim();
 const expiry = document.getElementById('opExpiry').value;
-const password = document.getElementById('opPassword').value.trim();
-
 push(ref(db, 'operatives'), {
-name, employer, qualification, expiry, assignedSite: currentSite, password
+name, employer, qualification, expiry, assignedSite: currentSite
 }).then(() => {
 document.getElementById('registerOpForm').reset();
 alert('Operative registered successfully!');
 });
 });
 
+// Load Operatives
 onValue(ref(db, 'operatives'), (snapshot) => {
 const data = snapshot.val() || {};
 const tbody = document.getElementById('operativesTableBody');
@@ -423,56 +370,43 @@ window.deleteOperative = (key) => {
 if (confirm('Are you sure you want to delete this operative?')) remove(ref(db, `operatives/${key}`));
 };
 
-const fileToBase64 = (file) => new Promise((resolve, reject) => {
-const reader = new FileReader();
-reader.readAsDataURL(file);
-reader.onload = () => resolve(reader.result);
-reader.onerror = error => reject(error);
-});
-
-// UPDATED: Task assignment with photo upload
-document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
+document.getElementById('assignTaskForm').addEventListener('submit', (e) => {
 e.preventDefault();
 const operative = document.getElementById('taskOpSelect').value;
 const details = document.getElementById('taskDetails').value.trim();
-const photoInput = document.getElementById('taskPhoto');
-
 if (!operative) return alert('Please select an operative.');
-
-let base64Photo = null;
-if (photoInput.files.length > 0) {
-base64Photo = await fileToBase64(photoInput.files[0]);
-}
-
 push(ref(db, 'tasks'), {
-site: currentSite, 
-dlm: currentDlm, 
-operative, 
-details, 
-photo: base64Photo,
-status: 'Assigned', 
-createdAt: new Date().toISOString()
+site: currentSite, dlm: currentDlm, operative, details, status: 'Assigned', createdAt: new Date().toISOString()
 }).then(() => {
 document.getElementById('assignTaskForm').reset();
 alert('Task dispatched successfully!');
 });
 });
 
+// FIXED: Task tracking with proper comment translation display
 onValue(ref(db, 'tasks'), async (snapshot) => {
 const data = snapshot.val() || {};
 const tbody = document.getElementById('tasksTableBody');
 tbody.innerHTML = '';
+
 for (const key of Object.keys(data)) {
 const task = data[key];
 if (task.site && task.site.toLowerCase() === currentSite.toLowerCase()) {
-const translatedComment = await translateToEnglish(task.comment);
-const dlmPhotoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openImageModal('${task.photo}')" title="DLM Reference Photo">` : '—';
-const photoHtml = task.photo ? `<img src="${task.photo}" class="thumb-img" onclick="openImageModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${translatedComment}</small>` : '—';
+// FIX: Better comment handling with translation
+let commentDisplay = 'No comment';
+if (task.comment && task.comment.trim() !== '') {
+commentDisplay = await translateToEnglish(task.comment);
+}
+
+const photoHtml = task.photo ? 
+`<img src="${task.photo}" class="thumb-img" onclick="openImageModal('${task.photo}')"><br><small style="color:var(--text-muted);">Comment: ${commentDisplay}</small>` : 
+`<small style="color:var(--text-muted);">Comment: ${commentDisplay}</small>`;
+
 let actionHtml = '';
 if (task.status === 'Submitted') {
 actionHtml = `
 <div style="display: flex; flex-direction: column; gap: 6px; min-width: 220px;">
-<input type="text" id="returnNote_${key}" style="padding: 6px; font-size: 0.85rem;">
+<input type="text" id="returnNote_${key}" placeholder="Enter return note..." style="padding: 6px; font-size: 0.85rem;">
 <div style="display: flex; gap: 5px;">
 <button class="btn-success btn-auto" onclick="acceptTask('${key}')" style="flex: 1; padding: 6px;">Accept</button>
 <button class="btn-warning btn-auto" onclick="returnTask('${key}')" style="flex: 1; padding: 6px;">Return</button>
@@ -486,7 +420,6 @@ tbody.innerHTML += `
 <tr>
 <td><strong>${task.operative}</strong></td>
 <td>${task.details}</td>
-<td>${dlmPhotoHtml}</td>
 <td><span class="badge badge-valid">${task.status}</span></td>
 <td>${photoHtml}</td>
 <td>${actionHtml}</td>
@@ -524,6 +457,13 @@ div.innerHTML = `
 <input type="file" class="report-photo-input" accept="image/*">
 </div>`;
 reportItemsContainer.appendChild(div);
+});
+
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.readAsDataURL(file);
+reader.onload = () => resolve(reader.result);
+reader.onerror = error => reject(error);
 });
 
 document.getElementById('createReportForm').addEventListener('submit', async (e) => {
