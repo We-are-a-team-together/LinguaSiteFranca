@@ -6,16 +6,16 @@
 <title>Office Management Dashboard</title>
 <style>
 :root {
-  --bg: #0f172a;
-  --card-bg: #1e293b;
-  --accent: #3b82f6;
-  --accent-hover: #2563eb;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --border: #334155;
-  --success: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
+--bg: #0f172a;
+--card-bg: #1e293b;
+--accent: #3b82f6;
+--accent-hover: #2563eb;
+--text: #f8fafc;
+--text-muted: #94a3b8;
+--border: #334155;
+--success: #10b981;
+--danger: #ef4444;
+--warning: #f59e0b;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 body { background-color: var(--bg); color: var(--text); padding: 20px; }
@@ -33,6 +33,8 @@ h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
 .btn-danger:hover { opacity: 0.9; }
 .btn-warning { background: var(--warning); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
 .btn-warning:hover { opacity: 0.9; }
+.btn-info { background: #06b6d4; color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
+.btn-info:hover { opacity: 0.9; }
 .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
 .card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
 .card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -55,745 +57,842 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
 .modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
-
 .filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .filter-bar label { margin: 0; color: #fff; font-weight: 600; }
 .filter-bar select { max-width: 300px; }
-
-/* ===== NEW: Branding Preview Styles ===== */
 .color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
 .color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
 .logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
+
+/* ===== Management Modal Styles ===== */
+.modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
+.modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
+.modal h2 { color: var(--accent); margin-bottom: 10px; }
+.modal-meta { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+.modal-action-area { background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border); }
+.modal-action-area label { color: var(--warning); margin-bottom: 10px; }
+.modal-action-area input { margin-bottom: 10px; }
+.modal-action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
+.history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
+.detail-section { background: rgba(0,0,0,0.2); padding: 14px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
+.detail-section h3 { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; }
+.detail-section p { font-size: 0.95rem; line-height: 1.5; }
+.detail-section img { max-width: 200px; border-radius: 6px; margin-top: 8px; border: 1px solid var(--border); }
+
+@media (max-width: 768px) {
+.action-row { flex-direction: column; }
+.action-row .btn { width: 100%; }
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <header>
-    <div class="header-left">
-      <img id="headerLogo" class="header-logo" src="" alt="Logo">
-      <h1><span class="brand-name">Office</span> — Management Dashboard</h1>
-    </div>
-  </header>
+<header>
+<div class="header-left">
+<img id="headerLogo" class="header-logo" src="" alt="Logo">
+<h1><span class="brand-name">Office</span> — Management Dashboard</h1>
+</div>
+</header>
 
-  <div class="filter-bar">
-    <label for="siteFilter">Filter by Location:</label>
-    <select id="siteFilter" onchange="applyFilter()">
-      <option value="ALL">All Locations</option>
-    </select>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Register New Site</div>
-      <form id="registerSiteForm">
-        <div class="form-group">
-          <label>Site Name</label>
-          <input type="text" id="siteName" required>
-        </div>
-        <div class="form-group">
-          <label>Location / Address</label>
-          <input type="text" id="siteLocation" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Add Site</button>
-      </form>
-    </div>
-    <div class="card">
-      <div class="card-title">Create DLM Account</div>
-      <form id="assignManagerForm">
-        <div class="form-group">
-          <label>Select Site</label>
-          <select id="managerSiteSelect" required></select>
-        </div>
-        <div class="form-group">
-          <label>DLM Manager Name</label>
-          <input type="text" id="dlmManagerName" required>
-        </div>
-        <div class="form-group">
-          <label>Password (for DLM login)</label>
-          <input type="text" id="dlmManagerPassword" required placeholder="Set a password for this DLM">
-        </div>
-        <button type="submit" class="btn btn-primary">Create DLM Account</button>
-      </form>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Active Sites & Assigned Managers Directory</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Site Name</th>
-            <th>Location</th>
-            <th>Assigned DLM Manager</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="sitesTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Master Operative & Qualifications Directory</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Operative Name</th>
-            <th>Employer</th>
-            <th>Assigned Site</th>
-            <th>Qualification</th>
-            <th>Expiry Date</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="masterOperativesTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Master Reports Management</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Ref</th>
-            <th>Title</th>
-            <th>Site</th>
-            <th>DLM</th>
-            <th>Assigned To</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="masterReportsTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">Master Tasks Management</div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Ref</th>
-            <th>Site</th>
-            <th>DLM</th>
-            <th>Operative</th>
-            <th>Task</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="masterTasksTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== UPDATED: Branding Panel now includes Logo + 2 Colours ===== -->
-  <div class="card" style="border: 2px solid var(--accent);">
-    <div class="card-title">Global Branding & Footer Configuration</div>
-    <form id="brandingForm">
-      <div class="grid-2">
-        <div class="form-group">
-          <label>Company / Brand Name (displayed centrally)</label>
-          <input type="text" id="brandNameInput" required>
-        </div>
-        <div class="form-group">
-          <label>Footer Custom Text (displayed centrally)</label>
-          <input type="text" id="footerTextInput" required>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Logo (placed on top-left of all interfaces)</label>
-        <input type="file" id="logoInput" accept="image/*">
-        <img id="logoPreview" class="logo-preview" alt="Logo preview">
-      </div>
-      <div class="grid-2">
-        <div class="form-group">
-          <label>Primary Brand Colour</label>
-          <input type="color" id="primaryColorInput" value="#3b82f6">
-          <div class="color-preview">
-            <div class="color-swatch" id="primarySwatch" style="background:#3b82f6;"></div>
-            <span id="primaryHex">#3b82f6</span>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Secondary Brand Colour</label>
-          <input type="color" id="secondaryColorInput" value="#10b981">
-          <div class="color-preview">
-            <div class="color-swatch" id="secondarySwatch" style="background:#10b981;"></div>
-            <span id="secondaryHex">#10b981</span>
-          </div>
-        </div>
-      </div>
-      <button type="submit" class="btn btn-success">Apply Branding to All Interfaces</button>
-    </form>
-  </div>
-
-  <div class="dynamic-footer">Office Management Dashboard</div>
+<div class="filter-bar">
+<label for="siteFilter">Filter by Location:</label>
+<select id="siteFilter" onchange="applyFilter()">
+<option value="ALL">All Locations</option>
+</select>
 </div>
 
+<div class="grid-2">
+<div class="card">
+<div class="card-title">Register New Site</div>
+<form id="registerSiteForm">
+<div class="form-group">
+<label>Site Name</label>
+<input type="text" id="siteName" required>
+</div>
+<div class="form-group">
+<label>Location / Address</label>
+<input type="text" id="siteLocation" required>
+</div>
+<button type="submit" class="btn btn-primary">Add Site</button>
+</form>
+</div>
+<div class="card">
+<div class="card-title">Create DLM Account</div>
+<form id="assignManagerForm">
+<div class="form-group">
+<label>Select Site</label>
+<select id="managerSiteSelect" required></select>
+</div>
+<div class="form-group">
+<label>DLM Manager Name</label>
+<input type="text" id="dlmManagerName" required>
+</div>
+<div class="form-group">
+<label>Password (for DLM login)</label>
+<input type="text" id="dlmManagerPassword" required placeholder="Set a password for this DLM">
+</div>
+<button type="submit" class="btn btn-primary">Create DLM Account</button>
+</form>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Active Sites & Assigned Managers Directory</div>
+<div style="overflow-x: auto;">
+<table>
+<thead>
+<tr>
+<th>Site Name</th>
+<th>Location</th>
+<th>Assigned DLM Manager</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="sitesTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Master Operative & Qualifications Directory</div>
+<div style="overflow-x: auto;">
+<table>
+<thead>
+<tr>
+<th>Operative Name</th>
+<th>Employer</th>
+<th>Assigned Site</th>
+<th>Qualification</th>
+<th>Expiry Date</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="masterOperativesTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Master Reports Management</div>
+<div style="overflow-x: auto;">
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Ref</th>
+<th>Title</th>
+<th>Site</th>
+<th>DLM</th>
+<th>Assigned To</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="masterReportsTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">Master Tasks Management</div>
+<div style="overflow-x: auto;">
+<table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Site</th>
+<th>DLM</th>
+<th>Operative</th>
+<th>Task</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="masterTasksTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card" style="border: 2px solid var(--accent);">
+<div class="card-title">Global Branding & Footer Configuration</div>
+<form id="brandingForm">
+<div class="grid-2">
+<div class="form-group">
+<label>Company / Brand Name (displayed centrally)</label>
+<input type="text" id="brandNameInput" required>
+</div>
+<div class="form-group">
+<label>Footer Custom Text (displayed centrally)</label>
+<input type="text" id="footerTextInput" required>
+</div>
+</div>
+<div class="form-group">
+<label>Logo (placed on top-left of all interfaces)</label>
+<input type="file" id="logoInput" accept="image/*">
+<img id="logoPreview" class="logo-preview" alt="Logo preview">
+</div>
+<div class="grid-2">
+<div class="form-group">
+<label>Primary Brand Colour</label>
+<input type="color" id="primaryColorInput" value="#3b82f6">
+<div class="color-preview">
+<div class="color-swatch" id="primarySwatch" style="background:#3b82f6;"></div>
+<span id="primaryHex">#3b82f6</span>
+</div>
+</div>
+<div class="form-group">
+<label>Secondary Brand Colour</label>
+<input type="color" id="secondaryColorInput" value="#10b981">
+<div class="color-preview">
+<div class="color-swatch" id="secondarySwatch" style="background:#10b981;"></div>
+<span id="secondaryHex">#10b981</span>
+</div>
+</div>
+</div>
+<button type="submit" class="btn btn-success">Apply Branding to All Interfaces</button>
+</form>
+</div>
+
+<div class="dynamic-footer">Office Management Dashboard</div>
+</div>
+
+<!-- Image Zoom Modal -->
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
-  <img id="modalImg" src="" alt="Zoom">
+<img id="modalImg" src="" alt="Zoom">
+</div>
+
+<!-- Task Management Modal -->
+<div class="modal" id="taskManageModal">
+<div class="modal-content">
+<button class="modal-close-btn" onclick="closeTaskManageModal()">✕</button>
+<h2 id="manageTaskTitle">Task Management</h2>
+<div class="modal-meta" id="manageTaskMeta"></div>
+<div id="manageTaskActionArea" class="modal-action-area" style="display:none;">
+<label>Task submitted. Review and take action:</label>
+<input type="text" id="taskReturnNote" placeholder="Reason if returning...">
+<div class="modal-action-buttons">
+<button class="btn btn-success" id="btnAcceptTaskFromModal">Accept (Complete)</button>
+<button class="btn btn-warning" id="btnReturnTaskFromModal">Return for Revision</button>
+</div>
+</div>
+<div id="manageTaskDetails"></div>
+<div id="manageTaskHistory" class="history-box" style="display:none;"></div>
+<div class="modal-action-buttons" style="margin-top: 15px;">
+<button class="btn btn-danger" id="btnDeleteTaskFromModal">Delete Task</button>
+</div>
+</div>
+</div>
+
+<!-- Report Management Modal -->
+<div class="modal" id="reportManageModal">
+<div class="modal-content">
+<button class="modal-close-btn" onclick="closeReportManageModal()">✕</button>
+<h2 id="manageReportTitle">Report Management</h2>
+<div class="modal-meta" id="manageReportMeta"></div>
+<div id="manageReportActionArea" class="modal-action-area" style="display:none;">
+<label>Report submitted. Review and take action:</label>
+<input type="text" id="reportReturnNote" placeholder="Reason if returning...">
+<div class="modal-action-buttons">
+<button class="btn btn-success" id="btnAcceptReportFromModal">Accept (Complete)</button>
+<button class="btn btn-warning" id="btnReturnReportFromModal">Return for Revision</button>
+</div>
+</div>
+<div id="manageReportDetails"></div>
+<div id="manageReportHistory" class="history-box" style="display:none;"></div>
+<div class="modal-action-buttons" style="margin-top: 15px;">
+<button class="btn btn-danger" id="btnDeleteReportFromModal">Delete Report</button>
+</div>
+</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, set, push, remove, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
-  authDomain: "lingua-site-franca.firebaseapp.com",
-  databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "lingua-site-franca",
-  storageBucket: "lingua-site-franca.firebasestorage.app",
-  messagingSenderId: "737514168886",
-  appId: "1:737514168886:web:08f3abd5816505d3a72e97"
+apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
+authDomain: "lingua-site-franca.firebaseapp.com",
+databaseURL: "https://lingua-site-franca-default-rtdb.europe-west1.firebasedatabase.app",
+projectId: "lingua-site-franca",
+storageBucket: "lingua-site-franca.firebasestorage.app",
+messagingSenderId: "737514168886",
+appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// ===== Translation Function =====
 async function translateToEnglish(text) {
-  if (!text) return 'None';
-  try {
-    const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
-    const data = await res.json();
-    return data[0][0][0];
-  } catch (e) {
-    return text;
-  }
+if (!text || text.trim() === '') return 'None';
+try {
+const res = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=${encodeURIComponent(text)}`);
+const data = await res.json();
+return data[0][0][0] || text;
+} catch (e) {
+return text;
+}
 }
 
+// ===== CSV Download Helper =====
 function downloadCSV(filename, csvContent) {
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+const url = URL.createObjectURL(blob);
+const link = document.createElement("a");
+link.setAttribute("href", url);
+link.setAttribute("download", filename);
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+URL.revokeObjectURL(url);
 }
 
+// ===== Format History for Export =====
 function formatHistory(historyArr) {
-  if (!historyArr || historyArr.length === 0) return 'No history';
-  return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
+if (!historyArr || historyArr.length === 0) return 'No history';
+return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
 }
 
+// ===== Filter Logic =====
 let currentFilter = 'ALL';
 function applyFilter() {
-  currentFilter = document.getElementById('siteFilter').value;
-  renderAll();
+currentFilter = document.getElementById('siteFilter').value;
+renderAll();
 }
 window.applyFilter = applyFilter;
 
 function matchesFilter(siteName) {
-  if (currentFilter === 'ALL') return true;
-  return siteName && siteName.toLowerCase() === currentFilter.toLowerCase();
+if (currentFilter === 'ALL') return true;
+return siteName && siteName.toLowerCase() === currentFilter.toLowerCase();
 }
 
 function renderAll() {
-  renderSites();
-  renderOperatives();
-  renderReports();
-  renderTasks();
+renderSites();
+renderOperatives();
+renderReports();
+renderTasks();
 }
 
-// ===== NEW: Logo + Branding State =====
+// ===== Branding State =====
 let currentLogoBase64 = null;
 
-// ===== NEW: Branding Sync (loads logo + colours from Firebase) =====
+// ===== Branding Sync =====
 onValue(ref(db, 'branding'), (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    if (data.businessName) {
-      document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
-      document.title = `${data.businessName} - Office Dashboard`;
-      const brandInput = document.getElementById('brandNameInput');
-      if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
-    }
-    if (data.footerText) {
-      document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
-      const footerInput = document.getElementById('footerTextInput');
-      if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
-    }
-    // ===== NEW: Logo =====
-    if (data.logo) {
-      document.getElementById('headerLogo').src = data.logo;
-      document.getElementById('headerLogo').style.display = 'block';
-      document.getElementById('logoPreview').src = data.logo;
-      document.getElementById('logoPreview').style.display = 'block';
-      currentLogoBase64 = data.logo;
-    }
-    // ===== NEW: Primary Colour =====
-    if (data.primaryColor) {
-      document.documentElement.style.setProperty('--accent', data.primaryColor);
-      document.getElementById('primaryColorInput').value = data.primaryColor;
-      document.getElementById('primarySwatch').style.background = data.primaryColor;
-      document.getElementById('primaryHex').innerText = data.primaryColor;
-    }
-    // ===== NEW: Secondary Colour =====
-    if (data.secondaryColor) {
-      document.documentElement.style.setProperty('--success', data.secondaryColor);
-      document.getElementById('secondaryColorInput').value = data.secondaryColor;
-      document.getElementById('secondarySwatch').style.background = data.secondaryColor;
-      document.getElementById('secondaryHex').innerText = data.secondaryColor;
-    }
-  }
+const data = snapshot.val();
+if (data) {
+if (data.businessName) {
+document.querySelectorAll('.brand-name').forEach(el => el.innerText = data.businessName);
+document.title = `${data.businessName} - Office Dashboard`;
+const brandInput = document.getElementById('brandNameInput');
+if (brandInput && document.activeElement !== brandInput) brandInput.value = data.businessName;
+}
+if (data.footerText) {
+document.querySelectorAll('.dynamic-footer').forEach(el => el.innerText = data.footerText);
+const footerInput = document.getElementById('footerTextInput');
+if (footerInput && document.activeElement !== footerInput) footerInput.value = data.footerText;
+}
+if (data.logo) {
+document.getElementById('headerLogo').src = data.logo;
+document.getElementById('headerLogo').style.display = 'block';
+document.getElementById('logoPreview').src = data.logo;
+document.getElementById('logoPreview').style.display = 'block';
+currentLogoBase64 = data.logo;
+}
+if (data.primaryColor) {
+document.documentElement.style.setProperty('--accent', data.primaryColor);
+document.getElementById('primaryColorInput').value = data.primaryColor;
+document.getElementById('primarySwatch').style.background = data.primaryColor;
+document.getElementById('primaryHex').innerText = data.primaryColor;
+}
+if (data.secondaryColor) {
+document.documentElement.style.setProperty('--success', data.secondaryColor);
+document.getElementById('secondaryColorInput').value = data.secondaryColor;
+document.getElementById('secondarySwatch').style.background = data.secondaryColor;
+document.getElementById('secondaryHex').innerText = data.secondaryColor;
+}
+}
 });
 
-// ===== NEW: Live colour swatch updates =====
+// ===== Live Colour Swatch Updates =====
 document.getElementById('primaryColorInput').addEventListener('input', (e) => {
-  document.getElementById('primarySwatch').style.background = e.target.value;
-  document.getElementById('primaryHex').innerText = e.target.value;
+document.getElementById('primarySwatch').style.background = e.target.value;
+document.getElementById('primaryHex').innerText = e.target.value;
 });
 document.getElementById('secondaryColorInput').addEventListener('input', (e) => {
-  document.getElementById('secondarySwatch').style.background = e.target.value;
-  document.getElementById('secondaryHex').innerText = e.target.value;
+document.getElementById('secondarySwatch').style.background = e.target.value;
+document.getElementById('secondaryHex').innerText = e.target.value;
 });
 
-// ===== NEW: Logo file reader =====
+// ===== Logo File Reader =====
 document.getElementById('logoInput').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    currentLogoBase64 = reader.result;
-    document.getElementById('logoPreview').src = reader.result;
-    document.getElementById('logoPreview').style.display = 'block';
-  };
-  reader.readAsDataURL(file);
+const file = e.target.files[0];
+if (!file) return;
+const reader = new FileReader();
+reader.onloadend = () => {
+currentLogoBase64 = reader.result;
+document.getElementById('logoPreview').src = reader.result;
+document.getElementById('logoPreview').style.display = 'block';
+};
+reader.readAsDataURL(file);
 });
 
-// ===== UPDATED: Branding form now saves logo + colours too =====
+// ===== Branding Form Submit =====
 document.getElementById('brandingForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const businessName = document.getElementById('brandNameInput').value.trim();
-  const footerText = document.getElementById('footerTextInput').value.trim();
-  const primaryColor = document.getElementById('primaryColorInput').value;
-  const secondaryColor = document.getElementById('secondaryColorInput').value;
-  set(ref(db, 'branding'), {
-    businessName,
-    footerText,
-    logo: currentLogoBase64 || '',
-    primaryColor,
-    secondaryColor
-  }).then(() => {
-    alert('Global branding, logo and colours updated across all interfaces!');
-  });
+e.preventDefault();
+const businessName = document.getElementById('brandNameInput').value.trim();
+const footerText = document.getElementById('footerTextInput').value.trim();
+const primaryColor = document.getElementById('primaryColorInput').value;
+const secondaryColor = document.getElementById('secondaryColorInput').value;
+set(ref(db, 'branding'), {
+businessName,
+footerText,
+logo: currentLogoBase64 || '',
+primaryColor,
+secondaryColor
+}).then(() => {
+alert('Global branding, logo and colours updated across all interfaces!');
+});
 });
 
+// ===== Register Site =====
 document.getElementById('registerSiteForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = document.getElementById('siteName').value.trim();
-  const location = document.getElementById('siteLocation').value.trim();
-  push(ref(db, 'sites'), { name, location }).then(() => {
-    document.getElementById('registerSiteForm').reset();
-    alert('Site registered successfully!');
-  });
+e.preventDefault();
+const name = document.getElementById('siteName').value.trim();
+const location = document.getElementById('siteLocation').value.trim();
+push(ref(db, 'sites'), { name, location }).then(() => {
+document.getElementById('registerSiteForm').reset();
+alert('Site registered successfully!');
+});
 });
 
+// ===== Create DLM Account =====
 document.getElementById('assignManagerForm').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const site = document.getElementById('managerSiteSelect').value;
-  const manager = document.getElementById('dlmManagerName').value.trim();
-  const password = document.getElementById('dlmManagerPassword').value;
-  push(ref(db, 'dlmAccounts'), { 
-    name: manager, 
-    password: password,
-    assignedSite: site,
-    createdAt: new Date().toISOString() 
-  }).then(() => {
-    document.getElementById('assignManagerForm').reset();
-    alert('DLM Manager account created successfully!');
-  });
+e.preventDefault();
+const site = document.getElementById('managerSiteSelect').value;
+const manager = document.getElementById('dlmManagerName').value.trim();
+const password = document.getElementById('dlmManagerPassword').value;
+push(ref(db, 'dlmAccounts'), {
+name: manager,
+password: password,
+assignedSite: site,
+createdAt: new Date().toISOString()
+}).then(() => {
+document.getElementById('assignManagerForm').reset();
+alert('DLM Manager account created successfully!');
+});
 });
 
+// ===== Load Sites =====
 onValue(ref(db, 'sites'), (snapshot) => {
-  const data = snapshot.val() || {};
-  const filterSelect = document.getElementById('siteFilter');
-  const managerSelect = document.getElementById('managerSiteSelect');
-  const currentFilterVal = filterSelect.value;
-  
-  filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
-  managerSelect.innerHTML = '<option value="">-- Select Site --</option>';
-  
-  Object.keys(data).forEach(key => {
-    const site = data[key];
-    filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
-    managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
-  });
-  
-  filterSelect.value = currentFilterVal || 'ALL';
-  renderAll();
+const data = snapshot.val() || {};
+const filterSelect = document.getElementById('siteFilter');
+const managerSelect = document.getElementById('managerSiteSelect');
+const currentFilterVal = filterSelect.value;
+filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
+managerSelect.innerHTML = '<option value="">-- Select Site --</option>';
+Object.keys(data).forEach(key => {
+const site = data[key];
+filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+});
+filterSelect.value = currentFilterVal || 'ALL';
+renderAll();
 });
 
 let allDlmAccounts = {};
 onValue(ref(db, 'dlmAccounts'), (snapshot) => {
-  allDlmAccounts = snapshot.val() || {};
-  renderSites();
+allDlmAccounts = snapshot.val() || {};
+renderSites();
 });
 
+// ===== Render Sites =====
 function renderSites() {
-  onValue(ref(db, 'sites'), (siteSnapshot) => {
-    const sitesData = siteSnapshot.val() || {};
-    const tbody = document.getElementById('sitesTableBody');
-    tbody.innerHTML = '';
-    Object.keys(sitesData).forEach(siteKey => {
-      const site = sitesData[siteKey];
-      if (!matchesFilter(site.name)) return;
-      const managerEntry = Object.values(allDlmAccounts).find(a => a.assignedSite === site.name);
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${site.name}</strong></td>
-          <td>${site.location}</td>
-          <td>${managerEntry ? managerEntry.name : 'Unassigned'}</td>
-          <td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
-        </tr>
-      `;
-    });
-  }, { onlyOnce: true });
+onValue(ref(db, 'sites'), (siteSnapshot) => {
+const sitesData = siteSnapshot.val() || {};
+const tbody = document.getElementById('sitesTableBody');
+tbody.innerHTML = '';
+Object.keys(sitesData).forEach(siteKey => {
+const site = sitesData[siteKey];
+if (!matchesFilter(site.name)) return;
+const managerEntry = Object.values(allDlmAccounts).find(a => a.assignedSite === site.name);
+tbody.innerHTML += `
+<tr>
+<td><strong>${site.name}</strong></td>
+<td>${site.location}</td>
+<td>${managerEntry ? managerEntry.name : 'Unassigned'}</td>
+<td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
+</tr>
+`;
+});
+}, { onlyOnce: true });
 }
-
 window.deleteSite = (key) => {
-  if (confirm('Remove this site?')) {
-    remove(ref(db, `sites/${key}`));
-  }
+if (confirm('Remove this site?')) {
+remove(ref(db, `sites/${key}`));
+}
 };
 
+// ===== Render Operatives =====
 function renderOperatives() {
-  onValue(ref(db, 'operatives'), (snapshot) => {
-    const data = snapshot.val() || {};
-    const tbody = document.getElementById('masterOperativesTableBody');
-    tbody.innerHTML = '';
-    const today = new Date().toISOString().split('T')[0];
-    Object.keys(data).forEach(key => {
-      const op = data[key];
-      if (!matchesFilter(op.assignedSite)) return;
-      const isExpired = op.expiry && op.expiry < today;
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${op.name}</strong></td>
-          <td>${op.employer || 'N/A'}</td>
-          <td>${op.assignedSite}</td>
-          <td>${op.qualification}</td>
-          <td>${op.expiry}</td>
-          <td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
-          <td>
-            <div class="action-row">
-              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="editOperative('${key}')">Edit</button>
-              <button class="btn-danger" onclick="deleteOperative('${key}')">Remove</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    });
-  }, { onlyOnce: true });
+onValue(ref(db, 'operatives'), (snapshot) => {
+const data = snapshot.val() || {};
+const tbody = document.getElementById('masterOperativesTableBody');
+tbody.innerHTML = '';
+const today = new Date().toISOString().split('T')[0];
+Object.keys(data).forEach(key => {
+const op = data[key];
+if (!matchesFilter(op.assignedSite)) return;
+const isExpired = op.expiry && op.expiry < today;
+tbody.innerHTML += `
+<tr>
+<td><strong>${op.name}</strong></td>
+<td>${op.employer || 'N/A'}</td>
+<td>${op.assignedSite}</td>
+<td>${op.qualification}</td>
+<td>${op.expiry}</td>
+<td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="editOperative('${key}')">Edit</button>
+<button class="btn-danger" onclick="deleteOperative('${key}')">Remove</button>
+</div>
+</td>
+</tr>
+`;
+});
+}, { onlyOnce: true });
 }
-
 window.editOperative = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `operatives/${key}`), resolve, { onlyOnce: true }));
-  const op = snap.val();
-  if (!op) return;
-  const newName = prompt('Name:', op.name); if (newName === null) return;
-  const newPwd = prompt('Password:', op.password || ''); if (newPwd === null) return;
-  const newEmp = prompt('Employer:', op.employer || ''); if (newEmp === null) return;
-  const newQual = prompt('Certification:', op.qualification || ''); if (newQual === null) return;
-  const newExp = prompt('Expiry date (YYYY-MM-DD):', op.expiry || ''); if (newExp === null) return;
-  await update(ref(db, `operatives/${key}`), {
-    name: newName.trim(), password: newPwd, employer: newEmp.trim(),
-    qualification: newQual.trim(), expiry: newExp.trim()
-  });
-  alert('Member updated.');
+const snap = await get(ref(db, `operatives/${key}`));
+const op = snap.val();
+if (!op) return;
+const newName = prompt('Name:', op.name); if (newName === null) return;
+const newPwd = prompt('Password:', op.password || ''); if (newPwd === null) return;
+const newEmp = prompt('Employer:', op.employer || ''); if (newEmp === null) return;
+const newQual = prompt('Certification:', op.qualification || ''); if (newQual === null) return;
+const newExp = prompt('Expiry date (YYYY-MM-DD):', op.expiry || ''); if (newExp === null) return;
+await update(ref(db, `operatives/${key}`), {
+name: newName.trim(), password: newPwd, employer: newEmp.trim(),
+qualification: newQual.trim(), expiry: newExp.trim()
+});
+alert('Member updated.');
 };
-
 window.deleteOperative = (key) => {
-  if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
+if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
 };
 
+// ===== Render Reports (3 buttons only) =====
+let allReportsData = {};
 function renderReports() {
-  onValue(ref(db, 'reports'), async (snapshot) => {
-    const data = snapshot.val() || {};
-    const tbody = document.getElementById('masterReportsTableBody');
-    tbody.innerHTML = '';
-    const keys = Object.keys(data);
-    for (const key of keys) {
-      const rep = data[key];
-      if (!matchesFilter(rep.site)) continue;
-      let assignedNames = 'None';
-      if (rep.assignedTo) {
-        if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-        else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-        else assignedNames = rep.assignedTo;
-      }
-      let badgeClass = 'badge-assigned';
-      if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
-      else if (rep.status === 'Returned') badgeClass = 'badge-expired';
-      else if (rep.status === 'Submitted') badgeClass = 'badge-assigned';
-      const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
-      tbody.innerHTML += `
-        <tr>
-          <td>${reportDate}</td>
-          <td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
-          <td>${rep.title || 'Untitled'}</td>
-          <td>${rep.site || 'N/A'}</td>
-          <td>${rep.dlm || 'N/A'}</td>
-          <td>${assignedNames}</td>
-          <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
-          <td>
-            <div class="action-row">
-              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewReport('${key}')">View</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptReport('${key}')">Accept</button>
-              <button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnReport('${key}')">Return</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
-              <button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
-  }, { onlyOnce: true });
+onValue(ref(db, 'reports'), async (snapshot) => {
+allReportsData = snapshot.val() || {};
+const tbody = document.getElementById('masterReportsTableBody');
+tbody.innerHTML = '';
+const keys = Object.keys(allReportsData);
+for (const key of keys) {
+const rep = allReportsData[key];
+if (!matchesFilter(rep.site)) continue;
+let assignedNames = 'None';
+if (rep.assignedTo) {
+if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+else assignedNames = rep.assignedTo;
+}
+let badgeClass = 'badge-assigned';
+if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
+else if (rep.status === 'Returned') badgeClass = 'badge-expired';
+else if (rep.status === 'Submitted') badgeClass = 'badge-assigned';
+const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
+// Only 3 buttons: CSV, PDF, Manage
+tbody.innerHTML += `
+<tr>
+<td>${reportDate}</td>
+<td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+<td>${rep.title || 'Untitled'}</td>
+<td>${rep.site || 'N/A'}</td>
+<td>${rep.dlm || 'N/A'}</td>
+<td>${assignedNames}</td>
+<td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
+<button class="btn btn-info" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openReportManageModal('${key}')">Manage</button>
+</div>
+</td>
+</tr>
+`;
+}
+}, { onlyOnce: true });
 }
 
-window.viewReport = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  if (!rep) return alert('Report not found.');
-  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-  let itemsHtml = '';
-  if (rep.items) {
-    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const translatedComment = await translateToEnglish(item.comment || '');
-      itemsHtml += `\n  Item ${i+1}: ${item.description} | Status: ${item.status || 'Assigned'} | Comment (EN): ${translatedComment}`;
-    }
-  }
-  alert(`Report: ${rep.title}\nRef: ${rep.refNumber || key.substring(0,8)}\nStatus: ${rep.status}\nAssigned to: ${assignedNames}\n\nItems:${itemsHtml}`);
-};
-
-window.acceptReport = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  const history = rep.history || [];
-  history.push({ action: 'Report accepted by office', timestamp: new Date().toISOString() });
-  await update(ref(db, `reports/${key}`), { status: 'Accepted', history });
-  alert('Report accepted!');
-};
-
-window.returnReport = async (key) => {
-  const note = prompt('Enter reason for returning:');
-  if (!note) return;
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  const history = rep.history || [];
-  history.push({ action: 'Report returned by office', timestamp: new Date().toISOString(), note });
-  await update(ref(db, `reports/${key}`), { status: 'Returned', returnNote: note, history });
-  alert('Report returned!');
-};
-
-window.exportSingleReportCsv = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const rep = snap.val();
-  if (!rep) return alert('Report not found.');
-  const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-  let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
-  const history = formatHistory(rep.history || []);
-  csv += [
-    `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(rep.title || '').replace(/"/g, '""')}"`,
-    `"${(rep.site || '').replace(/"/g, '""')}"`,
-    `"${(rep.dlm || '').replace(/"/g, '""')}"`,
-    `"${assignedNames.replace(/"/g, '""')}"`,
-    `"${(rep.status || '').replace(/"/g, '""')}"`,
-    `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-    `"${history.replace(/"/g, '""')}"`
-  ].join(",") + "\n";
-  if (rep.items) {
-    const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-    csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const translatedComment = await translateToEnglish(item.comment || '');
-      const itemHistory = formatHistory(item.history || []);
-      csv += [
-        `"${i+1}"`,
-        `"${(item.description || '').replace(/"/g, '""')}"`,
-        `"${(item.status || '').replace(/"/g, '""')}"`,
-        `"${translatedComment.replace(/"/g, '""')}"`,
-        `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
-        `"${itemHistory.replace(/"/g, '""')}"`
-      ].join(",") + "\n";
-    }
-  }
-  downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
-};
-
-window.exportSingleReportPdf = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
-  const report = snap.val();
-  if (!report) return alert('Report not found.');
-  const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
-  let itemsHtml = '';
-  if (report.items) {
-    const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
-    for (let i = 0; i < itemsArr.length; i++) {
-      const item = itemsArr[i];
-      const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-      const opPhoto = item.submittedPhoto || item.operativePhoto;
-      const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-      const translatedComment = await translateToEnglish(item.comment || '');
-      const itemHistory = item.history || [];
-      const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-      itemsHtml += `
-        <tr>
-          <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
-          <td>${item.description}<br><br><strong>Supervisor's photo:</strong><br>${dlmPhotoTag}<br><br><strong>Member's comment (translated):</strong><br>${translatedComment}<br><br><strong>Member's photo:</strong><br>${opPhotoTag}<br><br><small>Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
-          <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
-        </tr>`;
-    }
-  }
-  const reportHistory = report.history || [];
-  const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-
-  const printWindow = window.open('', '', 'height=900,width=900');
-  printWindow.document.write(`
-<html><head><title>${report.title}</title>
-<style>
-body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
-h2 { color: #0f172a; margin-bottom: 5px; }
-.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
-th { background: #f1f5f9; }
-.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-</style></head><body>
-<h2>Report — ${report.title}</h2>
-<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | Supervisor: ${report.dlm} | Assigned to: ${assignedNames} | Status: <strong>${report.status}</strong></div>
-<h3>Items</h3>
-<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-<h3 style="margin-top:20px;">Report Timeline</h3>
-<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
-</body></html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => printWindow.print(), 700);
-};
-
-window.deleteReport = (key) => {
-  if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
-};
-
+// ===== Render Tasks (3 buttons only) =====
 function renderTasks() {
-  onValue(ref(db, 'tasks'), async (snapshot) => {
-    const data = snapshot.val() || {};
-    const tbody = document.getElementById('masterTasksTableBody');
-    tbody.innerHTML = '';
-    const keys = Object.keys(data);
-    for (const key of keys) {
-      const task = data[key];
-      if (!matchesFilter(task.site)) continue;
-      let badgeClass = 'badge-assigned';
-      if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
-      else if (task.status === 'Returned') badgeClass = 'badge-expired';
-      else if (task.status === 'Submitted') badgeClass = 'badge-assigned';
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
-          <td>${task.site || 'N/A'}</td>
-          <td>${task.dlm || 'N/A'}</td>
-          <td>${task.operative || 'N/A'}</td>
-          <td style="max-width:200px;">${task.details || ''}</td>
-          <td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
-          <td>
-            <div class="action-row">
-              <button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewTask('${key}')">View</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptTask('${key}')">Accept</button>
-              <button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnTask('${key}')">Return</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
-              <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
-              <button class="btn-danger" onclick="deleteTask('${key}')">Delete</button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }
-  }, { onlyOnce: true });
+onValue(ref(db, 'tasks'), async (snapshot) => {
+const data = snapshot.val() || {};
+const tbody = document.getElementById('masterTasksTableBody');
+tbody.innerHTML = '';
+const keys = Object.keys(data);
+for (const key of keys) {
+const task = data[key];
+if (!matchesFilter(task.site)) continue;
+let badgeClass = 'badge-assigned';
+if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
+else if (task.status === 'Returned') badgeClass = 'badge-expired';
+else if (task.status === 'Submitted') badgeClass = 'badge-assigned';
+// Only 3 buttons: CSV, PDF, Manage
+tbody.innerHTML += `
+<tr>
+<td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
+<td>${task.site || 'N/A'}</td>
+<td>${task.dlm || 'N/A'}</td>
+<td>${task.operative || 'N/A'}</td>
+<td style="max-width:200px;">${task.details || ''}</td>
+<td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
+<button class="btn btn-info" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskManageModal('${key}')">Manage</button>
+</div>
+</td>
+</tr>
+`;
+}
+}, { onlyOnce: true });
 }
 
-window.viewTask = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const history = formatHistory(task.history || []);
-  alert(`Task: ${task.refNumber || key.substring(0,8)}\nStatus: ${task.status}\nAssigned to: ${task.operative}\n\nDescription: ${task.details}\n\nComment (EN): ${translatedComment}\nSubmitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}\n\nTimeline:\n  ${history}`);
+// ===== TASK MANAGEMENT MODAL =====
+let currentManageTaskKey = null;
+
+window.openTaskManageModal = async (key) => {
+currentManageTaskKey = key;
+const snap = await get(ref(db, `tasks/${key}`));
+const task = snap.val();
+if (!task) return alert('Task not found.');
+
+document.getElementById('manageTaskTitle').innerText = `Task: ${task.refNumber || key.substring(0,8)}`;
+document.getElementById('manageTaskMeta').innerHTML = `
+<strong>Site:</strong> ${task.site || 'N/A'} | 
+<strong>DLM:</strong> ${task.dlm || 'N/A'} | 
+<strong>Operative:</strong> ${task.operative || 'N/A'} | 
+<strong>Status:</strong> <span class="badge ${task.status === 'Accepted' ? 'badge-valid' : task.status === 'Returned' ? 'badge-expired' : 'badge-assigned'}">${task.status || 'Assigned'}</span>
+`;
+
+const actionArea = document.getElementById('manageTaskActionArea');
+if (task.status === 'Submitted') {
+actionArea.style.display = 'block';
+document.getElementById('taskReturnNote').value = '';
+} else {
+actionArea.style.display = 'none';
+}
+
+const translatedComment = await translateToEnglish(task.comment || '');
+const opPhoto = task.operativePhoto || task.photo;
+const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" onclick="openImageModal('${opPhoto}')" />` : '<em>No photo</em>';
+const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" onclick="openImageModal('${task.dlmPhoto}')" />` : '<em>No photo</em>';
+
+document.getElementById('manageTaskDetails').innerHTML = `
+<div class="detail-section">
+<h3>DLM Description</h3>
+<p>${task.details || 'N/A'}</p>
+<h3 style="margin-top:10px;">Reference Photo from DLM</h3>
+${dlmPhotoHtml}
+<h3 style="margin-top:10px;">Created</h3>
+<p>${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</p>
+</div>
+<div class="detail-section" style="border-left-color: var(--success);">
+<h3>Operative Response</h3>
+<h3>Comment (translated to English)</h3>
+<p>${translatedComment}</p>
+<h3 style="margin-top:10px;">Photo Evidence from Operative</h3>
+${opPhotoHtml}
+<h3 style="margin-top:10px;">Submitted</h3>
+<p>${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</p>
+</div>
+`;
+
+const history = task.history || [];
+const historyBox = document.getElementById('manageTaskHistory');
+if (history.length > 0) {
+historyBox.style.display = 'block';
+historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+} else {
+historyBox.style.display = 'none';
+}
+
+document.getElementById('taskManageModal').style.display = 'flex';
 };
 
-window.acceptTask = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  const history = task.history || [];
-  history.push({ action: 'Task accepted by office', timestamp: new Date().toISOString() });
-  await update(ref(db, `tasks/${key}`), { status: 'Accepted', history });
-  alert('Task accepted!');
+window.closeTaskManageModal = () => {
+document.getElementById('taskManageModal').style.display = 'none';
+currentManageTaskKey = null;
 };
 
-window.returnTask = async (key) => {
-  const note = prompt('Enter reason for returning:');
-  if (!note) return;
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  const history = task.history || [];
-  history.push({ action: 'Task returned by office', timestamp: new Date().toISOString(), note });
-  await update(ref(db, `tasks/${key}`), { status: 'Returned', returnNote: note, history });
-  alert('Task returned!');
+document.getElementById('btnAcceptTaskFromModal').addEventListener('click', async () => {
+if (!currentManageTaskKey) return;
+const snap = await get(ref(db, `tasks/${currentManageTaskKey}`));
+const task = snap.val();
+const history = task.history || [];
+history.push({ action: 'Accepted by Office', timestamp: new Date().toISOString() });
+await update(ref(db, `tasks/${currentManageTaskKey}`), { status: 'Accepted', history });
+closeTaskManageModal();
+renderTasks();
+alert('Task accepted!');
+});
+
+document.getElementById('btnReturnTaskFromModal').addEventListener('click', async () => {
+if (!currentManageTaskKey) return;
+const note = document.getElementById('taskReturnNote').value.trim();
+if (!note) return alert('Please provide a reason for returning.');
+const snap = await get(ref(db, `tasks/${currentManageTaskKey}`));
+const task = snap.val();
+const history = task.history || [];
+history.push({ action: 'Returned by Office', timestamp: new Date().toISOString(), note });
+await update(ref(db, `tasks/${currentManageTaskKey}`), { status: 'Returned', returnNote: note, history });
+closeTaskManageModal();
+renderTasks();
+alert('Task returned!');
+});
+
+document.getElementById('btnDeleteTaskFromModal').addEventListener('click', async () => {
+if (!currentManageTaskKey) return;
+if (confirm('Delete this task permanently?')) {
+await remove(ref(db, `tasks/${currentManageTaskKey}`));
+closeTaskManageModal();
+renderTasks();
+alert('Task deleted!');
+}
+});
+
+// ===== REPORT MANAGEMENT MODAL =====
+let currentManageReportKey = null;
+
+window.openReportManageModal = async (key) => {
+currentManageReportKey = key;
+const report = allReportsData[key];
+if (!report) return alert('Report not found.');
+
+document.getElementById('manageReportTitle').innerText = `Report: ${report.title}`;
+const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+document.getElementById('manageReportMeta').innerHTML = `
+<strong>Ref:</strong> ${report.refNumber || key.substring(0,8)} | 
+<strong>Site:</strong> ${report.site || 'N/A'} | 
+<strong>DLM:</strong> ${report.dlm || 'N/A'} | 
+<strong>Assigned to:</strong> ${assignedNames} | 
+<strong>Status:</strong> <span class="badge ${report.status === 'Accepted' ? 'badge-valid' : report.status === 'Returned' ? 'badge-expired' : 'badge-assigned'}">${report.status || 'Assigned'}</span>
+`;
+
+const actionArea = document.getElementById('manageReportActionArea');
+if (report.status === 'Submitted') {
+actionArea.style.display = 'block';
+document.getElementById('reportReturnNote').value = '';
+} else {
+actionArea.style.display = 'none';
+}
+
+let itemsHtml = '';
+if (report.items) {
+const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const translatedComment = await translateToEnglish(item.comment || '');
+const dlmPhotoTag = item.photo ? `<img src="${item.photo}" onclick="openImageModal('${item.photo}')" />` : '<em>No photo</em>';
+const opPhoto = item.submittedPhoto || item.operativePhoto;
+const opPhotoTag = opPhoto ? `<img src="${opPhoto}" onclick="openImageModal('${opPhoto}')" />` : '<em>No photo</em>';
+itemsHtml += `
+<div class="detail-section">
+<h3>Item ${i+1}: ${item.description}</h3>
+<p><strong>Status:</strong> ${item.status || 'Assigned'}</p>
+<h3 style="margin-top:10px;">DLM Reference Photo</h3>
+${dlmPhotoTag}
+<h3 style="margin-top:10px;">Operative Comment (translated)</h3>
+<p>${translatedComment}</p>
+<h3 style="margin-top:10px;">Operative Photo</h3>
+${opPhotoTag}
+<h3 style="margin-top:10px;">Submitted</h3>
+<p>${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</p>
+</div>
+`;
+}
+}
+
+document.getElementById('manageReportDetails').innerHTML = itemsHtml || '<p>No items in this report.</p>';
+
+const history = report.history || [];
+const historyBox = document.getElementById('manageReportHistory');
+if (history.length > 0) {
+historyBox.style.display = 'block';
+historyBox.innerHTML = '<strong>Report Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+} else {
+historyBox.style.display = 'none';
+}
+
+document.getElementById('reportManageModal').style.display = 'flex';
 };
 
-window.exportTaskCsv = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const history = formatHistory(task.history || []);
-  let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
-  csv += [
-    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-    `"${(task.site || '').replace(/"/g, '""')}"`,
-    `"${(task.dlm || '').replace(/"/g, '""')}"`,
-    `"${(task.operative || '').replace(/"/g, '""')}"`,
-    `"${(task.details || '').replace(/"/g, '""')}"`,
-    `"${(task.status || '').replace(/"/g, '""')}"`,
-    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
-    `"${translatedComment.replace(/"/g, '""')}"`,
-    `"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
-    `"${history.replace(/"/g, '""')}"`
-  ].join(",") + "\n";
-  downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+window.closeReportManageModal = () => {
+document.getElementById('reportManageModal').style.display = 'none';
+currentManageReportKey = null;
 };
 
+document.getElementById('btnAcceptReportFromModal').addEventListener('click', async () => {
+if (!currentManageReportKey) return;
+const rep = allReportsData[currentManageReportKey];
+const history = rep.history || [];
+history.push({ action: 'Accepted by Office', timestamp: new Date().toISOString() });
+await update(ref(db, `reports/${currentManageReportKey}`), { status: 'Accepted', history });
+closeReportManageModal();
+renderReports();
+alert('Report accepted!');
+});
+
+document.getElementById('btnReturnReportFromModal').addEventListener('click', async () => {
+if (!currentManageReportKey) return;
+const note = document.getElementById('reportReturnNote').value.trim();
+if (!note) return alert('Please provide a reason for returning.');
+const rep = allReportsData[currentManageReportKey];
+const history = rep.history || [];
+history.push({ action: 'Returned by Office', timestamp: new Date().toISOString(), note });
+await update(ref(db, `reports/${currentManageReportKey}`), { status: 'Returned', returnNote: note, history });
+closeReportManageModal();
+renderReports();
+alert('Report returned!');
+});
+
+document.getElementById('btnDeleteReportFromModal').addEventListener('click', async () => {
+if (!currentManageReportKey) return;
+if (confirm('Delete this report permanently?')) {
+await remove(ref(db, `reports/${currentManageReportKey}`));
+closeReportManageModal();
+renderReports();
+alert('Report deleted!');
+}
+});
+
+// ===== Image Modal =====
+window.openImageModal = (src) => {
+document.getElementById('modalImg').src = src;
+document.getElementById('imgModal').style.display = 'flex';
+};
+
+// ===== PDF EXPORT (TASK) - Full Data =====
 window.exportTaskPdf = async (key) => {
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return alert('Task not found.');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const opPhoto = task.operativePhoto || task.photo;
-  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-  const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
-  const history = task.history || [];
-  const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+const snap = await get(ref(db, `tasks/${key}`));
+const task = snap.val();
+if (!task) return alert('Task not found.');
 
-  const printWindow = window.open('', '', 'height=900,width=900');
-  printWindow.document.write(`
+const translatedComment = await translateToEnglish(task.comment || '');
+const opPhoto = task.operativePhoto || task.photo;
+const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
+const history = task.history || [];
+const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+const printWindow = window.open('', '', 'height=900,width=900');
+printWindow.document.write(`
 <html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
 <style>
 body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
@@ -807,24 +906,153 @@ th { background: #f1f5f9; }
 .footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 </style></head><body>
 <h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
-<div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
-<div class="section"><h3>Supervisor's Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
+<div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Current State: <strong>${task.status || 'Assigned'}</strong></div>
+<div class="section"><h3>DLM Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
 <div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence:</strong><br>${opPhotoTag}</p><p><small>Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
-<div class="section"><h3>Activity Timeline</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
-<div class="footer">Generated on ${new Date().toLocaleString()}</div>
+<div class="section"><h3>Activity Timeline (all returns and re-submissions)</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${task.status || 'Assigned'}</div>
 </body></html>`);
-  printWindow.document.close();
-  printWindow.focus();
-  setTimeout(() => printWindow.print(), 700);
+printWindow.document.close();
+printWindow.focus();
+setTimeout(() => printWindow.print(), 700);
 };
 
+// ===== CSV EXPORT (TASK) - Full Data =====
+window.exportTaskCsv = async (key) => {
+const snap = await get(ref(db, `tasks/${key}`));
+const task = snap.val();
+if (!task) return alert('Task not found.');
+
+const translatedComment = await translateToEnglish(task.comment || '');
+const history = formatHistory(task.history || []);
+
+let csv = "Reference,Site,Supervisor,Team Member,Task Description,Created At,Operative Comment (English),Operative Photo Submitted At,Current State,Full History\n";
+csv += [
+`"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+`"${(task.site || '').replace(/"/g, '""')}"`,
+`"${(task.dlm || '').replace(/"/g, '""')}"`,
+`"${(task.operative || '').replace(/"/g, '""')}"`,
+`"${(task.details || '').replace(/"/g, '""')}"`,
+`"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+`"${translatedComment.replace(/"/g, '""')}"`,
+`"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
+`"${(task.status || 'Assigned').replace(/"/g, '""')}"`,
+`"${history.replace(/"/g, '""')}"`
+].join(",") + "\n";
+
+downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+// ===== PDF EXPORT (REPORT) - Full Data =====
+window.exportSingleReportPdf = async (key) => {
+const report = allReportsData[key];
+if (!report) return alert('Report not found.');
+
+const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+
+let itemsHtml = '';
+if (report.items) {
+const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+const opPhoto = item.submittedPhoto || item.operativePhoto;
+const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+const translatedComment = await translateToEnglish(item.comment || '');
+const itemHistory = item.history || [];
+const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+itemsHtml += `
+<tr>
+<td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
+<td>
+<strong>Description:</strong> ${item.description}<br><br>
+<strong>DLM Photo:</strong><br>${dlmPhotoTag}<br><br>
+<strong>Operative Comment (translated):</strong><br>${translatedComment}<br><br>
+<strong>Operative Photo:</strong><br>${opPhotoTag}<br><br>
+<small>Submitted: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small>
+</td>
+<td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
+</tr>`;
+}
+}
+
+const reportHistory = report.history || [];
+const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+const printWindow = window.open('', '', 'height=900,width=900');
+printWindow.document.write(`
+<html><head><title>${report.title}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Report — ${report.title}</h2>
+<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | Supervisor: ${report.dlm} | Assigned to: ${assignedNames} | Current State: <strong>${report.status || 'Assigned'}</strong></div>
+<h3>Items</h3>
+<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+<h3 style="margin-top:20px;">Report Timeline (all returns and re-submissions)</h3>
+<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${report.status || 'Assigned'}</div>
+</body></html>`);
+printWindow.document.close();
+printWindow.focus();
+setTimeout(() => printWindow.print(), 700);
+};
+
+// ===== CSV EXPORT (REPORT) - Full Data =====
+window.exportSingleReportCsv = async (key) => {
+const rep = allReportsData[key];
+if (!rep) return alert('Report not found.');
+
+const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
+const reportHistory = formatHistory(rep.history || []);
+
+let csv = "Reference,Title,Site,Supervisor,Assigned To,Created At,Current State,Full History\n";
+csv += [
+`"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+`"${(rep.title || '').replace(/"/g, '""')}"`,
+`"${(rep.site || '').replace(/"/g, '""')}"`,
+`"${(rep.dlm || '').replace(/"/g, '""')}"`,
+`"${assignedNames.replace(/"/g, '""')}"`,
+`"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+`"${(rep.status || 'Assigned').replace(/"/g, '""')}"`,
+`"${reportHistory.replace(/"/g, '""')}"`
+].join(",") + "\n";
+
+if (rep.items) {
+csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
+const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const translatedComment = await translateToEnglish(item.comment || '');
+const itemHistory = formatHistory(item.history || []);
+csv += [
+`"${i+1}"`,
+`"${(item.description || '').replace(/"/g, '""')}"`,
+`"${(item.status || 'Assigned').replace(/"/g, '""')}"`,
+`"${translatedComment.replace(/"/g, '""')}"`,
+`"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
+`"${itemHistory.replace(/"/g, '""')}"`
+].join(",") + "\n";
+}
+}
+
+downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
+};
+
+// ===== Delete Report (from table) =====
+window.deleteReport = (key) => {
+if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
+};
+
+// ===== Delete Task (from table) =====
 window.deleteTask = (key) => {
-  if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
-};
-
-window.openModal = (src) => {
-  document.getElementById('modalImg').src = src;
-  document.getElementById('imgModal').style.display = 'flex';
+if (confirm('Delete this task?')) remove(ref(db, `tasks/${key}`));
 };
 </script>
 </body>
