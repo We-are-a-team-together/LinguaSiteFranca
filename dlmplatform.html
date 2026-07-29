@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">ni
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Direct Line Manager Platform</title>
 <style>
@@ -267,47 +267,6 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-  // ====== PHOTO COMPRESSION ======
-async function compressImage(file) {
-  return new Promise((resolve, reject) => {
-    if (file.size <= 200 * 1024) {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 1600;
-        const MAX_HEIGHT = 1600;
-        let width = img.width;
-        let height = img.height;
-        if (width > height) {
-          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-        } else {
-          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.75));
-      };
-      img.onerror = reject;
-      img.src = event.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-// ====== END PHOTO COMPRESSION ======
-
 
 // ====== NOTIFICATION SYSTEM ======
 const notifiedSubmissions = new Set();
@@ -540,9 +499,12 @@ const fileInput = document.getElementById('taskPhoto');
 if (!operative) return alert('Please select a team member.');
 let dlmPhoto = null;
 if (fileInput.files.length > 0) {
-dlmPhoto = await compressImage(fileInput.files[0]);
+dlmPhoto = await new Promise(resolve => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.readAsDataURL(fileInput.files[0]);
+});
 }
-
 const now = new Date().toISOString();
 const refNum = 'T-' + Date.now().toString().slice(-8);
 push(ref(db, 'tasks'), {
@@ -644,61 +606,52 @@ if (task.status === 'Submitted') {
 actionArea.style.display = 'block';
 document.getElementById('taskReturnNote').value = '';
 } else actionArea.style.display = 'none';
-const printWindow = window.open('', '', 'height=900,width=900');
-
-// Build submissions HTML - show ALL submissions
-let submissionsHtml = '';
-if (task.submissions && task.submissions.length > 0) {
-  for (let i = 0; i < task.submissions.length; i++) {
-    const sub = task.submissions[i];
-    const translatedSubComment = await translateToEnglish(sub.comment || '');
-    const subPhoto = sub.photo;
-    const subPhotoTag = subPhoto ? `<img src="${subPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-    submissionsHtml += `
-    <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid var(--accent);">
-      <strong>Submission #${i + 1}</strong> <small style="color: #64748b;">(${new Date(sub.timestamp).toLocaleString()})</small>
-      <p><strong>Comment (translated to English):</strong><br>${translatedSubComment}</p>
-      <p><strong>Photo evidence:</strong><br>${subPhotoTag}</p>
-    </div>
-    `;
-  }
-} else {
-  // Fallback for old tasks without submissions array
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const opPhoto = task.operativePhoto || task.photo;
-  const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-  submissionsHtml = `
-  <div style="background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-    <p><strong>Comment (translated to English):</strong><br>${translatedComment}</p>
-    <p><strong>Photo evidence:</strong><br>${opPhotoTag}</p>
-  </div>
-  `;
-}
-
+const translatedComment = await translateToEnglish(task.comment || '');
+const opPhoto = task.operativePhoto || task.photo;
+const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${opPhoto}')">` : 'No photo';
+const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${task.dlmPhoto}')">` : 'No reference photo';
+document.getElementById('viewTaskDetails').innerHTML = `
+<div class="card" style="margin-bottom:10px;">
+<strong>DLM Description:</strong>
+<div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
+</div>
+<div class="card">
+<strong>Team Member's Response:</strong>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
+</div>
+`;
 const history = task.history || [];
-const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-
-printWindow.document.write(`
-<html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
-<style>
-body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
-h2 { color: #0f172a; margin-bottom: 5px; }
-.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-.section { background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
-.section h3 { margin: 0 0 10px 0; color: #334155; font-size: 1rem; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
-th { background: #f1f5f9; }
-.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-</style></head><body>
-<h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
-<div class="meta">Location: ${task.site} | DLM: ${task.dlm} | Assigned to: ${task.operative} | Current Status: <strong>${task.status}</strong></div>
-<div class="section"><h3>DLM Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo provided by DLM:</strong><br>${task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:200px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>'}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
-<div class="section"><h3>All Team Member Submissions (${task.submissions ? task.submissions.length : 1})</h3>${submissionsHtml}</div>
-<div class="section"><h3>Activity Timeline (all submissions, returns and re-submissions)</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
-<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${task.status}</div>
-</body></html>`);
-
+const historyBox = document.getElementById('taskHistoryBox');
+if (history.length > 0) {
+historyBox.style.display = 'block';
+historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+} else historyBox.style.display = 'none';
+document.getElementById('taskViewModal').style.display = 'flex';
+};
+document.getElementById('btnAcceptTask').addEventListener('click', async () => {
+if (!currentTaskKey) return;
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+const history = task.history || [];
+history.push({ action: 'Accepted by DLM', timestamp: new Date().toISOString() });
+await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Accepted', history });
+document.getElementById('taskViewModal').style.display = 'none';
+});
+document.getElementById('btnReturnTask').addEventListener('click', async () => {
+if (!currentTaskKey) return;
+const note = document.getElementById('taskReturnNote').value.trim();
+if (!note) return alert('Please provide a reason for returning.');
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+const history = task.history || [];
+history.push({ action: 'Returned by DLM', timestamp: new Date().toISOString(), note });
+await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Returned', returnNote: note, history });
+document.getElementById('taskViewModal').style.display = 'none';
+});
 // ====== REPORTS MODULE ======
 const reportItemsContainer = document.getElementById('reportItemsContainer');
 document.getElementById('addReportItemBtn').addEventListener('click', () => {
@@ -711,8 +664,12 @@ div.innerHTML = `
 `;
 reportItemsContainer.appendChild(div);
 });
-const fileToBase64 = (file) => compressImage(file);
-
+const fileToBase64 = (file) => new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.readAsDataURL(file);
+reader.onload = () => resolve(reader.result);
+reader.onerror = error => reject(error);
+});
 document.getElementById('createReportForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const title = document.getElementById('reportTitle').value.trim();
@@ -975,113 +932,96 @@ csv += [
 downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 // ====== PDF EXPORT (REPORT) ======
+window.exportReportPDF = async (key) => {
+const report = allReportsData[key];
+if (!report) return alert('Report not found.');
+const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+let itemsHtml = '';
+if (report.items) {
+const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+const opPhoto = item.submittedPhoto || item.operativePhoto;
+const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+const translatedComment = await translateToEnglish(item.comment || '');
 const itemHistory = item.history || [];
 const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-
-// Build all submissions for this item
-let itemSubmissionsHtml = '';
-if (item.submissions && item.submissions.length > 0) {
-for (let j = 0; j < item.submissions.length; j++) {
-const sub = item.submissions[j];
-const translatedSubComment = await translateToEnglish(sub.comment || '');
-const subPhoto = sub.photo;
-const subPhotoTag = subPhoto ? `<img src="${subPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-itemSubmissionsHtml += `
-<div style="background: #f1f5f9; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid var(--accent);">
-<strong>Submission #${j + 1}</strong> <small>(${new Date(sub.timestamp).toLocaleString()})</small><br>
-<strong>Comment:</strong> ${translatedSubComment}<br>
-<strong>Photo:</strong><br>${subPhotoTag}
-</div>
-`;
-}
-} else {
-// Fallback for old items
-const translatedComment = await translateToEnglish(item.comment || '');
-itemSubmissionsHtml = `
-<div style="background: #f1f5f9; padding: 10px; border-radius: 4px;">
-<strong>Comment:</strong> ${translatedComment}<br>
-<strong>Photo:</strong><br>${opPhotoTag}
-</div>
-`;
-}
-
 itemsHtml += `
 <tr>
 <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
 <td>
 <strong>DLM Description:</strong> ${item.description}<br><br>
 <strong>Photo provided by DLM:</strong><br>${dlmPhotoTag}<br><br>
-<strong>All Operative Submissions (${item.submissions ? item.submissions.length : 1}):</strong><br>
-${itemSubmissionsHtml}
+<strong>Operative comment (translated to English):</strong><br>${translatedComment}<br><br>
+<strong>Photo provided by operative:</strong><br>${opPhotoTag}<br><br>
+<small>Response submitted at: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small>
 </td>
 <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
 </tr>`;
-
-
+}
+}
+const reportHistory = report.history || [];
+const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+const printWindow = window.open('', '', 'height=900,width=900');
+printWindow.document.write(`
+<html><head><title>${report.title}</title>
+<style>
+body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
+h2 { color: #0f172a; margin-bottom: 5px; }
+.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
+th { background: #f1f5f9; }
+.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+</style></head><body>
+<h2>Report — ${report.title}</h2>
+<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | DLM: ${report.dlm} | Assigned to: ${assignedNames} | Current Status: <strong>${report.status}</strong></div>
+<h3>Items</h3>
+<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
+<h3 style="margin-top:20px;">Report Timeline (all returns and re-submissions)</h3>
+<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
+<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${report.status}</div>
+</body></html>`);
+printWindow.document.close();
+printWindow.focus();
+setTimeout(() => printWindow.print(), 700);
+};
 // ====== CSV EXPORT (SINGLE REPORT) ======
 window.exportReportCSV = async (key) => {
 const rep = allReportsData[key];
 if (!rep) return alert('Report not found.');
-
-let csv = "Reference,Item #,DLM Description,Report Created,Submission #,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
 const reportHistory = formatHistory(rep.history || []);
-
 if (rep.items) {
 const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
 for (let i = 0; i < itemsArr.length; i++) {
 const item = itemsArr[i];
-
-if (item.submissions && item.submissions.length > 0) {
-for (let j = 0; j < item.submissions.length; j++) {
-const sub = item.submissions[j];
-const translatedComment = await translateToEnglish(sub.comment || '');
-const itemHistory = formatHistory(item.history || []);
-csv += [
-`"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
-`"${i + 1}"`,
-`"${(item.description || '').replace(/"/g, '""')}"`,
-`"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-`"${j + 1}"`,
-`"${translatedComment.replace(/"/g, '""')}"`,
-`"${new Date(sub.timestamp).toLocaleString()}"`,
-`"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
-`"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
-].join(",") + "\n";
-}
-} else {
-// Fallback for old items
 const translatedComment = await translateToEnglish(item.comment || '');
 const itemHistory = formatHistory(item.history || []);
 csv += [
 `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
-`"${i + 1}"`,
 `"${(item.description || '').replace(/"/g, '""')}"`,
 `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-`"1"`,
 `"${translatedComment.replace(/"/g, '""')}"`,
 `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
 `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
 `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
 ].join(",") + "\n";
 }
-}
 } else {
 csv += [
 `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-`"N/A"`,
 `"${(rep.title || '').replace(/"/g, '""')}"`,
 `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-`"N/A"`,
 `"N/A"`,
 `""`,
 `"${(rep.status || '').replace(/"/g, '""')}"`,
 `"${reportHistory.replace(/"/g, '""')}"`
 ].join(",") + "\n";
 }
-
 downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
-
 // ====== CSV EXPORT (ALL TASKS) ======
 document.getElementById('exportTasksCsvBtn').addEventListener('click', async () => {
 const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
