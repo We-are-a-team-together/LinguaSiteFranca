@@ -461,7 +461,7 @@ header { flex-direction: column; align-items: flex-start; }
 <!-- ===================== JAVASCRIPT ===================== -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, update, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 // ---------- Firebase Config ----------
 const firebaseConfig = {
 apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
@@ -733,26 +733,26 @@ document.getElementById('loginError').style.display = 'none';
 document.getElementById('tasksContainer').innerHTML = `<div class="empty-state" id="loadingMsg">${translatedUI.loadingMsg}</div>`;
 });
 // ---------- Render All Work ----------
-window.renderAllWork = async function() {
+// Global cache for the filtered data
+let liveTasksData = {};
+let liveReportsData = {};
+
+function renderFilteredWork() {
 if (!currentOp) return;
 const container = document.getElementById('tasksContainer');
-container.innerHTML = `<div class="empty-state">${translatedUI.loadingMsg}</div>`;
-let loadedCount = 0;
-let tasksData = {}, reportsData = {};
-function checkAndDisplay() {
-loadedCount++;
-if (loadedCount < 2) return;
 container.innerHTML = '';
 let hasWork = false;
-for (const key of Object.keys(tasksData)) {
-const task = tasksData[key];
-if (task.operative && task.operative.toLowerCase() === currentOp.toLowerCase()) {
+
+// Render Tasks (These are already filtered by the server!)
+for (const key of Object.keys(liveTasksData)) {
+const task = liveTasksData[key];
 hasWork = true;
 renderTaskCard(key, task, container);
 }
-}
-for (const key of Object.keys(reportsData)) {
-const rep = reportsData[key];
+
+// Render Reports (We still filter these in the browser, see note below)
+for (const key of Object.keys(liveReportsData)) {
+const rep = liveReportsData[key];
 let isAssigned = false;
 if (rep.assignedTo) {
 if (Array.isArray(rep.assignedTo)) isAssigned = rep.assignedTo.some(n => n.toLowerCase() === currentOp.toLowerCase());
@@ -764,12 +764,32 @@ hasWork = true;
 renderReportCard(key, rep, container);
 }
 }
+
 if (!hasWork) {
 container.innerHTML = `<div class="empty-state">${translatedUI.noWork} ${currentOp}.</div>`;
 }
 }
-onValue(ref(db, 'tasks'), (s) => { tasksData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
-onValue(ref(db, 'reports'), (s) => { reportsData = s.val() || {}; checkAndDisplay(); }, { onlyOnce: true });
+
+window.renderAllWork = function() {
+if (!currentOp) return;
+const container = document.getElementById('tasksContainer');
+container.innerHTML = `<div class="empty-state">${translatedUI.loadingMsg}</div>`;
+
+// 1. SERVER-SIDE FILTERING FOR TASKS (The "Bill = £0.00" magic)
+// This tells Firebase: "Only send tasks where 'operative' exactly matches currentOp"
+const tasksQuery = query(ref(db, 'tasks'), orderByChild('operative'), equalTo(currentOp));
+onValue(tasksQuery, (snapshot) => {
+liveTasksData = snapshot.val() || {};
+renderFilteredWork();
+});
+
+// 2. CLIENT-SIDE FILTERING FOR REPORTS
+// Note: Firebase Realtime DB cannot query inside Arrays. We must download reports 
+// and filter them in the browser. Since reports are fewer than tasks, this is fine.
+onValue(ref(db, 'reports'), (snapshot) => {
+liveReportsData = snapshot.val() || {};
+renderFilteredWork();
+});
 };
 // ---------- Render Task Card ----------
 async function renderTaskCard(key, task, container) {
