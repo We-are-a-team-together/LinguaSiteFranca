@@ -61,15 +61,6 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
 .color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
 .logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
-/* ====== NOTIFICATION ANIMATIONS ====== */
-@keyframes slideInNotif {
-  from { transform: translateY(-120%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@keyframes slideOutNotif {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-120%); opacity: 0; }
-}
 </style>
 </head>
 <body>
@@ -253,127 +244,55 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ====== NOTIFICATION SYSTEM ======
-const notifiedSubmissions = new Set();
-let tasksInitialLoad = false;
-let reportsInitialLoad = false;
-
-function playNotificationSound() {
+// ====== PHOTO COMPRESSION (NEW - for logo uploads) ======
+async function compressImage(file, options = {}) {
+  const { maxWidth = 800, maxHeight = 800, quality = 0.9, skipIfUnderKB = 200 } = options;
+  if (file.size <= skipIfUnderKB * 1024) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 880;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
+    const bitmap = await createImageBitmap(file);
+    let { width, height } = bitmap;
+    if (width > maxWidth || height > maxHeight) {
+      const ratio = Math.min(maxWidth / width, maxHeight / height);
+      width = Math.round(width * ratio);
+      height = Math.round(height * ratio);
+    }
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+    bitmap.close();
+    if (dataUrl.length > file.size * 1.4) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+    console.log(`[Compression] ${Math.round(file.size/1024)}KB → ${Math.round(dataUrl.length*0.75/1024)}KB`);
+    return dataUrl;
   } catch (e) {
-    console.warn('Audio notification failed:', e);
+    console.warn('[Compression] Failed, using original:', e);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 }
-
-function showNotification(title, message, onClick) {
-  let container = document.getElementById('notificationContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'notificationContainer';
-    container.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:700px; width:90%; pointer-events:none;';
-    document.body.appendChild(container);
-  }
-  const notif = document.createElement('div');
-  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
-  const success = getComputedStyle(document.documentElement).getPropertyValue('--success').trim() || '#10b981';
-  notif.style.cssText = `background:linear-gradient(135deg, ${accent}, ${success}); color:white; padding:18px 24px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5); cursor:pointer; animation:slideInNotif 0.4s ease-out; font-family:system-ui,sans-serif; pointer-events:auto; border-left:4px solid rgba(255,255,255,0.3); position:relative;`;
-  notif.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px;">
-      <div style="flex:1;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-          <span style="font-size:1.4rem;">🔔</span>
-          <strong style="font-size:1rem; font-weight:700;">${title}</strong>
-        </div>
-        <div style="font-size:0.9rem; opacity:0.95; line-height:1.5;">${message}</div>
-      </div>
-      <button class="notif-close-btn" style="background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1.2rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">×</button>
-    </div>
-  `;
-  notif.className = 'notification-item';
-  const closeBtn = notif.querySelector('.notif-close-btn');
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
-    setTimeout(() => notif.remove(), 300);
-  });
-  notif.addEventListener('click', (e) => {
-    if (e.target.closest('.notif-close-btn')) return;
-    if (onClick) onClick();
-    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
-    setTimeout(() => notif.remove(), 300);
-  });
-  container.appendChild(notif);
-}
-
-// Continuous listener for task submissions (notifications only)
-onValue(ref(db, 'tasks'), (snapshot) => {
-  const data = snapshot.val() || {};
-  Object.keys(data).forEach(key => {
-    const task = data[key];
-    if (matchesFilter(task.site)) {
-      const subKey = 'task-' + key;
-      if (task.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
-        if (tasksInitialLoad) {
-          notifiedSubmissions.add(subKey);
-          playNotificationSound();
-          showNotification(
-            '📋 New Task Submission',
-            `<strong>${task.operative}</strong> at <strong>${task.site || 'N/A'}</strong><br><small style="opacity:0.9;">Task: ${task.refNumber || key.substring(0,8)} | Supervisor: ${task.dlm || 'N/A'}</small>`,
-            () => viewTask(key)
-          );
-        } else {
-          notifiedSubmissions.add(subKey);
-        }
-      }
-      if (task.status !== 'Submitted') notifiedSubmissions.delete(subKey);
-    }
-  });
-  if (!tasksInitialLoad) tasksInitialLoad = true;
-});
-
-// Continuous listener for report submissions (notifications only)
-onValue(ref(db, 'reports'), (snapshot) => {
-  const data = snapshot.val() || {};
-  Object.keys(data).forEach(key => {
-    const rep = data[key];
-    if (matchesFilter(rep.site)) {
-      const subKey = 'report-' + key;
-      if (rep.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
-        if (reportsInitialLoad) {
-          notifiedSubmissions.add(subKey);
-          playNotificationSound();
-          let assignedNames = 'None';
-          if (rep.assignedTo) {
-            if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-            else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-            else assignedNames = rep.assignedTo;
-          }
-          showNotification(
-            '📄 New Report Submission',
-            `<strong>${rep.title || 'Untitled'}</strong> at <strong>${rep.site || 'N/A'}</strong><br><small style="opacity:0.9;">Assigned to: ${assignedNames} | Supervisor: ${rep.dlm || 'N/A'}</small>`,
-            () => viewReport(key)
-          );
-        } else {
-          notifiedSubmissions.add(subKey);
-        }
-      }
-      if (rep.status !== 'Submitted') notifiedSubmissions.delete(subKey);
-    }
-  });
-  if (!reportsInitialLoad) reportsInitialLoad = true;
-});
-// ====== END NOTIFICATION SYSTEM ======
+// ====== END PHOTO COMPRESSION ======
 
 async function translateToEnglish(text) {
 if (!text) return 'None';
@@ -460,16 +379,14 @@ document.getElementById('secondaryColorInput').addEventListener('input', (e) => 
 document.getElementById('secondarySwatch').style.background = e.target.value;
 document.getElementById('secondaryHex').innerText = e.target.value;
 });
-document.getElementById('logoInput').addEventListener('change', (e) => {
+// ====== MODIFIED: Logo upload now uses compression ======
+document.getElementById('logoInput').addEventListener('change', async (e) => {
 const file = e.target.files[0];
 if (!file) return;
-const reader = new FileReader();
-reader.onloadend = () => {
-currentLogoBase64 = reader.result;
-document.getElementById('logoPreview').src = reader.result;
+const compressed = await compressImage(file, { maxWidth: 800, maxHeight: 800, quality: 0.9 });
+currentLogoBase64 = compressed;
+document.getElementById('logoPreview').src = compressed;
 document.getElementById('logoPreview').style.display = 'block';
-};
-reader.readAsDataURL(file);
 });
 document.getElementById('brandingForm').addEventListener('submit', (e) => {
 e.preventDefault();
