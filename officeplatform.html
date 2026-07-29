@@ -689,9 +689,9 @@ tbody.innerHTML += `
 <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
 <td>
 <div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openReportView('${key}')">View</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
 </div>
 </td>
 </tr>
@@ -850,12 +850,9 @@ tbody.innerHTML += `
 <td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
 <td>
 <div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewTask('${key}')">View</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptTask('${key}')">Accept</button>
-<button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnTask('${key}')">Return</button>
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
 <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
 <button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
-<button class="btn-danger" onclick="deleteTask('${key}')">Delete</button>
 </div>
 </td>
 </tr>
@@ -1114,7 +1111,6 @@ await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned',
 document.getElementById('reportViewModal').style.display = 'none';
 alert('Report returned!');
 });
-</script>
 </script>
 </body>
 </html>
