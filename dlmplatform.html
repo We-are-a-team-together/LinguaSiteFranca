@@ -252,10 +252,9 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ====== PHOTO COMPRESSION (NEW - reduces file size before upload) ======
+// ====== PHOTO COMPRESSION ======
 async function compressImage(file, options = {}) {
   const { maxWidth = 1600, maxHeight = 1600, quality = 0.75, skipIfUnderKB = 200 } = options;
-  // If file is already small, skip compression
   if (file.size <= skipIfUnderKB * 1024) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -281,7 +280,6 @@ async function compressImage(file, options = {}) {
     ctx.drawImage(bitmap, 0, 0, width, height);
     const dataUrl = canvas.toDataURL('image/jpeg', quality);
     bitmap.close();
-    // If compression somehow made it bigger, use original
     if (dataUrl.length > file.size * 1.4) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -458,7 +456,6 @@ alert('Member updated.');
 window.deleteOperative = (key) => {
 if (confirm('Delete this team member?')) remove(ref(db, `operatives/${key}`));
 };
-// ====== MODIFIED: Task photo now uses compression ======
 document.getElementById('assignTaskForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const operative = document.getElementById('taskOpSelect').value;
@@ -599,9 +596,7 @@ div.innerHTML = `
 `;
 reportItemsContainer.appendChild(div);
 });
-// ====== MODIFIED: fileToBase64 now compresses ======
 const fileToBase64 = (file) => compressImage(file);
-// ====== MODIFIED: Report form submit uses compression via fileToBase64 ======
 document.getElementById('createReportForm').addEventListener('submit', async (e) => {
 e.preventDefault();
 const title = document.getElementById('reportTitle').value.trim();
