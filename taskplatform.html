@@ -921,14 +921,27 @@ const snapshot = await get(ref(db, `tasks/${key}`));
 const existing = snapshot.val() || {};
 const history = existing.history || [];
 history.push({ action: 'Submitted by team member', timestamp: now, comment });
+// Create submission record
+const submission = {
+photo: photoData,
+comment: comment,
+timestamp: now
+};
+
+// Get existing submissions or create new array
+const existingSubmissions = existing.submissions || [];
+existingSubmissions.push(submission);
+
 await update(ref(db, `tasks/${key}`), {
 status: 'Submitted',
 comment: comment,
 operativePhoto: photoData,
 photo: photoData,
 submittedAt: now,
+submissions: existingSubmissions,
 history: history
 });
+
 alert(translatedUI.submitSuccess);
 window.renderAllWork();
 } catch (error) {
@@ -963,14 +976,28 @@ const photoData = await compressImage(fileEl.files[0]);
 if (itemsArray[i]) {
 const itemHistory = itemsArray[i].history || [];
 itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
+
+// Create submission record
+const submission = {
+photo: photoData,
+comment: comment,
+timestamp: now
+};
+
+// Get existing submissions or create new array
+const existingSubmissions = itemsArray[i].submissions || [];
+existingSubmissions.push(submission);
+
 itemsArray[i].comment = comment;
 itemsArray[i].status = 'Submitted';
 itemsArray[i].submittedPhoto = photoData;
 itemsArray[i].operativePhoto = photoData;
 itemsArray[i].submittedAt = now;
+itemsArray[i].submissions = existingSubmissions;
 itemsArray[i].history = itemHistory;
 anyChanges = true;
 }
+
 }
 if (!anyChanges) {
 return alert(translatedUI.noItemsSubmitted);
