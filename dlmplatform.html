@@ -966,96 +966,113 @@ csv += [
 downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 // ====== PDF EXPORT (REPORT) ======
-window.exportReportPDF = async (key) => {
-const report = allReportsData[key];
-if (!report) return alert('Report not found.');
-const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
-let itemsHtml = '';
-if (report.items) {
-const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
-for (let i = 0; i < itemsArr.length; i++) {
-const item = itemsArr[i];
-const dlmPhotoTag = item.photo ? `<img src="${item.photo}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-const opPhoto = item.submittedPhoto || item.operativePhoto;
-const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
-const translatedComment = await translateToEnglish(item.comment || '');
 const itemHistory = item.history || [];
 const itemHistoryHtml = itemHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+// Build all submissions for this item
+let itemSubmissionsHtml = '';
+if (item.submissions && item.submissions.length > 0) {
+for (let j = 0; j < item.submissions.length; j++) {
+const sub = item.submissions[j];
+const translatedSubComment = await translateToEnglish(sub.comment || '');
+const subPhoto = sub.photo;
+const subPhotoTag = subPhoto ? `<img src="${subPhoto}" style="max-width:150px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+itemSubmissionsHtml += `
+<div style="background: #f1f5f9; padding: 10px; border-radius: 4px; margin-bottom: 10px; border-left: 3px solid var(--accent);">
+<strong>Submission #${j + 1}</strong> <small>(${new Date(sub.timestamp).toLocaleString()})</small><br>
+<strong>Comment:</strong> ${translatedSubComment}<br>
+<strong>Photo:</strong><br>${subPhotoTag}
+</div>
+`;
+}
+} else {
+// Fallback for old items
+const translatedComment = await translateToEnglish(item.comment || '');
+itemSubmissionsHtml = `
+<div style="background: #f1f5f9; padding: 10px; border-radius: 4px;">
+<strong>Comment:</strong> ${translatedComment}<br>
+<strong>Photo:</strong><br>${opPhotoTag}
+</div>
+`;
+}
+
 itemsHtml += `
 <tr>
 <td><strong>Item ${i+1}</strong><br><small>Status: ${item.status || 'Assigned'}</small></td>
 <td>
 <strong>DLM Description:</strong> ${item.description}<br><br>
 <strong>Photo provided by DLM:</strong><br>${dlmPhotoTag}<br><br>
-<strong>Operative comment (translated to English):</strong><br>${translatedComment}<br><br>
-<strong>Photo provided by operative:</strong><br>${opPhotoTag}<br><br>
-<small>Response submitted at: ${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small>
+<strong>All Operative Submissions (${item.submissions ? item.submissions.length : 1}):</strong><br>
+${itemSubmissionsHtml}
 </td>
 <td><table style="width:100%;"><tbody>${itemHistoryHtml || '<tr><td>No history</td></tr>'}</tbody></table></td>
 </tr>`;
-}
-}
-const reportHistory = report.history || [];
-const reportHistoryRows = reportHistory.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-const printWindow = window.open('', '', 'height=900,width=900');
-printWindow.document.write(`
-<html><head><title>${report.title}</title>
-<style>
-body { font-family: system-ui, sans-serif; padding: 30px; color: #1e293b; background: #fff; }
-h2 { color: #0f172a; margin-bottom: 5px; }
-.meta { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-size: 0.85rem; vertical-align: top; }
-th { background: #f1f5f9; }
-.footer { margin-top: 30px; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }
-</style></head><body>
-<h2>Report — ${report.title}</h2>
-<div class="meta">Ref: ${report.refNumber || key.substring(0,8)} | Location: ${report.site} | DLM: ${report.dlm} | Assigned to: ${assignedNames} | Current Status: <strong>${report.status}</strong></div>
-<h3>Items</h3>
-<table><thead><tr><th>Item</th><th>Details & Photos</th><th>Item Timeline</th></tr></thead><tbody>${itemsHtml}</tbody></table>
-<h3 style="margin-top:20px;">Report Timeline (all returns and re-submissions)</h3>
-<table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${reportHistoryRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table>
-<div class="footer">PDF extracted on ${new Date().toLocaleString()} — State at extraction: ${report.status}</div>
-</body></html>`);
-printWindow.document.close();
-printWindow.focus();
-setTimeout(() => printWindow.print(), 700);
-};
+
+
 // ====== CSV EXPORT (SINGLE REPORT) ======
 window.exportReportCSV = async (key) => {
 const rep = allReportsData[key];
 if (!rep) return alert('Report not found.');
-let csv = "Reference,DLM Description,Submitted At,Operative Comment (English),Response Submitted At,Current State,Full History\n";
+
+let csv = "Reference,Item #,DLM Description,Report Created,Submission #,Operative Comment (English),Response Submitted At,Current State,Full History\n";
 const reportHistory = formatHistory(rep.history || []);
+
 if (rep.items) {
 const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
 for (let i = 0; i < itemsArr.length; i++) {
 const item = itemsArr[i];
+
+if (item.submissions && item.submissions.length > 0) {
+for (let j = 0; j < item.submissions.length; j++) {
+const sub = item.submissions[j];
+const translatedComment = await translateToEnglish(sub.comment || '');
+const itemHistory = formatHistory(item.history || []);
+csv += [
+`"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
+`"${i + 1}"`,
+`"${(item.description || '').replace(/"/g, '""')}"`,
+`"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+`"${j + 1}"`,
+`"${translatedComment.replace(/"/g, '""')}"`,
+`"${new Date(sub.timestamp).toLocaleString()}"`,
+`"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
+`"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
+].join(",") + "\n";
+}
+} else {
+// Fallback for old items
 const translatedComment = await translateToEnglish(item.comment || '');
 const itemHistory = formatHistory(item.history || []);
 csv += [
 `"${(rep.refNumber || key.substring(0,8))} - Item ${i+1}"`,
+`"${i + 1}"`,
 `"${(item.description || '').replace(/"/g, '""')}"`,
 `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+`"1"`,
 `"${translatedComment.replace(/"/g, '""')}"`,
 `"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
 `"${(item.status || rep.status || '').replace(/"/g, '""')}"`,
 `"${(reportHistory + ' || Item: ' + itemHistory).replace(/"/g, '""')}"`
 ].join(",") + "\n";
 }
+}
 } else {
 csv += [
 `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+`"N/A"`,
 `"${(rep.title || '').replace(/"/g, '""')}"`,
 `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
+`"N/A"`,
 `"N/A"`,
 `""`,
 `"${(rep.status || '').replace(/"/g, '""')}"`,
 `"${reportHistory.replace(/"/g, '""')}"`
 ].join(",") + "\n";
 }
+
 downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
+
 // ====== CSV EXPORT (ALL TASKS) ======
 document.getElementById('exportTasksCsvBtn').addEventListener('click', async () => {
 const snap = await new Promise(resolve => onValue(ref(db, 'tasks'), resolve, { onlyOnce: true }));
