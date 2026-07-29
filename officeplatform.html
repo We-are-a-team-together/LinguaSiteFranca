@@ -918,12 +918,29 @@ window.exportTaskPdf = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
 const task = snap.val();
 if (!task) return alert('Task not found.');
-const translatedComment = await translateToEnglish(task.comment || '');
-const opPhoto = task.operativePhoto || task.photo;
-const opPhotoTag = opPhoto ? `<img src="${opPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No photo</em>';
+
 const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
 const history = task.history || [];
 const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
+
+// Handle both new format (submissions array) and legacy format (single comment/photo)
+const submissions = task.submissions && task.submissions.length > 0 
+  ? task.submissions 
+  : [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
+
+let submissionsHtml = '';
+for (let i = 0; i < submissions.length; i++) {
+  const sub = submissions[i];
+  const translatedComment = await translateToEnglish(sub.comment || '');
+  const photoTag = sub.photo ? `<img src="${sub.photo}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1; margin-top:8px;" />` : '<em>No photo</em>';
+  submissionsHtml += `
+  <div style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 4px solid #3b82f6;">
+    <p style="margin:0 0 8px 0;"><strong>Submission #${i + 1}</strong> <small style="color:#64748b;">(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown date'})</small></p>
+    <p style="margin:0 0 8px 0;"><strong>Comment (translated to English):</strong><br>${translatedComment}</p>
+    <p style="margin:0;"><strong>Photo evidence:</strong><br>${photoTag}</p>
+  </div>`;
+}
+
 const printWindow = window.open('', '', 'height=900,width=900');
 printWindow.document.write(`
 <html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
@@ -940,9 +957,27 @@ th { background: #f1f5f9; }
 </style></head><body>
 <h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
 <div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
-<div class="section"><h3>Supervisor's Description</h3><p>${task.details || 'N/A'}</p><p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p><p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p></div>
-<div class="section"><h3>Team Member's Response</h3><p><strong>Comment (translated to English):</strong><br>${translatedComment}</p><p><strong>Photo evidence:</strong><br>${opPhotoTag}</p><p><small>Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</small></p></div>
-<div class="section"><h3>Activity Timeline</h3><table><thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead><tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody></table></div>
+
+<div class="section">
+  <h3>Supervisor's Description</h3>
+  <p>${task.details || 'N/A'}</p>
+  <p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p>
+  <p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p>
+</div>
+
+<div class="section">
+  <h3>Team Member's Responses (Full History)</h3>
+  ${submissionsHtml}
+</div>
+
+<div class="section">
+  <h3>Activity Timeline</h3>
+  <table>
+    <thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead>
+    <tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody>
+  </table>
+</div>
+
 <div class="footer">Generated on ${new Date().toLocaleString()}</div>
 </body></html>`);
 printWindow.document.close();
