@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Team Member Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
 --bg: #0f172a;
@@ -16,6 +19,7 @@
 --success: #10b981;
 --danger: #ef4444;
 --warning: #f59e0b;
+--font-display: 'Sora', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * {
 box-sizing: border-box;
@@ -28,12 +32,24 @@ background-color: var(--bg);
 color: var(--text);
 min-height: 100vh;
 }
-body { padding: clamp(10px, 2vw, 20px); }
+/* ====== AMBIENT DEPTH (reacts live to Office brand colours) ====== */
+body {
+padding: clamp(10px, 2vw, 20px);
+background-image:
+radial-gradient(1200px 620px at 10% -12%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%),
+radial-gradient(900px 520px at 102% -4%, color-mix(in srgb, var(--success) 11%, transparent), transparent 55%),
+radial-gradient(820px 820px at 50% 122%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 62%);
+background-attachment: fixed;
+background-repeat: no-repeat;
+}
 /* ---------- LOGIN SCREEN ---------- */
 .login-overlay {
 position: fixed;
 inset: 0;
-background: var(--bg);
+background:
+radial-gradient(900px 500px at 50% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+radial-gradient(700px 500px at 50% 120%, color-mix(in srgb, var(--success) 12%, transparent), transparent 60%),
+var(--bg);
 display: flex;
 justify-content: center;
 align-items: center;
@@ -43,16 +59,22 @@ padding: 20px;
 .login-card {
 width: 100%;
 max-width: 420px;
-background: var(--card-bg);
+background: color-mix(in srgb, var(--card-bg) 92%, transparent);
 border: 1px solid var(--border);
-border-radius: 12px;
-padding: 28px;
+border-radius: 16px;
+padding: 30px 28px;
 text-align: center;
+box-shadow: 0 30px 80px -30px rgba(0,0,0,0.8);
+backdrop-filter: blur(6px);
+animation: cardIn 0.5s cubic-bezier(.2,.7,.2,1) both;
 }
 .login-card h2 {
+font-family: var(--font-display);
 color: var(--accent);
 margin-bottom: 8px;
-font-size: 1.4rem;
+font-size: 1.7rem;
+font-weight: 800;
+letter-spacing: -0.02em;
 }
 .login-card p {
 color: var(--text-muted);
@@ -103,11 +125,14 @@ border: 1px solid var(--border);
 border-radius: 6px;
 color: #fff;
 font-size: 0.95rem;
+transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .form-group input:focus,
-.form-group textarea:focus {
+.form-group textarea:focus,
+.form-group select:focus {
 outline: none;
 border-color: var(--accent);
+box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .btn-login {
 width: 100%;
@@ -115,14 +140,16 @@ padding: 12px;
 background: var(--accent);
 color: white;
 border: none;
-border-radius: 6px;
-font-weight: 600;
+border-radius: 8px;
+font-family: var(--font-display);
+font-weight: 700;
 cursor: pointer;
 font-size: 1rem;
 margin-top: 10px;
-transition: opacity 0.2s;
+transition: transform 0.12s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
-.btn-login:hover { opacity: 0.9; }
+.btn-login:hover { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent); }
+.btn-login:active { transform: translateY(0) scale(0.99); }
 .login-error {
 color: var(--danger);
 margin-top: 12px;
@@ -142,9 +169,9 @@ header {
 display: flex;
 justify-content: space-between;
 align-items: center;
-margin-bottom: 20px;
+margin-bottom: 22px;
 border-bottom: 1px solid var(--border);
-padding-bottom: 15px;
+padding-bottom: 16px;
 flex-wrap: wrap;
 gap: 12px;
 }
@@ -162,10 +189,13 @@ border-radius: 6px;
 display: none;
 }
 .header-title {
-font-size: clamp(1rem, 2.5vw, 1.3rem);
-font-weight: 700;
+font-family: var(--font-display);
+font-size: clamp(1.1rem, 3vw, 1.6rem);
+font-weight: 800;
+letter-spacing: -0.02em;
 color: #fff;
 }
+.brand-name { font-family: var(--font-display); }
 .header-controls {
 display: flex;
 align-items: center;
@@ -194,26 +224,36 @@ border: 1px solid var(--danger);
 color: var(--danger);
 border-radius: 6px;
 font-size: 0.85rem;
+font-weight: 600;
 cursor: pointer;
-transition: all 0.2s;
+transition: background 0.2s ease, color 0.2s ease, transform 0.12s ease;
 }
 .logout-btn:hover {
 background: var(--danger);
 color: #fff;
+transform: translateY(-1px);
 }
+.logout-btn:active { transform: translateY(0) scale(0.98); }
 /* ---------- CARDS ---------- */
 .card {
 background-color: var(--card-bg);
 border: 1px solid var(--border);
-border-radius: 10px;
+border-radius: 12px;
 padding: clamp(15px, 2vw, 25px);
 margin-bottom: 18px;
+transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.card:hover {
+border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+box-shadow: 0 14px 36px -18px rgba(0,0,0,0.7);
 }
 .task-title {
-font-size: clamp(1rem, 2vw, 1.2rem);
-font-weight: 700;
+font-family: var(--font-display);
+font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+font-weight: 800;
+letter-spacing: -0.01em;
 color: var(--accent);
-margin-bottom: 8px;
+margin-bottom: 10px;
 display: flex;
 justify-content: space-between;
 align-items: center;
@@ -224,6 +264,7 @@ gap: 8px;
 font-size: 0.75rem;
 color: var(--text-muted);
 font-weight: 400;
+font-family: system-ui, sans-serif;
 }
 .task-desc {
 font-size: 1rem;
@@ -285,10 +326,11 @@ cursor: pointer;
 border: 1px solid var(--border);
 margin-top: 8px;
 display: block;
+transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .thumb-img:hover {
 transform: scale(1.05);
-transition: transform 0.2s;
+box-shadow: 0 8px 20px -8px rgba(0,0,0,0.7);
 }
 .dlm-ref-photo { margin-top: 10px; }
 .dlm-ref-photo small {
@@ -304,13 +346,15 @@ padding: 12px;
 background: var(--success);
 color: white;
 border: none;
-border-radius: 6px;
-font-weight: 600;
+border-radius: 8px;
+font-family: var(--font-display);
+font-weight: 700;
 cursor: pointer;
 font-size: 1rem;
-transition: opacity 0.2s;
+transition: transform 0.12s ease, filter 0.2s ease, box-shadow 0.2s ease;
 }
-button[type="submit"]:hover:not(:disabled) { opacity: 0.9; }
+button[type="submit"]:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--success) 70%, transparent); }
+button[type="submit"]:active:not(:disabled) { transform: translateY(0) scale(0.99); }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 .empty-state {
 text-align: center;
@@ -342,10 +386,28 @@ max-height: 100%;
 border-radius: 8px;
 border: 2px solid var(--border);
 }
+/* ====== MOTION ====== */
+@keyframes cardIn {
+from { opacity: 0; transform: translateY(14px); }
+to { opacity: 1; transform: none; }
+}
+.card--enter { animation: cardIn 0.5s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes softPulse {
+0%, 100% { opacity: 0.55; }
+50% { opacity: 1; }
+}
+#loadingMsg { animation: softPulse 1.6s ease-in-out infinite; }
 @media (max-width: 600px) {
 .header-title { font-size: 1rem; }
 .thumb-img { width: 60px; height: 60px; }
 header { flex-direction: column; align-items: flex-start; }
+}
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after {
+animation-duration: 0.001ms !important;
+animation-iteration-count: 1 !important;
+transition-duration: 0.001ms !important;
+}
 }
 </style>
 </head>
@@ -474,61 +536,58 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
-// ====== PHOTO COMPRESSION (NEW - reduces file size before upload) ======
+// ====== PHOTO COMPRESSION (reduces file size before upload) ======
 async function compressImage(file, options = {}) {
-  const { maxWidth = 1600, maxHeight = 1600, quality = 0.75, skipIfUnderKB = 200 } = options;
-  // If file is already small, skip compression
-  if (file.size <= skipIfUnderKB * 1024) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-  try {
-    const bitmap = await createImageBitmap(file);
-    let { width, height } = bitmap;
-    if (width > maxWidth || height > maxHeight) {
-      const ratio = Math.min(maxWidth / width, maxHeight / height);
-      width = Math.round(width * ratio);
-      height = Math.round(height * ratio);
-    }
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(bitmap, 0, 0, width, height);
-    const dataUrl = canvas.toDataURL('image/jpeg', quality);
-    bitmap.close();
-    // If compression somehow made it bigger, use original
-    if (dataUrl.length > file.size * 1.4) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-    console.log(`[Compression] ${Math.round(file.size/1024)}KB → ${Math.round(dataUrl.length*0.75/1024)}KB`);
-    return dataUrl;
-  } catch (e) {
-    console.warn('[Compression] Failed, using original:', e);
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+const { maxWidth = 1600, maxHeight = 1600, quality = 0.75, skipIfUnderKB = 200 } = options;
+if (file.size <= skipIfUnderKB * 1024) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
+try {
+const bitmap = await createImageBitmap(file);
+let { width, height } = bitmap;
+if (width > maxWidth || height > maxHeight) {
+const ratio = Math.min(maxWidth / width, maxHeight / height);
+width = Math.round(width * ratio);
+height = Math.round(height * ratio);
+}
+const canvas = document.createElement('canvas');
+canvas.width = width;
+canvas.height = height;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, width, height);
+ctx.drawImage(bitmap, 0, 0, width, height);
+const dataUrl = canvas.toDataURL('image/jpeg', quality);
+bitmap.close();
+if (dataUrl.length > file.size * 1.4) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
+console.log(`[Compression] ${Math.round(file.size/1024)}KB → ${Math.round(dataUrl.length*0.75/1024)}KB`);
+return dataUrl;
+} catch (e) {
+console.warn('[Compression] Failed, using original:', e);
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onloadend = () => resolve(reader.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
 }
 // ====== END PHOTO COMPRESSION ======
-
 // ---------- State ----------
 let currentOp = "";
+let currentOpSite = "";   // CHANGED: captured at login so reports can be site-filtered server-side
 let currentLangCode = 'en';
 // ---------- UI Text (English base) ----------
 const UI_TEXT = {
@@ -574,13 +633,8 @@ bothRequired: "Both a photo and a comment are required before submitting.",
 noItemsSubmitted: "No items were submitted. Please ensure you have filled out the required fields for at least one active item."
 };
 let translatedUI = { ...UI_TEXT };
-// ---------- Translation Engine (Google Translate - FREE, same as dlmplatform/officeplatform) ----------
+// ---------- Translation Engine (Google Translate - FREE) ----------
 const translationCache = {};
-/**
-* Translate text from English to target language.
-* Uses the same Google Translate endpoint as dlmplatform.html and officeplatform.html.
-* This is FREE with no API key required.
-*/
 async function translateText(text, targetLangCode) {
 if (!text || !text.trim()) return text;
 if (targetLangCode === 'en') return text;
@@ -598,10 +652,6 @@ console.warn("Translation failed:", e);
 return text;
 }
 }
-/**
-* Translate any text to English (auto-detect source language).
-* Used for translating team member comments to English for supervisors.
-*/
 async function translateToEnglish(text) {
 if (!text || !text.trim()) return text;
 const cacheKey = `${text}__en`;
@@ -631,7 +681,6 @@ keys.forEach((k, i) => { translatedUI[k] = results[i]; });
 applyUIText();
 }
 function applyUIText() {
-// Login screen
 const titleEl = document.getElementById('loginTitle');
 if (titleEl) titleEl.innerText = translatedUI.loginTitle;
 const subtitleEl = document.getElementById('loginSubtitle');
@@ -669,9 +718,12 @@ document.getElementById('wsLangSelect').addEventListener('change', async (e) => 
 currentLangCode = e.target.value;
 document.getElementById('loginLangSelect').value = currentLangCode;
 await translateUI(currentLangCode);
-window.renderAllWork();
+// CHANGED: re-render only (translations changed). Do NOT re-attach live
+// listeners here — the old code did, and leaked a new pair of onValue
+// listeners on every single language switch.
+renderFilteredWork();
 });
-// ---------- Branding ----------
+// ---------- Branding (single tiny node — no filtering needed) ----------
 onValue(ref(db, 'branding'), (snapshot) => {
 const data = snapshot.val();
 if (!data) return;
@@ -703,6 +755,11 @@ errEl.style.display = 'block';
 return;
 }
 try {
+// NOTE: login still reads /operatives in full (one-shot). An operative logs in
+// with name + password only — no site hint — and name matching must be
+// case-insensitive, which Realtime Database queries cannot do server-side.
+// This is the same deliberate compromise as the DLM login. The operative
+// dataset is bounded, so the cost is small and paid once per login.
 const snap = await get(ref(db, 'operatives'));
 const ops = snap.val() || {};
 const match = Object.values(ops).find(o =>
@@ -713,10 +770,13 @@ errEl.style.display = 'block';
 return;
 }
 currentOp = match.name;
+currentOpSite = match.assignedSite || "";   // CHANGED: remember the site for the reports query
 document.getElementById('loginOverlay').style.display = 'none';
 document.getElementById('mainContainer').style.display = 'flex';
 document.getElementById('opDisplayName').innerText = currentOp;
-window.renderAllWork();
+document.getElementById('tasksContainer').innerHTML = `<div class="empty-state" id="loadingMsg">${translatedUI.loadingMsg}</div>`;
+firstRenderDone = false;
+attachLiveListeners();   // CHANGED: attach the (now filtered) live listeners exactly once
 } catch (err) {
 console.error("Login error:", err);
 errEl.innerText = "Connection error. Please try again.";
@@ -725,7 +785,12 @@ errEl.style.display = 'block';
 });
 // ---------- Logout Handler ----------
 document.getElementById('logoutBtn').addEventListener('click', () => {
+detachLiveListeners();   // CHANGED: stop the live listeners so they don't keep firing / leaking
 currentOp = "";
+currentOpSite = "";
+liveTasksData = {};
+liveReportsData = {};
+firstRenderDone = false;
 document.getElementById('mainContainer').style.display = 'none';
 document.getElementById('loginOverlay').style.display = 'flex';
 document.getElementById('opLoginForm').reset();
@@ -736,21 +801,27 @@ document.getElementById('tasksContainer').innerHTML = `<div class="empty-state" 
 // Global cache for the filtered data
 let liveTasksData = {};
 let liveReportsData = {};
-
-function renderFilteredWork() {
+let firstRenderDone = false;
+// CHANGED: this now ONLY re-renders from the cached data. It no longer touches
+// Firebase, so it is safe to call on every language change without leaking
+// listeners. The cached data is kept fresh by attachLiveListeners() below.
+async function renderFilteredWork() {
 if (!currentOp) return;
 const container = document.getElementById('tasksContainer');
 container.innerHTML = '';
+const animate = !firstRenderDone;   // one-time staggered reveal on login only
+let cardIndex = 0;
 let hasWork = false;
-
-// Render Tasks (These are already filtered by the server!)
+// Tasks: already server-filtered to this member — render in stable order.
 for (const key of Object.keys(liveTasksData)) {
-const task = liveTasksData[key];
 hasWork = true;
-renderTaskCard(key, task, container);
+const card = await renderTaskCard(key, liveTasksData[key]);
+if (animate) { card.classList.add('card--enter'); card.style.animationDelay = (cardIndex * 60) + 'ms'; }
+cardIndex++;
+container.appendChild(card);
 }
-
-// Render Reports (We still filter these in the browser, see note below)
+// Reports: server-filtered to this member's SITE; final "is it mine?" check on
+// assignedTo happens here over that small set (Realtime DB cannot query arrays).
 for (const key of Object.keys(liveReportsData)) {
 const rep = liveReportsData[key];
 let isAssigned = false;
@@ -761,38 +832,61 @@ else if (typeof rep.assignedTo === 'string') isAssigned = rep.assignedTo.toLower
 }
 if (isAssigned) {
 hasWork = true;
-renderReportCard(key, rep, container);
+const card = await renderReportCard(key, rep);
+if (animate) { card.classList.add('card--enter'); card.style.animationDelay = (cardIndex * 60) + 'ms'; }
+cardIndex++;
+container.appendChild(card);
 }
 }
-
 if (!hasWork) {
 container.innerHTML = `<div class="empty-state">${translatedUI.noWork} ${currentOp}.</div>`;
 }
+firstRenderDone = true;
 }
-
-window.renderAllWork = function() {
-if (!currentOp) return;
-const container = document.getElementById('tasksContainer');
-container.innerHTML = `<div class="empty-state">${translatedUI.loadingMsg}</div>`;
-
-// 1. SERVER-SIDE FILTERING FOR TASKS (The "Bill = £0.00" magic)
-// This tells Firebase: "Only send tasks where 'operative' exactly matches currentOp"
+// ====================================================================
+// LIVE LISTENERS — attached ONCE on login, detached on logout.
+// Both are server-side filtered so bandwidth stays tiny.
+// ====================================================================
+let unsubTasks = null;
+let unsubReports = null;
+function detachLiveListeners() {
+if (unsubTasks) { try { unsubTasks(); } catch (e) {} unsubTasks = null; }
+if (unsubReports) { try { unsubReports(); } catch (e) {} unsubReports = null; }
+}
+function attachLiveListeners() {
+detachLiveListeners();   // defensive: never stack listeners
+// 1. TASKS — exact per-member server filter (the "Bill = £0.00" magic).
+// Firebase sends ONLY tasks where 'operative' === currentOp.
+// Uses the ".indexOn": ["operative"] already present on /tasks in your rules.
 const tasksQuery = query(ref(db, 'tasks'), orderByChild('operative'), equalTo(currentOp));
-onValue(tasksQuery, (snapshot) => {
+unsubTasks = onValue(tasksQuery, (snapshot) => {
 liveTasksData = snapshot.val() || {};
 renderFilteredWork();
 });
-
-// 2. CLIENT-SIDE FILTERING FOR REPORTS
-// Note: Firebase Realtime DB cannot query inside Arrays. We must download reports 
-// and filter them in the browser. Since reports are fewer than tasks, this is fine.
-onValue(ref(db, 'reports'), (snapshot) => {
+// 2. REPORTS — server filter by the member's SITE, then a tiny client-side
+// membership check on assignedTo (Realtime DB cannot query inside arrays).
+// A DLM only ever assigns a report to operatives of that report's site, so
+// filtering by site guarantees every report this member is on is included,
+// while excluding every other site's reports. Uses ".indexOn": ["site"]
+// already present on /reports in your rules.
+if (currentOpSite) {
+const reportsQuery = query(ref(db, 'reports'), orderByChild('site'), equalTo(currentOpSite));
+unsubReports = onValue(reportsQuery, (snapshot) => {
 liveReportsData = snapshot.val() || {};
 renderFilteredWork();
 });
-};
-// ---------- Render Task Card ----------
-async function renderTaskCard(key, task, container) {
+} else {
+// Legacy fallback: an operative record with no assignedSite cannot be
+// site-filtered, so we read all reports and filter client-side. This only
+// triggers for malformed/legacy records and preserves the old behaviour.
+unsubReports = onValue(ref(db, 'reports'), (snapshot) => {
+liveReportsData = snapshot.val() || {};
+renderFilteredWork();
+});
+}
+}
+// ---------- Render Task Card (returns the card element) ----------
+async function renderTaskCard(key, task) {
 const translatedDetails = await translateText(task.details || '', currentLangCode);
 const isLocked = task.status === 'Submitted' || task.status === 'Accepted' || task.status === 'Approved';
 const isCompleted = task.status === 'Accepted' || task.status === 'Approved';
@@ -847,10 +941,10 @@ ${bannerHTML}
 ${returnNoteHTML}
 ${formHTML}
 `;
-container.appendChild(card);
+return card;   // CHANGED: caller appends (so it can stagger the entrance animation)
 }
-// ---------- Render Report Card ----------
-async function renderReportCard(key, rep, container) {
+// ---------- Render Report Card (returns the card element) ----------
+async function renderReportCard(key, rep) {
 const rawItems = rep.items;
 const itemsArray = rawItems ? (Array.isArray(rawItems) ? [...rawItems] : Object.values(rawItems)) : [];
 const isReportLocked = rep.status === 'Submitted' || rep.status === 'Accepted' || rep.status === 'Approved';
@@ -917,14 +1011,14 @@ ${itemsHtml}
 ${!isReportLocked ? `<button type="submit">${translatedUI.submitReport}</button>` : ''}
 </form>
 `;
-container.appendChild(card);
+return card;   // CHANGED: caller appends
 }
 // ---------- Image Modal ----------
 window.openModal = (src) => {
 document.getElementById('modalImg').src = src;
 document.getElementById('imgModal').style.display = 'flex';
 };
-// ---------- Submit Task (MODIFIED: now uses compression) ----------
+// ---------- Submit Task (compression + optimistic UI) ----------
 window.submitTask = async (e, key) => {
 e.preventDefault();
 try {
@@ -933,25 +1027,15 @@ const fileInput = document.getElementById(`photo_${key}`);
 if (!comment || fileInput.files.length === 0) {
 return alert(translatedUI.bothRequired);
 }
-// ====== MODIFIED: Use compression instead of direct FileReader ======
 const photoData = await compressImage(fileInput.files[0]);
-// ====== END MODIFICATION ======
 const now = new Date().toISOString();
 const snapshot = await get(ref(db, `tasks/${key}`));
 const existing = snapshot.val() || {};
 const history = existing.history || [];
 history.push({ action: 'Submitted by team member', timestamp: now, comment });
-// Create submission record
-const submission = {
-photo: photoData,
-comment: comment,
-timestamp: now
-};
-
-// Get existing submissions or create new array
+const submission = { photo: photoData, comment: comment, timestamp: now };
 const existingSubmissions = existing.submissions || [];
 existingSubmissions.push(submission);
-
 await update(ref(db, `tasks/${key}`), {
 status: 'Submitted',
 comment: comment,
@@ -961,15 +1045,21 @@ submittedAt: now,
 submissions: existingSubmissions,
 history: history
 });
-
+// CHANGED: optimistic local update so the card locks instantly (perceptible
+// feedback) instead of waiting for the server echo. The live listener will
+// confirm with the same data moments later.
+liveTasksData[key] = Object.assign({}, liveTasksData[key], {
+status: 'Submitted', comment, operativePhoto: photoData, photo: photoData,
+submittedAt: now, submissions: existingSubmissions, history
+});
+await renderFilteredWork();
 alert(translatedUI.submitSuccess);
-window.renderAllWork();
 } catch (error) {
 console.error("Error in submitTask:", error);
 alert(translatedUI.submitError + error.message);
 }
 };
-// ---------- Submit Report (MODIFIED: now uses compression) ----------
+// ---------- Submit Report (compression + optimistic UI) ----------
 window.submitReport = async (e, key, itemCount) => {
 e.preventDefault();
 try {
@@ -990,24 +1080,13 @@ if (!comment || fileEl.files.length === 0) {
 alert(`${translatedUI.item} ${i+1}: Both photo and comment are required.`);
 return;
 }
-// ====== MODIFIED: Use compression instead of direct FileReader ======
 const photoData = await compressImage(fileEl.files[0]);
-// ====== END MODIFICATION ======
 if (itemsArray[i]) {
 const itemHistory = itemsArray[i].history || [];
 itemHistory.push({ action: 'Submitted by team member', timestamp: now, comment });
-
-// Create submission record
-const submission = {
-photo: photoData,
-comment: comment,
-timestamp: now
-};
-
-// Get existing submissions or create new array
+const submission = { photo: photoData, comment: comment, timestamp: now };
 const existingSubmissions = itemsArray[i].submissions || [];
 existingSubmissions.push(submission);
-
 itemsArray[i].comment = comment;
 itemsArray[i].status = 'Submitted';
 itemsArray[i].submittedPhoto = photoData;
@@ -1017,7 +1096,6 @@ itemsArray[i].submissions = existingSubmissions;
 itemsArray[i].history = itemHistory;
 anyChanges = true;
 }
-
 }
 if (!anyChanges) {
 return alert(translatedUI.noItemsSubmitted);
@@ -1030,8 +1108,12 @@ items: itemsArray,
 submittedAt: now,
 history: reportHistory
 });
+// CHANGED: optimistic local update for instant lock.
+liveReportsData[key] = Object.assign({}, rep, {
+status: 'Submitted', items: itemsArray, submittedAt: now, history: reportHistory
+});
+await renderFilteredWork();
 alert(translatedUI.reportSubmitSuccess);
-window.renderAllWork();
 } catch (error) {
 console.error("Error in submitReport:", error);
 alert(translatedUI.reportSubmitError + error.message);
