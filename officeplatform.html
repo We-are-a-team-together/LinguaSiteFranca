@@ -742,9 +742,11 @@ window.exportSingleReportCsv = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
 const rep = snap.val();
 if (!rep) return alert('Report not found.');
+
 const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
-let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,History\n";
-const history = formatHistory(rep.history || []);
+const reportHistory = formatHistory(rep.history || []);
+
+let csv = "Reference,Title,Site,Supervisor,Assigned To,Status,Created At,Report History\n";
 csv += [
 `"${(rep.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
 `"${(rep.title || '').replace(/"/g, '""')}"`,
@@ -753,25 +755,41 @@ csv += [
 `"${assignedNames.replace(/"/g, '""')}"`,
 `"${(rep.status || '').replace(/"/g, '""')}"`,
 `"${rep.createdAt ? new Date(rep.createdAt).toLocaleString() : ''}"`,
-`"${history.replace(/"/g, '""')}"`
-].join(",") + "\n";
+`"${reportHistory.replace(/"/g, '""')}"`
+].join(",") + "\n\n";
+
+csv += "Item #,Description,Item Status,Submission #,Operative Comment (English),Photo Attached,Submitted At,Item History\n";
+
 if (rep.items) {
 const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-csv += "\nItem #,Description,Status,Operative Comment (English),Submitted At,Item History\n";
 for (let i = 0; i < itemsArr.length; i++) {
-const item = itemsArr[i];
-const translatedComment = await translateToEnglish(item.comment || '');
-const itemHistory = formatHistory(item.history || []);
-csv += [
-`"${i+1}"`,
-`"${(item.description || '').replace(/"/g, '""')}"`,
-`"${(item.status || '').replace(/"/g, '""')}"`,
-`"${translatedComment.replace(/"/g, '""')}"`,
-`"${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : ''}"`,
-`"${itemHistory.replace(/"/g, '""')}"`
-].join(",") + "\n";
+  const item = itemsArr[i];
+  
+  // Handle both new format (submissions array) and legacy format
+  const itemSubmissions = item.submissions && item.submissions.length > 0 
+    ? item.submissions 
+    : [{ comment: item.comment, photo: item.submittedPhoto || item.operativePhoto, timestamp: item.submittedAt }];
+
+  for (let j = 0; j < itemSubmissions.length; j++) {
+    const sub = itemSubmissions[j];
+    const translatedComment = await translateToEnglish(sub.comment || '');
+    const photoStatus = sub.photo ? "Yes" : "No";
+    const itemHistory = formatHistory(item.history || []);
+    
+    csv += [
+      `"${i + 1}"`,
+      `"${(item.description || '').replace(/"/g, '""')}"`,
+      `"${(item.status || '').replace(/"/g, '""')}"`,
+      `"Submission ${j + 1}"`,
+      `"${translatedComment.replace(/"/g, '""')}"`,
+      `"${photoStatus}"`,
+      `"${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : ''}"`,
+      `"${itemHistory.replace(/"/g, '""')}"`
+    ].join(",") + "\n";
+  }
 }
 }
+
 downloadCSV(`report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 window.exportSingleReportPdf = async (key) => {
@@ -897,21 +915,36 @@ window.exportTaskCsv = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
 const task = snap.val();
 if (!task) return alert('Task not found.');
-const translatedComment = await translateToEnglish(task.comment || '');
+
 const history = formatHistory(task.history || []);
-let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Operative Comment (English),Submitted At,History\n";
-csv += [
-`"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
-`"${(task.site || '').replace(/"/g, '""')}"`,
-`"${(task.dlm || '').replace(/"/g, '""')}"`,
-`"${(task.operative || '').replace(/"/g, '""')}"`,
-`"${(task.details || '').replace(/"/g, '""')}"`,
-`"${(task.status || '').replace(/"/g, '""')}"`,
-`"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
-`"${translatedComment.replace(/"/g, '""')}"`,
-`"${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : ''}"`,
-`"${history.replace(/"/g, '""')}"`
-].join(",") + "\n";
+let csv = "Reference,Site,Supervisor,Team Member,Task Description,Status,Created At,Submission #,Operative Comment (English),Photo Attached,Submitted At,Full History\n";
+
+// Handle both new format (submissions array) and legacy format (single comment/photo)
+const submissions = task.submissions && task.submissions.length > 0 
+  ? task.submissions 
+  : [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
+
+for (let i = 0; i < submissions.length; i++) {
+  const sub = submissions[i];
+  const translatedComment = await translateToEnglish(sub.comment || '');
+  const photoStatus = sub.photo ? "Yes" : "No";
+  
+  csv += [
+    `"${(task.refNumber || key.substring(0,8)).replace(/"/g, '""')}"`,
+    `"${(task.site || '').replace(/"/g, '""')}"`,
+    `"${(task.dlm || '').replace(/"/g, '""')}"`,
+    `"${(task.operative || '').replace(/"/g, '""')}"`,
+    `"${(task.details || '').replace(/"/g, '""')}"`,
+    `"${(task.status || '').replace(/"/g, '""')}"`,
+    `"${task.createdAt ? new Date(task.createdAt).toLocaleString() : ''}"`,
+    `"Submission ${i + 1}"`,
+    `"${translatedComment.replace(/"/g, '""')}"`,
+    `"${photoStatus}"`,
+    `"${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : ''}"`,
+    `"${history.replace(/"/g, '""')}"`
+  ].join(",") + "\n";
+}
+
 downloadCSV(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.csv`, csv);
 };
 window.exportTaskPdf = async (key) => {
