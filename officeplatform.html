@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Office Management Dashboard</title>
+  .modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
+.modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
+.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
+.history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
 <style>
 :root {
 --bg: #0f172a;
@@ -237,6 +241,20 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
 <img id="modalImg" src="" alt="Zoom">
+</div>
+  <!-- Task Detail Modal -->
+<div class="modal" id="taskViewModal">
+  <div class="modal-content">
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
+    <h2 id="viewTaskTitle" style="color: var(--accent); margin-bottom: 5px;">Task Details</h2>
+    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+      <strong>Ref:</strong> <span id="viewTaskRef"></span><br>
+      <strong>Assigned to:</strong> <span id="viewTaskOp"></span><br>
+      <strong>Status:</strong> <span id="viewTaskStatus" class="badge"></span>
+    </p>
+    <div id="viewTaskDetails"></div>
+    <div id="taskHistoryBox" class="history-box" style="display:none;"></div>
+  </div>
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -811,20 +829,48 @@ tbody.innerHTML += `
 }
 }, { onlyOnce: true });
 }
-window.viewTask = async (key) => {
-const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-const task = snap.val();
-if (!task) return alert('Task not found.');
-const translatedComment = await translateToEnglish(task.comment || '');
-const history = formatHistory(task.history || []);
-alert(`Task: ${task.refNumber || key.substring(0,8)}
-Status: ${task.status}
-Assigned to: ${task.operative}
-Description: ${task.details}
-Comment (EN): ${translatedComment}
-Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}
-Timeline:
-${history}`);
+// ====== TASK VIEW MODAL ======
+let currentTaskKey = null;
+window.openTaskView = async (key) => {
+  currentTaskKey = key;
+  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+  const task = snap.val();
+  if (!task) return;
+  document.getElementById('viewTaskTitle').innerText = `Task: ${task.details ? task.details.substring(0, 60) : ''}...`;
+  document.getElementById('viewTaskRef').innerText = task.refNumber || key.substring(0,8);
+  document.getElementById('viewTaskOp').innerText = task.operative;
+  const statusEl = document.getElementById('viewTaskStatus');
+  statusEl.innerText = task.status;
+  statusEl.className = 'badge';
+  if (task.status === 'Accepted' || task.status === 'Approved') statusEl.classList.add('badge-valid');
+  else if (task.status === 'Returned') statusEl.classList.add('badge-expired');
+  else if (task.status === 'Submitted') statusEl.classList.add('badge-submitted');
+  else statusEl.classList.add('badge-open');
+  const translatedComment = await translateToEnglish(task.comment || '');
+  const opPhoto = task.operativePhoto || task.photo;
+  const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openModal('${opPhoto}')">` : 'No photo';
+  const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openModal('${task.dlmPhoto}')">` : 'No reference photo';
+  document.getElementById('viewTaskDetails').innerHTML = `
+    <div class="card" style="margin-bottom:10px;">
+      <strong>Supervisor's Description:</strong>
+      <div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
+    </div>
+    <div class="card">
+      <strong>Team Member's Response:</strong>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
+      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
+    </div>
+  `;
+  const history = task.history || [];
+  const historyBox = document.getElementById('taskHistoryBox');
+  if (history.length > 0) {
+    historyBox.style.display = 'block';
+    historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+  } else historyBox.style.display = 'none';
+  document.getElementById('taskViewModal').style.display = 'flex';
 };
 window.acceptTask = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
