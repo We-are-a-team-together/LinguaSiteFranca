@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Office Management Dashboard</title>
-  .modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
-.modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
-.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
-.history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
 <style>
 :root {
 --bg: #0f172a;
@@ -56,8 +52,14 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
 .thumb-img:hover { transform: scale(1.05); }
 .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); }
-.modal { display: none; position: fixed; z-index: 1000; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
-.modal img { max-width: 90%; max-height: 90%; border-radius: 8px; border: 2px solid var(--border); }
+.btn-auto { width: auto; }
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
+.modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
+.modal-close-btn { position: absolute; top: 12px; right: 12px; background: transparent; color: var(--text-muted); font-size: 1.5rem; border: none; cursor: pointer; }
+.modal img.zoom-img { max-width: 100%; max-height: 80vh; border-radius: 8px; border: 2px solid var(--border); margin: auto; display: block; }
+.history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
+.history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
 .filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .filter-bar label { margin: 0; color: #fff; font-weight: 600; }
@@ -239,22 +241,57 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 <div class="dynamic-footer">Office Management Dashboard</div>
 </div>
+<!-- Image Modal -->
 <div class="modal" id="imgModal" onclick="this.style.display='none'">
-<img id="modalImg" src="" alt="Zoom">
+<img id="modalImg" class="zoom-img" src="" alt="Zoom">
 </div>
-  <!-- Task Detail Modal -->
+<!-- Report Detail Modal -->
+<div class="modal" id="reportViewModal">
+<div class="modal-content">
+<button class="modal-close-btn" onclick="document.getElementById('reportViewModal').style.display='none'">✕</button>
+<h2 id="viewReportTitle" style="color: var(--accent); margin-bottom: 5px;">Report</h2>
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+<strong>Ref:</strong> <span id="viewReportRef"></span><br>
+<strong>Assigned to:</strong> <span id="viewReportOps"></span><br>
+<strong>Status:</strong> <span id="viewReportStatus" class="badge"></span>
+</p>
+<div id="reportActionArea" style="display: none; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
+<label style="color: var(--warning);">Report submitted. Review and take action:</label>
+<input type="text" id="reportReturnNote" placeholder="Reason if returning..." style="margin: 10px 0; width:100%; padding:10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff;">
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<button class="btn btn-success btn-auto" id="btnAcceptReport">Accept (Complete)</button>
+<button class="btn btn-warning btn-auto" id="btnReturnReport">Return for Revision</button>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th>Description</th><th>Reference Photo</th><th>Submission (Photo + Comment EN)</th></tr></thead>
+<tbody id="viewReportItemsBody"></tbody>
+</table>
+</div>
+<div id="reportHistoryBox" class="history-box" style="display:none;"></div>
+</div>
+</div>
+<!-- Task Detail Modal -->
 <div class="modal" id="taskViewModal">
-  <div class="modal-content">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
-    <h2 id="viewTaskTitle" style="color: var(--accent); margin-bottom: 5px;">Task Details</h2>
-    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-      <strong>Ref:</strong> <span id="viewTaskRef"></span><br>
-      <strong>Assigned to:</strong> <span id="viewTaskOp"></span><br>
-      <strong>Status:</strong> <span id="viewTaskStatus" class="badge"></span>
-    </p>
-    <div id="viewTaskDetails"></div>
-    <div id="taskHistoryBox" class="history-box" style="display:none;"></div>
-  </div>
+<div class="modal-content">
+<button class="modal-close-btn" onclick="document.getElementById('taskViewModal').style.display='none'">✕</button>
+<h2 id="viewTaskTitle" style="color: var(--accent); margin-bottom: 5px;">Task Details</h2>
+<p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+<strong>Ref:</strong> <span id="viewTaskRef"></span><br>
+<strong>Assigned to:</strong> <span id="viewTaskOp"></span><br>
+<strong>Status:</strong> <span id="viewTaskStatus" class="badge"></span>
+</p>
+<div id="taskActionArea" style="display: none; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border);">
+<label style="color: var(--warning);">Task submitted. Review and take action:</label>
+<input type="text" id="taskReturnNote" placeholder="Reason if returning..." style="margin: 10px 0; width:100%; padding:10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff;">
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<button class="btn btn-success btn-auto" id="btnAcceptTask">Accept (Complete)</button>
+<button class="btn btn-warning btn-auto" id="btnReturnTask">Return for Revision</button>
+</div>
+</div>
+<div id="viewTaskDetails"></div>
+<div id="taskHistoryBox" class="history-box" style="display:none;"></div>
 </div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -652,12 +689,9 @@ tbody.innerHTML += `
 <td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
 <td>
 <div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="viewReport('${key}')">View</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="acceptReport('${key}')">Accept</button>
-<button class="btn btn-warning" style="padding: 6px 10px; font-size: 0.75rem;" onclick="returnReport('${key}')">Return</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
-<button class="btn-danger" onclick="deleteReport('${key}')">Delete</button>
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
 </div>
 </td>
 </tr>
@@ -829,48 +863,20 @@ tbody.innerHTML += `
 }
 }, { onlyOnce: true });
 }
-// ====== TASK VIEW MODAL ======
-let currentTaskKey = null;
-window.openTaskView = async (key) => {
-  currentTaskKey = key;
-  const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
-  const task = snap.val();
-  if (!task) return;
-  document.getElementById('viewTaskTitle').innerText = `Task: ${task.details ? task.details.substring(0, 60) : ''}...`;
-  document.getElementById('viewTaskRef').innerText = task.refNumber || key.substring(0,8);
-  document.getElementById('viewTaskOp').innerText = task.operative;
-  const statusEl = document.getElementById('viewTaskStatus');
-  statusEl.innerText = task.status;
-  statusEl.className = 'badge';
-  if (task.status === 'Accepted' || task.status === 'Approved') statusEl.classList.add('badge-valid');
-  else if (task.status === 'Returned') statusEl.classList.add('badge-expired');
-  else if (task.status === 'Submitted') statusEl.classList.add('badge-submitted');
-  else statusEl.classList.add('badge-open');
-  const translatedComment = await translateToEnglish(task.comment || '');
-  const opPhoto = task.operativePhoto || task.photo;
-  const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openModal('${opPhoto}')">` : 'No photo';
-  const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openModal('${task.dlmPhoto}')">` : 'No reference photo';
-  document.getElementById('viewTaskDetails').innerHTML = `
-    <div class="card" style="margin-bottom:10px;">
-      <strong>Supervisor's Description:</strong>
-      <div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
-    </div>
-    <div class="card">
-      <strong>Team Member's Response:</strong>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
-      <div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
-    </div>
-  `;
-  const history = task.history || [];
-  const historyBox = document.getElementById('taskHistoryBox');
-  if (history.length > 0) {
-    historyBox.style.display = 'block';
-    historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
-  } else historyBox.style.display = 'none';
-  document.getElementById('taskViewModal').style.display = 'flex';
+window.viewTask = async (key) => {
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+if (!task) return alert('Task not found.');
+const translatedComment = await translateToEnglish(task.comment || '');
+const history = formatHistory(task.history || []);
+alert(`Task: ${task.refNumber || key.substring(0,8)}
+Status: ${task.status}
+Assigned to: ${task.operative}
+Description: ${task.details}
+Comment (EN): ${translatedComment}
+Submitted: ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}
+Timeline:
+${history}`);
 };
 window.acceptTask = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
@@ -953,6 +959,162 @@ window.openModal = (src) => {
 document.getElementById('modalImg').src = src;
 document.getElementById('imgModal').style.display = 'flex';
 };
+  // ====== MODAL VIEW FUNCTIONS (same behaviour as dlmplatform) ======
+let currentTaskKey = null;
+let currentActiveReportKey = null;
+
+window.openImageModal = (src) => {
+document.getElementById('modalImg').src = src;
+document.getElementById('imgModal').style.display = 'flex';
+};
+
+window.openTaskView = async (key) => {
+currentTaskKey = key;
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+if (!task) return alert('Task not found.');
+document.getElementById('viewTaskTitle').innerText = `Task: ${task.details ? task.details.substring(0, 60) : ''}...`;
+document.getElementById('viewTaskRef').innerText = task.refNumber || key.substring(0,8);
+document.getElementById('viewTaskOp').innerText = task.operative;
+const statusEl = document.getElementById('viewTaskStatus');
+statusEl.innerText = task.status;
+statusEl.className = 'badge';
+if (task.status === 'Accepted' || task.status === 'Approved') statusEl.classList.add('badge-valid');
+else if (task.status === 'Returned') statusEl.classList.add('badge-expired');
+else if (task.status === 'Submitted') statusEl.classList.add('badge-assigned');
+else statusEl.classList.add('badge-assigned');
+const actionArea = document.getElementById('taskActionArea');
+if (task.status === 'Submitted') {
+actionArea.style.display = 'block';
+document.getElementById('taskReturnNote').value = '';
+} else actionArea.style.display = 'none';
+const translatedComment = await translateToEnglish(task.comment || '');
+const opPhoto = task.operativePhoto || task.photo;
+const opPhotoHtml = opPhoto ? `<img src="${opPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${opPhoto}')">` : 'No photo';
+const dlmPhotoHtml = task.dlmPhoto ? `<img src="${task.dlmPhoto}" class="thumb-img" style="width:120px; height:120px;" onclick="openImageModal('${task.dlmPhoto}')">` : 'No reference photo';
+document.getElementById('viewTaskDetails').innerHTML = `
+<div class="card" style="margin-bottom:10px;">
+<strong>Supervisor's Description:</strong>
+<div style="margin-top:8px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--accent);">${task.details || 'N/A'}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Reference photo:</small><br>${dlmPhotoHtml}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Created:</small> ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</div>
+</div>
+<div class="card">
+<strong>Team Member's Response:</strong>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Comment (translated to English):</small><div style="margin-top:4px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 6px; border-left: 4px solid var(--success);">${translatedComment}</div></div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Photo evidence:</small><br>${opPhotoHtml}</div>
+<div style="margin-top:8px;"><small style="color:var(--text-muted);">Submitted:</small> ${task.submittedAt ? new Date(task.submittedAt).toLocaleString() : 'Not yet'}</div>
+</div>
+`;
+const history = task.history || [];
+const historyBox = document.getElementById('taskHistoryBox');
+if (history.length > 0) {
+historyBox.style.display = 'block';
+historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+} else historyBox.style.display = 'none';
+document.getElementById('taskViewModal').style.display = 'flex';
+};
+
+window.openReportView = async (key) => {
+const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
+const report = snap.val();
+if (!report) return alert('Report not found.');
+currentActiveReportKey = key;
+document.getElementById('viewReportTitle').innerText = report.title;
+document.getElementById('viewReportRef').innerText = report.refNumber || key.substring(0,8);
+const assignedNames = Array.isArray(report.assignedTo) ? report.assignedTo.join(', ') : (typeof report.assignedTo === 'object' ? Object.values(report.assignedTo).join(', ') : report.assignedTo);
+document.getElementById('viewReportOps').innerText = assignedNames;
+const statusBadge = document.getElementById('viewReportStatus');
+statusBadge.innerText = report.status;
+statusBadge.className = 'badge';
+if (report.status === 'Accepted' || report.status === 'Approved') statusBadge.classList.add('badge-valid');
+else if (report.status === 'Returned') statusBadge.classList.add('badge-expired');
+else statusBadge.classList.add('badge-assigned');
+const actionArea = document.getElementById('reportActionArea');
+if (report.status === 'Submitted') {
+actionArea.style.display = 'block';
+document.getElementById('reportReturnNote').value = '';
+} else actionArea.style.display = 'none';
+const itemsBody = document.getElementById('viewReportItemsBody');
+itemsBody.innerHTML = '';
+if (report.items) {
+const itemsArr = Array.isArray(report.items) ? report.items : Object.values(report.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const photoTag = item.photo ? `<img src="${item.photo}" class="thumb-img" onclick="openImageModal('${item.photo}')" />` : '<span style="color:var(--text-muted); font-size:0.75rem;">No photo</span>';
+const opPhoto = item.submittedPhoto || item.operativePhoto;
+const opPhotoTag = opPhoto ? `<img src="${opPhoto}" class="thumb-img" onclick="openImageModal('${opPhoto}')" />` : '—';
+const translatedComment = await translateToEnglish(item.comment || '');
+itemsBody.innerHTML += `
+<tr>
+<td><strong>${i + 1}</strong></td>
+<td>${item.description}<br><small style="color:var(--text-muted);">Status: ${item.status || 'Assigned'}</small></td>
+<td>${photoTag}</td>
+<td>${opPhotoTag}<br><small style="color:var(--text-muted);">Comment (EN): ${translatedComment}</small><br><small style="color:var(--text-muted);">${item.submittedAt ? new Date(item.submittedAt).toLocaleString() : 'Not yet'}</small></td>
+</tr>`;
+}
+}
+const history = report.history || [];
+const historyBox = document.getElementById('reportHistoryBox');
+if (history.length > 0) {
+historyBox.style.display = 'block';
+historyBox.innerHTML = '<strong>Report Timeline:</strong>' + history.map(h => `<div><strong>${new Date(h.timestamp).toLocaleString()}</strong> — ${h.action}${h.note ? ` (Note: ${h.note})` : ''}</div>`).join('');
+} else historyBox.style.display = 'none';
+document.getElementById('reportViewModal').style.display = 'flex';
+};
+
+document.getElementById('btnAcceptTask').addEventListener('click', async () => {
+if (!currentTaskKey) return;
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+if (!task) return;
+const history = task.history || [];
+history.push({ action: 'Accepted by office', timestamp: new Date().toISOString() });
+await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Accepted', history });
+document.getElementById('taskViewModal').style.display = 'none';
+alert('Task accepted!');
+});
+
+document.getElementById('btnReturnTask').addEventListener('click', async () => {
+if (!currentTaskKey) return;
+const note = document.getElementById('taskReturnNote').value.trim();
+if (!note) return alert('Please provide a reason for returning.');
+const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
+const task = snap.val();
+if (!task) return;
+const history = task.history || [];
+history.push({ action: 'Returned by office', timestamp: new Date().toISOString(), note });
+await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Returned', returnNote: note, history });
+document.getElementById('taskViewModal').style.display = 'none';
+alert('Task returned!');
+});
+
+document.getElementById('btnAcceptReport').addEventListener('click', async () => {
+if (!currentActiveReportKey) return;
+const snap = await new Promise(resolve => onValue(ref(db, `reports/${currentActiveReportKey}`), resolve, { onlyOnce: true }));
+const rep = snap.val();
+if (!rep) return;
+const history = rep.history || [];
+history.push({ action: 'Report accepted by office', timestamp: new Date().toISOString() });
+await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted', history });
+document.getElementById('reportViewModal').style.display = 'none';
+alert('Report accepted!');
+});
+
+document.getElementById('btnReturnReport').addEventListener('click', async () => {
+if (!currentActiveReportKey) return;
+const note = document.getElementById('reportReturnNote').value.trim();
+if (!note) return alert('Please provide a reason for returning.');
+const snap = await new Promise(resolve => onValue(ref(db, `reports/${currentActiveReportKey}`), resolve, { onlyOnce: true }));
+const rep = snap.val();
+if (!rep) return;
+const history = rep.history || [];
+history.push({ action: 'Report returned by office', timestamp: new Date().toISOString(), note });
+await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned', returnNote: note, history });
+document.getElementById('reportViewModal').style.display = 'none';
+alert('Report returned!');
+});
+</script>
 </script>
 </body>
 </html>
