@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Office Management Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
 --bg: #0f172a;
@@ -16,43 +19,64 @@
 --success: #10b981;
 --danger: #ef4444;
 --warning: #f59e0b;
+--font-display: 'Sora', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-body { background-color: var(--bg); color: var(--text); padding: 20px; }
-.container { width: 96%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html, body { background-color: var(--bg); color: var(--text); min-height: 100vh; }
+/* ====== AMBIENT DEPTH (reacts live to Office brand colours) ====== */
+body {
+padding: clamp(12px, 2vw, 24px);
+background-image:
+radial-gradient(1100px 600px at 8% -10%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%),
+radial-gradient(820px 520px at 100% 0%, color-mix(in srgb, var(--success) 10%, transparent), transparent 55%),
+radial-gradient(900px 900px at 50% 120%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 62%);
+background-attachment: fixed;
+background-repeat: no-repeat;
+}
+.container { width: 100%; max-width: 1800px; margin: 0 auto; display: flex; flex-direction: column; min-height: 95vh; }
 header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
 .header-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .header-logo { width: 48px; height: 48px; object-fit: contain; border-radius: 6px; display: none; }
-h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-.btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s; font-size: 0.9rem; }
+h1 { font-family: var(--font-display); font-size: clamp(1.2rem, 3vw, 1.7rem); font-weight: 800; letter-spacing: -0.02em; color: #fff; }
+.brand-name { font-family: var(--font-display); }
+.btn { padding: 10px 18px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: transform 0.12s ease, filter 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.btn:hover:not(:disabled) { transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0) scale(0.98); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:hover:not(:disabled) { background: var(--accent-hover); box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--accent) 70%, transparent); }
 .btn-success { background: var(--success); color: white; }
-.btn-success:hover { opacity: 0.9; }
+.btn-success:hover:not(:disabled) { filter: brightness(1.06); }
 .btn-danger { background: var(--danger); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
-.btn-danger:hover { opacity: 0.9; }
+.btn-danger:hover:not(:disabled) { filter: brightness(1.06); }
 .btn-warning { background: var(--warning); color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; cursor: pointer; }
-.btn-warning:hover { opacity: 0.9; }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; margin-bottom: 25px; }
-.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 25px; }
-.card-title { font-size: 1.1rem; font-weight: 600; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.btn-warning:hover:not(:disabled) { filter: brightness(1.06); }
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-outline:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.btn-auto { width: auto; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr)); gap: 20px; margin-bottom: 25px; }
+.card { background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: clamp(16px, 2vw, 22px); margin-bottom: 25px; transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease; }
+.card:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); box-shadow: 0 16px 40px -22px rgba(0,0,0,0.75); }
+.card-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: var(--accent); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.scope-note { font-family: system-ui, sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; color: var(--text-muted); background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
 .form-group { margin-bottom: 15px; }
 label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; }
-input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; }
-input:focus, select:focus { outline: none; border-color: var(--accent); }
+input, select { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: #fff; font-size: 0.9rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+input:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
 input[type="file"] { padding: 8px; font-size: 0.85rem; }
 input[type="color"] { height: 50px; cursor: pointer; padding: 4px; }
 table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; word-wrap: break-word; }
+th { background: rgba(0,0,0,0.25); color: var(--text-muted); text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
+tbody tr { transition: background 0.15s ease; }
+tbody tr:hover { background: color-mix(in srgb, var(--accent) 7%, transparent); }
 .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
 .badge-valid { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 .badge-expired { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
 .badge-assigned { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
-.thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); }
-.thumb-img:hover { transform: scale(1.05); }
+.thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 6px; cursor: pointer; border: 1px solid var(--border); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.thumb-img:hover { transform: scale(1.05); box-shadow: 0 8px 20px -8px rgba(0,0,0,0.7); }
 .dynamic-footer { margin-top: auto; padding-top: 20px; text-align: center; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); }
-.btn-auto { width: auto; }
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
 .modal-content { background: var(--card-bg); padding: 22px; border-radius: 10px; width: 100%; max-width: 900px; max-height: 92vh; overflow-y: auto; border: 1px solid var(--border); position: relative; }
@@ -61,20 +85,31 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 .history-box { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); max-height: 200px; overflow-y: auto; }
 .history-box div { padding: 3px 0; border-bottom: 1px dashed var(--border); }
 .action-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.filter-bar { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.filter-bar label { margin: 0; color: #fff; font-weight: 600; }
+.filter-bar { background: color-mix(in srgb, var(--card-bg) 88%, transparent); border: 1px solid var(--border); border-radius: 10px; padding: 15px; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; backdrop-filter: blur(4px); }
+.filter-bar label { margin: 0; color: #fff; font-family: var(--font-display); font-weight: 600; }
 .filter-bar select { max-width: 300px; }
+.filter-hint { width: 100%; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.refresh-ico { display: inline-block; transition: transform 0.3s ease; }
+#refreshBtn.loading .refresh-ico { animation: spin 0.8s linear infinite; }
 .color-preview { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
 .color-swatch { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--border); }
 .logo-preview { max-width: 150px; max-height: 100px; border-radius: 6px; border: 1px solid var(--border); margin-top: 8px; display: none; }
+.loading-dots { animation: softPulse 1.4s ease-in-out infinite; }
+/* ====== MOTION ====== */
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes softPulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+@keyframes cardIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.card--enter { animation: cardIn 0.5s cubic-bezier(.2,.7,.2,1) both; }
 /* ====== NOTIFICATION ANIMATIONS ====== */
-@keyframes slideInNotif {
-  from { transform: translateY(-120%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+@keyframes slideInNotif { from { transform: translateY(-120%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes slideOutNotif { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-120%); opacity: 0; } }
+@media (max-width: 600px) {
+h1 { font-size: 1.1rem; }
+th, td { padding: 8px 6px; font-size: 0.8rem; }
+.thumb-img { width: 44px; height: 44px; }
 }
-@keyframes slideOutNotif {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-120%); opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+*, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
@@ -92,6 +127,8 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <select id="siteFilter" onchange="applyFilter()">
 <option value="ALL">All Locations</option>
 </select>
+<button id="refreshBtn" class="btn btn-outline btn-auto" title="Reload the tables from the database"><span class="refresh-ico" aria-hidden="true">⟳</span> Refresh</button>
+<div class="filter-hint">Tables load on demand and are capped for speed — live submissions still arrive as toasts. A location's complete task history lives on its manager platform.</div>
 </div>
 <div class="grid-2">
 <div class="card">
@@ -129,7 +166,7 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 <div class="card">
 <div class="card-title">Active Sites & Assigned Managers Directory</div>
-<div style="overflow-x: auto;">
+<div class="table-wrap">
 <table>
 <thead>
 <tr>
@@ -144,8 +181,8 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 </div>
 <div class="card">
-<div class="card-title">Master Operative & Qualifications Directory</div>
-<div style="overflow-x: auto;">
+<div class="card-title"><span>Master Operative & Qualifications Directory</span><span class="scope-note" id="operativesScopeNote">—</span></div>
+<div class="table-wrap">
 <table>
 <thead>
 <tr>
@@ -163,8 +200,8 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 </div>
 <div class="card">
-<div class="card-title">Master Reports Management</div>
-<div style="overflow-x: auto;">
+<div class="card-title"><span>Master Reports Management</span><span class="scope-note" id="reportsScopeNote">—</span></div>
+<div class="table-wrap">
 <table>
 <thead>
 <tr>
@@ -183,8 +220,8 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 </div>
 </div>
 <div class="card">
-<div class="card-title">Master Tasks Management</div>
-<div style="overflow-x: auto;">
+<div class="card-title"><span>Master Tasks Management</span><span class="scope-note" id="tasksScopeNote">—</span></div>
+<div class="table-wrap">
 <table>
 <thead>
 <tr>
@@ -294,9 +331,12 @@ th { background: rgba(0,0,0,0.2); color: var(--text-muted); text-transform: uppe
 <div id="viewTaskDetails"></div>
 <div id="taskHistoryBox" class="history-box" style="display:none;"></div>
 </div>
+</div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, set, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// ====== CHANGED: get + query primitives imported so the office can read bounded,
+// server-side-filtered slices instead of streaming the whole database. ======
+import { getDatabase, ref, onValue, get, set, push, remove, update, query, orderByChild, equalTo, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 const firebaseConfig = {
 apiKey: "AIzaSyCyjEciES-wjKFvbrOyHpgXExdmqKFboIs",
 authDomain: "lingua-site-franca.firebaseapp.com",
@@ -308,129 +348,151 @@ appId: "1:737514168886:web:08f3abd5816505d3a72e97"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
+// ====================================================================
+// BOUNDS — the heart of the rewrite.
+// The old office kept two GLOBAL, never-closing listeners on /tasks and
+// /reports (streaming every photo of every record across all sites, forever)
+// AND re-downloaded the whole tree on every filter change. Both are gone.
+// Now: tables are one-shot reads, scoped by site and capped; the notification
+// beeps come from a single bounded window that is attached ONCE.
+// ====================================================================
+const TABLE_CAP = 300;     // max task/report rows fetched per table load (site OR all)
+const NOTIF_WINDOW = 100;  // size of the continuous notification window (by key)
 // ====== NOTIFICATION SYSTEM ======
 const notifiedSubmissions = new Set();
-let tasksInitialLoad = false;
-let reportsInitialLoad = false;
-
 function playNotificationSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.frequency.value = 880;
-    osc.type = 'sine';
-    gain.gain.setValueAtTime(0.3, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.3);
-  } catch (e) {
-    console.warn('Audio notification failed:', e);
-  }
+try {
+const ctx = new (window.AudioContext || window.webkitAudioContext)();
+const osc = ctx.createOscillator();
+const gain = ctx.createGain();
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.frequency.value = 880;
+osc.type = 'sine';
+gain.gain.setValueAtTime(0.3, ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+osc.start(ctx.currentTime);
+osc.stop(ctx.currentTime + 0.3);
+} catch (e) {
+console.warn('Audio notification failed:', e);
 }
-
+}
 function showNotification(title, message, onClick) {
-  let container = document.getElementById('notificationContainer');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'notificationContainer';
-    container.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:700px; width:90%; pointer-events:none;';
-    document.body.appendChild(container);
-  }
-  const notif = document.createElement('div');
-  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
-  const success = getComputedStyle(document.documentElement).getPropertyValue('--success').trim() || '#10b981';
-  notif.style.cssText = `background:linear-gradient(135deg, ${accent}, ${success}); color:white; padding:18px 24px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5); cursor:pointer; animation:slideInNotif 0.4s ease-out; font-family:system-ui,sans-serif; pointer-events:auto; border-left:4px solid rgba(255,255,255,0.3); position:relative;`;
-  notif.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px;">
-      <div style="flex:1;">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
-          <span style="font-size:1.4rem;">🔔</span>
-          <strong style="font-size:1rem; font-weight:700;">${title}</strong>
-        </div>
-        <div style="font-size:0.9rem; opacity:0.95; line-height:1.5;">${message}</div>
-      </div>
-      <button class="notif-close-btn" style="background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1.2rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">×</button>
-    </div>
-  `;
-  notif.className = 'notification-item';
-  const closeBtn = notif.querySelector('.notif-close-btn');
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
-    setTimeout(() => notif.remove(), 300);
-  });
-  notif.addEventListener('click', (e) => {
-    if (e.target.closest('.notif-close-btn')) return;
-    if (onClick) onClick();
-    notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
-    setTimeout(() => notif.remove(), 300);
-  });
-  container.appendChild(notif);
+let container = document.getElementById('notificationContainer');
+if (!container) {
+container = document.createElement('div');
+container.id = 'notificationContainer';
+container.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; max-width:700px; width:90%; pointer-events:none;';
+document.body.appendChild(container);
 }
-
-// Continuous listener for task submissions (notifications only)
-onValue(ref(db, 'tasks'), (snapshot) => {
-  const data = snapshot.val() || {};
-  Object.keys(data).forEach(key => {
-    const task = data[key];
-    if (matchesFilter(task.site)) {
-      const subKey = 'task-' + key;
-      if (task.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
-        if (tasksInitialLoad) {
-          notifiedSubmissions.add(subKey);
-          playNotificationSound();
-          showNotification(
-            '📋 New Task Submission',
-            `<strong>${task.operative}</strong> at <strong>${task.site || 'N/A'}</strong><br><small style="opacity:0.9;">Task: ${task.refNumber || key.substring(0,8)} | Supervisor: ${task.dlm || 'N/A'}</small>`,
-            () => viewTask(key)
-          );
-        } else {
-          notifiedSubmissions.add(subKey);
-        }
-      }
-      if (task.status !== 'Submitted') notifiedSubmissions.delete(subKey);
-    }
-  });
-  if (!tasksInitialLoad) tasksInitialLoad = true;
+const notif = document.createElement('div');
+const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#3b82f6';
+const success = getComputedStyle(document.documentElement).getPropertyValue('--success').trim() || '#10b981';
+notif.style.cssText = `background:linear-gradient(135deg, ${accent}, ${success}); color:white; padding:18px 24px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.5); cursor:pointer; animation:slideInNotif 0.4s ease-out; font-family:system-ui,sans-serif; pointer-events:auto; border-left:4px solid rgba(255,255,255,0.3); position:relative;`;
+notif.innerHTML = `
+<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px;">
+<div style="flex:1;">
+<div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+<span style="font-size:1.4rem;">🔔</span>
+<strong style="font-size:1rem; font-weight:700;">${title}</strong>
+</div>
+<div style="font-size:0.9rem; opacity:0.95; line-height:1.5;">${message}</div>
+</div>
+<button class="notif-close-btn" style="background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:1.2rem; line-height:1; display:flex; align-items:center; justify-content:center; flex-shrink:0;">×</button>
+</div>
+`;
+notif.className = 'notification-item';
+const closeBtn = notif.querySelector('.notif-close-btn');
+closeBtn.addEventListener('click', (e) => {
+e.stopPropagation();
+notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
+setTimeout(() => notif.remove(), 300);
 });
-
-// Continuous listener for report submissions (notifications only)
-onValue(ref(db, 'reports'), (snapshot) => {
-  const data = snapshot.val() || {};
-  Object.keys(data).forEach(key => {
-    const rep = data[key];
-    if (matchesFilter(rep.site)) {
-      const subKey = 'report-' + key;
-      if (rep.status === 'Submitted' && !notifiedSubmissions.has(subKey)) {
-        if (reportsInitialLoad) {
-          notifiedSubmissions.add(subKey);
-          playNotificationSound();
-          let assignedNames = 'None';
-          if (rep.assignedTo) {
-            if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-            else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-            else assignedNames = rep.assignedTo;
-          }
-          showNotification(
-            '📄 New Report Submission',
-            `<strong>${rep.title || 'Untitled'}</strong> at <strong>${rep.site || 'N/A'}</strong><br><small style="opacity:0.9;">Assigned to: ${assignedNames} | Supervisor: ${rep.dlm || 'N/A'}</small>`,
-            () => viewReport(key)
-          );
-        } else {
-          notifiedSubmissions.add(subKey);
-        }
-      }
-      if (rep.status !== 'Submitted') notifiedSubmissions.delete(subKey);
-    }
-  });
-  if (!reportsInitialLoad) reportsInitialLoad = true;
+notif.addEventListener('click', (e) => {
+if (e.target.closest('.notif-close-btn')) return;
+if (onClick) onClick();
+notif.style.animation = 'slideOutNotif 0.3s ease-in forwards';
+setTimeout(() => notif.remove(), 300);
 });
+container.appendChild(notif);
+}
+// ====================================================================
+// NOTIFICATION LISTENERS — a SINGLE bounded window, attached ONCE.
+// orderByKey()+limitToLast needs NO index (push-keys are chronological and
+// always indexed), so this is cheap to declare. The window slides forward as
+// new records are pushed, so a brand-new submission is always inside it. The
+// selected location is applied client-side via matchesFilter() — which means
+// changing the filter does NOT re-bind (and therefore does NOT re-stream)
+// these listeners. The 'seeded' flag guarantees the very first snapshot seeds
+// the "already seen" set silently, so opening the office never fires a storm
+// of beeps for existing submissions.
+// ====================================================================
+let notifTasksUnsub = null;
+let notifReportsUnsub = null;
+function processTaskNotifs(data, seeded) {
+Object.keys(data).forEach(key => {
+const task = data[key];
+const subKey = 'task-' + key;
+if (task.status === 'Submitted') {
+if (seeded && !notifiedSubmissions.has(subKey) && matchesFilter(task.site)) {
+notifiedSubmissions.add(subKey);
+playNotificationSound();
+showNotification(
+'📋 New Task Submission',
+`<strong>${task.operative}</strong> at <strong>${task.site || 'N/A'}</strong><br><small style="opacity:0.9;">Task: ${task.refNumber || key.substring(0,8)} | Supervisor: ${task.dlm || 'N/A'}</small>`,
+() => viewTask(key)
+);
+} else {
+notifiedSubmissions.add(subKey);
+}
+} else {
+notifiedSubmissions.delete(subKey);
+}
+});
+}
+function processReportNotifs(data, seeded) {
+Object.keys(data).forEach(key => {
+const rep = data[key];
+const subKey = 'report-' + key;
+if (rep.status === 'Submitted') {
+if (seeded && !notifiedSubmissions.has(subKey) && matchesFilter(rep.site)) {
+notifiedSubmissions.add(subKey);
+playNotificationSound();
+let assignedNames = 'None';
+if (rep.assignedTo) {
+if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+else assignedNames = rep.assignedTo;
+}
+showNotification(
+'📄 New Report Submission',
+`<strong>${rep.title || 'Untitled'}</strong> at <strong>${rep.site || 'N/A'}</strong><br><small style="opacity:0.9;">Assigned to: ${assignedNames} | Supervisor: ${rep.dlm || 'N/A'}</small>`,
+() => viewReport(key)
+);
+} else {
+notifiedSubmissions.add(subKey);
+}
+} else {
+notifiedSubmissions.delete(subKey);
+}
+});
+}
+function bindNotificationListeners() {
+if (notifTasksUnsub) { try { notifTasksUnsub(); } catch (e) {} notifTasksUnsub = null; }
+if (notifReportsUnsub) { try { notifReportsUnsub(); } catch (e) {} notifReportsUnsub = null; }
+let tasksSeeded = false, reportsSeeded = false;
+const tasksNotifQuery = query(ref(db, 'tasks'), orderByKey(), limitToLast(NOTIF_WINDOW));
+notifTasksUnsub = onValue(tasksNotifQuery, (snapshot) => {
+processTaskNotifs(snapshot.val() || {}, tasksSeeded);
+tasksSeeded = true;
+});
+const reportsNotifQuery = query(ref(db, 'reports'), orderByKey(), limitToLast(NOTIF_WINDOW));
+notifReportsUnsub = onValue(reportsNotifQuery, (snapshot) => {
+processReportNotifs(snapshot.val() || {}, reportsSeeded);
+reportsSeeded = true;
+});
+}
 // ====== END NOTIFICATION SYSTEM ======
-
 async function translateToEnglish(text) {
 if (!text) return 'None';
 try {
@@ -444,68 +506,61 @@ return text;
 function downloadExcel(filename, headers, rows) {
 // Create workbook
 const wb = XLSX.utils.book_new();
-
 // Create worksheet data with headers
 const wsData = [headers, ...rows];
 const ws = XLSX.utils.aoa_to_sheet(wsData);
-
 // Set column widths (auto-size approximation)
 const colWidths = headers.map((h, i) => {
-  let maxLen = h.length;
-  rows.forEach(row => {
-    if (row[i] && String(row[i]).length > maxLen) {
-      maxLen = String(row[i]).length;
-    }
-  });
-  return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
+let maxLen = h.length;
+rows.forEach(row => {
+if (row[i] && String(row[i]).length > maxLen) {
+maxLen = String(row[i]).length;
+}
+});
+return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
 });
 ws['!cols'] = colWidths;
-
 // Style headers (bold, background color)
 const range = XLSX.utils.decode_range(ws['!ref']);
 for (let C = range.s.c; C <= range.e.c; ++C) {
-  const addr = XLSX.utils.encode_cell({ r: 0, c: C });
-  if (!ws[addr]) continue;
-  ws[addr].s = {
-    font: { bold: true, color: { rgb: "FFFFFF" } },
-    fill: { fgColor: { rgb: "3B82F6" } },
-    alignment: { horizontal: "center", vertical: "center" },
-    border: {
-      top: { style: "thin", color: { rgb: "000000" } },
-      bottom: { style: "thin", color: { rgb: "000000" } },
-      left: { style: "thin", color: { rgb: "000000" } },
-      right: { style: "thin", color: { rgb: "000000" } }
-    }
-  };
+const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+if (!ws[addr]) continue;
+ws[addr].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "3B82F6" } },
+alignment: { horizontal: "center", vertical: "center" },
+border: {
+top: { style: "thin", color: { rgb: "000000" } },
+bottom: { style: "thin", color: { rgb: "000000" } },
+left: { style: "thin", color: { rgb: "000000" } },
+right: { style: "thin", color: { rgb: "000000" } }
 }
-
+};
+}
 // Style data rows (borders, text wrap)
 for (let R = 1; R <= range.e.r; ++R) {
-  for (let C = range.s.c; C <= range.e.c; ++C) {
-    const addr = XLSX.utils.encode_cell({ r: R, c: C });
-    if (!ws[addr]) continue;
-    ws[addr].s = {
-      alignment: { vertical: "top", wrapText: true },
-      border: {
-        top: { style: "thin", color: { rgb: "D1D5DB" } },
-        bottom: { style: "thin", color: { rgb: "D1D5DB" } },
-        left: { style: "thin", color: { rgb: "D1D5DB" } },
-        right: { style: "thin", color: { rgb: "D1D5DB" } }
-      }
-    };
-    // Alternating row colors
-    if (R % 2 === 0) {
-      ws[addr].s.fill = { fgColor: { rgb: "F8FAFC" } };
-    }
-  }
+for (let C = range.s.c; C <= range.e.c; ++C) {
+const addr = XLSX.utils.encode_cell({ r: R, c: C });
+if (!ws[addr]) continue;
+ws[addr].s = {
+alignment: { vertical: "top", wrapText: true },
+border: {
+top: { style: "thin", color: { rgb: "D1D5DB" } },
+bottom: { style: "thin", color: { rgb: "D1D5DB" } },
+left: { style: "thin", color: { rgb: "D1D5DB" } },
+right: { style: "thin", color: { rgb: "D1D5DB" } }
 }
-
+};
+// Alternating row colors
+if (R % 2 === 0) {
+ws[addr].s.fill = { fgColor: { rgb: "F8FAFC" } };
+}
+}
+}
 // Freeze header row
 ws['!freeze'] = { xSplit: 0, ySplit: 1 };
-
 // Add worksheet to workbook
 XLSX.utils.book_append_sheet(wb, ws, "Data");
-
 // Generate and download
 XLSX.writeFile(wb, filename);
 }
@@ -513,22 +568,214 @@ function formatHistory(historyArr) {
 if (!historyArr || historyArr.length === 0) return 'No history';
 return historyArr.map(h => `[${new Date(h.timestamp).toLocaleString()}] ${h.action}${h.note ? ' ('+h.note+')' : ''}`).join(' | ');
 }
+// ====== FILTER STATE ======
 let currentFilter = 'ALL';
-function applyFilter() {
-currentFilter = document.getElementById('siteFilter').value;
-renderAll();
-}
-window.applyFilter = applyFilter;
 function matchesFilter(siteName) {
 if (currentFilter === 'ALL') return true;
 return siteName && siteName.toLowerCase() === currentFilter.toLowerCase();
 }
-function renderAll() {
-renderSites();
-renderOperatives();
-renderReports();
-renderTasks();
+function applyFilter() {
+currentFilter = document.getElementById('siteFilter').value;
+refreshTables();   // CHANGED: re-fetch only the bounded tables — never the global tree
 }
+window.applyFilter = applyFilter;
+function refreshTables() {
+renderSitesTable();          // from the tiny cached sites/dlm data — no download
+fetchAndRenderOperatives();  // one-shot, scoped, no photos
+fetchAndRenderTasks();       // one-shot, scoped + capped
+fetchAndRenderReports();     // one-shot, scoped + capped
+}
+// ====== tiny always-on caches (no photos — safe to keep live) ======
+let allSites = {};
+let allDlmAccounts = {};
+function rebuildSiteDropdowns() {
+const filterSelect = document.getElementById('siteFilter');
+const managerSelect = document.getElementById('managerSiteSelect');
+const cur = filterSelect.value || 'ALL';
+const curMgr = managerSelect.value || '';
+filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
+managerSelect.innerHTML = '<option value="">-- Select Site --</option>';
+Object.keys(allSites).forEach(key => {
+const site = allSites[key];
+filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
+});
+const filterOpts = Array.from(filterSelect.options).map(o => o.value);
+filterSelect.value = filterOpts.includes(cur) ? cur : 'ALL';
+const mgrOpts = Array.from(managerSelect.options).map(o => o.value);
+managerSelect.value = mgrOpts.includes(curMgr) ? curMgr : '';
+}
+function renderSitesTable() {
+const tbody = document.getElementById('sitesTableBody');
+const rows = [];
+Object.keys(allSites).forEach(siteKey => {
+const site = allSites[siteKey];
+if (!matchesFilter(site.name)) return;
+const managerEntry = Object.values(allDlmAccounts).find(a => a.assignedSite === site.name);
+rows.push(`
+<tr>
+<td><strong>${site.name}</strong></td>
+<td>${site.location}</td>
+<td>${managerEntry ? managerEntry.name : 'Unassigned'}</td>
+<td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
+</tr>
+`);
+});
+tbody.innerHTML = rows.length ? rows.join('') : rowSpan(4, 'No sites registered yet.');
+}
+// CHANGED: sites + dlmAccounts are tiny and photo-free, so they stay as cheap
+// live listeners that only refresh the dropdowns + the sites table from cache.
+// They NO LONGER trigger a full task/report/operative re-download.
+onValue(ref(db, 'sites'), (snapshot) => {
+allSites = snapshot.val() || {};
+rebuildSiteDropdowns();
+renderSitesTable();
+});
+onValue(ref(db, 'dlmAccounts'), (snapshot) => {
+allDlmAccounts = snapshot.val() || {};
+renderSitesTable();
+});
+// ====== table helpers ======
+function rowSpan(cols, html) {
+return `<tr><td colspan="${cols}" style="text-align:center; color:var(--text-muted); padding:28px;">${html}</td></tr>`;
+}
+function loadingRow(cols) {
+return rowSpan(cols, '<span class="loading-dots">Loading…</span>');
+}
+function setScopeNote(id, capped, count) {
+const el = document.getElementById(id);
+if (!el) return;
+const label = currentFilter === 'ALL' ? 'All locations' : currentFilter;
+if (id === 'operativesScopeNote') {
+el.innerText = currentFilter === 'ALL' ? `${label} · full directory` : label;
+} else {
+el.innerText = `${label} · showing latest ${count}`;
+}
+}
+// ====================================================================
+// TABLE FETCHES — one-shot (get), server-side scoped, and capped for the
+// photo-bearing nodes. Nothing is stored at module scope, so a capped read
+// cannot pin hundreds of MB of base64 strings in memory after rendering.
+// ====================================================================
+async function fetchAndRenderOperatives() {
+const tbody = document.getElementById('masterOperativesTableBody');
+tbody.innerHTML = loadingRow(7);
+// Operatives carry no photos and are bounded by headcount, so the full
+// directory (or one site's) is always cheap to read in one shot.
+const opQuery = currentFilter === 'ALL'
+? ref(db, 'operatives')
+: query(ref(db, 'operatives'), orderByChild('assignedSite'), equalTo(currentFilter));
+const snap = await get(opQuery);
+const data = snap.val() || {};
+const today = new Date().toISOString().split('T')[0];
+const rows = [];
+Object.keys(data).forEach(key => {
+const op = data[key];
+const isExpired = op.expiry && op.expiry < today;
+rows.push(`
+<tr>
+<td><strong>${op.name}</strong></td>
+<td>${op.employer || 'N/A'}</td>
+<td>${op.assignedSite}</td>
+<td>${op.qualification}</td>
+<td>${op.expiry}</td>
+<td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="editOperative('${key}')">Edit</button>
+<button class="btn-danger" onclick="deleteOperative('${key}')">Remove</button>
+</div>
+</td>
+</tr>
+`);
+});
+tbody.innerHTML = rows.length ? rows.join('') : rowSpan(7, 'No team members for this scope.');
+setScopeNote('operativesScopeNote', false, rows.length);
+}
+async function fetchAndRenderTasks() {
+const tbody = document.getElementById('masterTasksTableBody');
+tbody.innerHTML = loadingRow(7);
+// Capped in BOTH modes: a single location can hold a whole month of photo
+// tasks, so even a per-site read is bounded to the latest TABLE_CAP. "All
+// Locations" reads the latest TABLE_CAP across every site by key (index-free).
+const tasksQuery = currentFilter === 'ALL'
+? query(ref(db, 'tasks'), orderByKey(), limitToLast(TABLE_CAP))
+: query(ref(db, 'tasks'), orderByChild('site'), equalTo(currentFilter), limitToLast(TABLE_CAP));
+const snap = await get(tasksQuery);
+const data = snap.val() || {};
+const rows = [];
+Object.keys(data).reverse().forEach(key => {   // newest first
+const task = data[key];
+let badgeClass = 'badge-assigned';
+if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
+else if (task.status === 'Returned') badgeClass = 'badge-expired';
+else if (task.status === 'Submitted') badgeClass = 'badge-assigned';
+rows.push(`
+<tr>
+<td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
+<td>${task.site || 'N/A'}</td>
+<td>${task.dlm || 'N/A'}</td>
+<td>${task.operative || 'N/A'}</td>
+<td style="max-width:200px;">${task.details || ''}</td>
+<td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
+</div>
+</td>
+</tr>
+`);
+});
+tbody.innerHTML = rows.length ? rows.join('') : rowSpan(7, 'No tasks for this scope.');
+setScopeNote('tasksScopeNote', true, rows.length);
+}
+async function fetchAndRenderReports() {
+const tbody = document.getElementById('masterReportsTableBody');
+tbody.innerHTML = loadingRow(8);
+const reportsQuery = currentFilter === 'ALL'
+? query(ref(db, 'reports'), orderByKey(), limitToLast(TABLE_CAP))
+: query(ref(db, 'reports'), orderByChild('site'), equalTo(currentFilter), limitToLast(TABLE_CAP));
+const snap = await get(reportsQuery);
+const data = snap.val() || {};
+const rows = [];
+Object.keys(data).reverse().forEach(key => {   // newest first
+const rep = data[key];
+let assignedNames = 'None';
+if (rep.assignedTo) {
+if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
+else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
+else assignedNames = rep.assignedTo;
+}
+let badgeClass = 'badge-assigned';
+if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
+else if (rep.status === 'Returned') badgeClass = 'badge-expired';
+else if (rep.status === 'Submitted') badgeClass = 'badge-assigned';
+const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
+rows.push(`
+<tr>
+<td>${reportDate}</td>
+<td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
+<td>${rep.title || 'Untitled'}</td>
+<td>${rep.site || 'N/A'}</td>
+<td>${rep.dlm || 'N/A'}</td>
+<td>${assignedNames}</td>
+<td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
+<td>
+<div class="action-row">
+<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openReportView('${key}')">View</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
+<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
+</div>
+</td>
+</tr>
+`);
+});
+tbody.innerHTML = rows.length ? rows.join('') : rowSpan(8, 'No reports for this scope.');
+setScopeNote('reportsScopeNote', true, rows.length);
+}
+// ====== BRANDING (single tiny node — unchanged) ======
 let currentLogoBase64 = null;
 onValue(ref(db, 'branding'), (snapshot) => {
 const data = snapshot.val();
@@ -624,80 +871,11 @@ document.getElementById('assignManagerForm').reset();
 alert('DLM Manager account created successfully!');
 });
 });
-onValue(ref(db, 'sites'), (snapshot) => {
-const data = snapshot.val() || {};
-const filterSelect = document.getElementById('siteFilter');
-const managerSelect = document.getElementById('managerSiteSelect');
-const currentFilterVal = filterSelect.value;
-filterSelect.innerHTML = '<option value="ALL">All Locations</option>';
-managerSelect.innerHTML = '<option value="">-- Select Site --</option>';
-Object.keys(data).forEach(key => {
-const site = data[key];
-filterSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
-managerSelect.innerHTML += `<option value="${site.name}">${site.name}</option>`;
-});
-filterSelect.value = currentFilterVal || 'ALL';
-renderAll();
-});
-let allDlmAccounts = {};
-onValue(ref(db, 'dlmAccounts'), (snapshot) => {
-allDlmAccounts = snapshot.val() || {};
-renderSites();
-});
-function renderSites() {
-onValue(ref(db, 'sites'), (siteSnapshot) => {
-const sitesData = siteSnapshot.val() || {};
-const tbody = document.getElementById('sitesTableBody');
-tbody.innerHTML = '';
-Object.keys(sitesData).forEach(siteKey => {
-const site = sitesData[siteKey];
-if (!matchesFilter(site.name)) return;
-const managerEntry = Object.values(allDlmAccounts).find(a => a.assignedSite === site.name);
-tbody.innerHTML += `
-<tr>
-<td><strong>${site.name}</strong></td>
-<td>${site.location}</td>
-<td>${managerEntry ? managerEntry.name : 'Unassigned'}</td>
-<td><button class="btn-danger" onclick="deleteSite('${siteKey}')">Remove</button></td>
-</tr>
-`;
-});
-}, { onlyOnce: true });
-}
 window.deleteSite = (key) => {
 if (confirm('Remove this site?')) {
 remove(ref(db, `sites/${key}`));
 }
 };
-function renderOperatives() {
-onValue(ref(db, 'operatives'), (snapshot) => {
-const data = snapshot.val() || {};
-const tbody = document.getElementById('masterOperativesTableBody');
-tbody.innerHTML = '';
-const today = new Date().toISOString().split('T')[0];
-Object.keys(data).forEach(key => {
-const op = data[key];
-if (!matchesFilter(op.assignedSite)) return;
-const isExpired = op.expiry && op.expiry < today;
-tbody.innerHTML += `
-<tr>
-<td><strong>${op.name}</strong></td>
-<td>${op.employer || 'N/A'}</td>
-<td>${op.assignedSite}</td>
-<td>${op.qualification}</td>
-<td>${op.expiry}</td>
-<td><span class="badge ${isExpired ? 'badge-expired' : 'badge-valid'}">${isExpired ? 'EXPIRED' : 'VALID'}</span></td>
-<td>
-<div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="editOperative('${key}')">Edit</button>
-<button class="btn-danger" onclick="deleteOperative('${key}')">Remove</button>
-</div>
-</td>
-</tr>
-`;
-});
-}, { onlyOnce: true });
-}
 window.editOperative = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `operatives/${key}`), resolve, { onlyOnce: true }));
 const op = snap.val();
@@ -716,47 +894,7 @@ alert('Member updated.');
 window.deleteOperative = (key) => {
 if (confirm('Remove this team member?')) remove(ref(db, `operatives/${key}`));
 };
-function renderReports() {
-onValue(ref(db, 'reports'), async (snapshot) => {
-const data = snapshot.val() || {};
-const tbody = document.getElementById('masterReportsTableBody');
-tbody.innerHTML = '';
-const keys = Object.keys(data);
-for (const key of keys) {
-const rep = data[key];
-if (!matchesFilter(rep.site)) continue;
-let assignedNames = 'None';
-if (rep.assignedTo) {
-if (Array.isArray(rep.assignedTo)) assignedNames = rep.assignedTo.join(', ');
-else if (typeof rep.assignedTo === 'object') assignedNames = Object.values(rep.assignedTo).join(', ');
-else assignedNames = rep.assignedTo;
-}
-let badgeClass = 'badge-assigned';
-if (rep.status === 'Accepted' || rep.status === 'Approved') badgeClass = 'badge-valid';
-else if (rep.status === 'Returned') badgeClass = 'badge-expired';
-else if (rep.status === 'Submitted') badgeClass = 'badge-assigned';
-const reportDate = rep.createdAt ? new Date(rep.createdAt).toLocaleDateString() : '—';
-tbody.innerHTML += `
-<tr>
-<td>${reportDate}</td>
-<td><strong>${rep.refNumber || key.substring(0,8)}</strong></td>
-<td>${rep.title || 'Untitled'}</td>
-<td>${rep.site || 'N/A'}</td>
-<td>${rep.dlm || 'N/A'}</td>
-<td>${assignedNames}</td>
-<td><span class="badge ${badgeClass}">${rep.status || 'Assigned'}</span></td>
-<td>
-<div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openReportView('${key}')">View</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportPdf('${key}')">PDF</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportSingleReportCsv('${key}')">CSV</button>
-</div>
-</td>
-</tr>
-`;
-}
-}, { onlyOnce: true });
-}
+// ====== single-record viewers / exporters (unchanged behaviour) ======
 window.viewReport = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
 const rep = snap.val();
@@ -800,157 +938,142 @@ window.exportSingleReportCsv = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
 const rep = snap.val();
 if (!rep) return alert('Report not found.');
-
 const assignedNames = Array.isArray(rep.assignedTo) ? rep.assignedTo.join(', ') : (typeof rep.assignedTo === 'object' ? Object.values(rep.assignedTo).join(', ') : rep.assignedTo);
 const reportHistory = formatHistory(rep.history || []);
-
 // Report header row
 const reportHeaders = ["Reference", "Title", "Site", "Supervisor", "Assigned To", "Status", "Created At", "Report History"];
 const reportRow = [
-  rep.refNumber || key.substring(0,8),
-  rep.title || '',
-  rep.site || '',
-  rep.dlm || '',
-  assignedNames,
-  rep.status || '',
-  rep.createdAt ? new Date(rep.createdAt).toLocaleString() : '',
-  reportHistory
+rep.refNumber || key.substring(0,8),
+rep.title || '',
+rep.site || '',
+rep.dlm || '',
+assignedNames,
+rep.status || '',
+rep.createdAt ? new Date(rep.createdAt).toLocaleString() : '',
+reportHistory
 ];
-
 // Items rows
 const itemHeaders = ["Item #", "Description", "Item Status", "All Submissions", "Photo Attached", "Item History"];
 const itemRows = [];
-
 if (rep.items) {
-  const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
-  for (let i = 0; i < itemsArr.length; i++) {
-    const item = itemsArr[i];
-    
-    const itemSubmissions = item.submissions && item.submissions.length > 0 
-      ? item.submissions 
-      : [{ comment: item.comment, photo: item.submittedPhoto || item.operativePhoto, timestamp: item.submittedAt }];
-
-    let allSubmissions = "";
-    let hasPhoto = "No";
-    for (let j = 0; j < itemSubmissions.length; j++) {
-      const sub = itemSubmissions[j];
-      const translatedComment = await translateToEnglish(sub.comment || '');
-      if (sub.photo) hasPhoto = "Yes";
-      
-      if (j > 0) allSubmissions += "\n\n";
-      allSubmissions += `Submission ${j+1}: ${translatedComment}\n(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown'})`;
-    }
-    
-    const itemHistory = formatHistory(item.history || []);
-    
-    itemRows.push([
-      i + 1,
-      item.description || '',
-      item.status || '',
-      allSubmissions,
-      hasPhoto,
-      itemHistory
-    ]);
-  }
+const itemsArr = Array.isArray(rep.items) ? rep.items : Object.values(rep.items);
+for (let i = 0; i < itemsArr.length; i++) {
+const item = itemsArr[i];
+const itemSubmissions = item.submissions && item.submissions.length > 0
+? item.submissions
+: [{ comment: item.comment, photo: item.submittedPhoto || item.operativePhoto, timestamp: item.submittedAt }];
+let allSubmissions = "";
+let hasPhoto = "No";
+for (let j = 0; j < itemSubmissions.length; j++) {
+const sub = itemSubmissions[j];
+const translatedComment = await translateToEnglish(sub.comment || '');
+if (sub.photo) hasPhoto = "Yes";
+if (j > 0) allSubmissions += "\n";
+allSubmissions += `Submission ${j+1}: ${translatedComment}\n(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown'})`;
 }
-
+const itemHistory = formatHistory(item.history || []);
+itemRows.push([
+i + 1,
+item.description || '',
+item.status || '',
+allSubmissions,
+hasPhoto,
+itemHistory
+]);
+}
+}
 // Create workbook with two sheets
 const wb = XLSX.utils.book_new();
-
 // Sheet 1: Report Summary
 const ws1Data = [reportHeaders, reportRow];
 const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
 ws1['!cols'] = reportHeaders.map((h, i) => {
-  let maxLen = h.length;
-  if (reportRow[i] && String(reportRow[i]).length > maxLen) maxLen = String(reportRow[i]).length;
-  return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
+let maxLen = h.length;
+if (reportRow[i] && String(reportRow[i]).length > maxLen) maxLen = String(reportRow[i]).length;
+return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
 });
-
 // Style headers for sheet 1
 const range1 = XLSX.utils.decode_range(ws1['!ref']);
 for (let C = range1.s.c; C <= range1.e.c; ++C) {
-  const addr = XLSX.utils.encode_cell({ r: 0, c: C });
-  if (!ws1[addr]) continue;
-  ws1[addr].s = {
-    font: { bold: true, color: { rgb: "FFFFFF" } },
-    fill: { fgColor: { rgb: "3B82F6" } },
-    alignment: { horizontal: "center", vertical: "center" },
-    border: {
-      top: { style: "thin", color: { rgb: "000000" } },
-      bottom: { style: "thin", color: { rgb: "000000" } },
-      left: { style: "thin", color: { rgb: "000000" } },
-      right: { style: "thin", color: { rgb: "000000" } }
-    }
-  };
+const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+if (!ws1[addr]) continue;
+ws1[addr].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "3B82F6" } },
+alignment: { horizontal: "center", vertical: "center" },
+border: {
+top: { style: "thin", color: { rgb: "000000" } },
+bottom: { style: "thin", color: { rgb: "000000" } },
+left: { style: "thin", color: { rgb: "000000" } },
+right: { style: "thin", color: { rgb: "000000" } }
+}
+};
 }
 for (let R = 1; R <= range1.e.r; ++R) {
-  for (let C = range1.s.c; C <= range1.e.c; ++C) {
-    const addr = XLSX.utils.encode_cell({ r: R, c: C });
-    if (!ws1[addr]) continue;
-    ws1[addr].s = {
-      alignment: { vertical: "top", wrapText: true },
-      border: {
-        top: { style: "thin", color: { rgb: "D1D5DB" } },
-        bottom: { style: "thin", color: { rgb: "D1D5DB" } },
-        left: { style: "thin", color: { rgb: "D1D5DB" } },
-        right: { style: "thin", color: { rgb: "D1D5DB" } }
-      }
-    };
-  }
+for (let C = range1.s.c; C <= range1.e.c; ++C) {
+const addr = XLSX.utils.encode_cell({ r: R, c: C });
+if (!ws1[addr]) continue;
+ws1[addr].s = {
+alignment: { vertical: "top", wrapText: true },
+border: {
+top: { style: "thin", color: { rgb: "D1D5DB" } },
+bottom: { style: "thin", color: { rgb: "D1D5DB" } },
+left: { style: "thin", color: { rgb: "D1D5DB" } },
+right: { style: "thin", color: { rgb: "D1D5DB" } }
+}
+};
+}
 }
 ws1['!freeze'] = { xSplit: 0, ySplit: 1 };
 XLSX.utils.book_append_sheet(wb, ws1, "Report Summary");
-
 // Sheet 2: Items (if any)
 if (itemRows.length > 0) {
-  const ws2Data = [itemHeaders, ...itemRows];
-  const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
-  ws2['!cols'] = itemHeaders.map((h, i) => {
-    let maxLen = h.length;
-    itemRows.forEach(row => {
-      if (row[i] && String(row[i]).length > maxLen) maxLen = String(row[i]).length;
-    });
-    return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
-  });
-  
-  const range2 = XLSX.utils.decode_range(ws2['!ref']);
-  for (let C = range2.s.c; C <= range2.e.c; ++C) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c: C });
-    if (!ws2[addr]) continue;
-    ws2[addr].s = {
-      font: { bold: true, color: { rgb: "FFFFFF" } },
-      fill: { fgColor: { rgb: "10B981" } },
-      alignment: { horizontal: "center", vertical: "center" },
-      border: {
-        top: { style: "thin", color: { rgb: "000000" } },
-        bottom: { style: "thin", color: { rgb: "000000" } },
-        left: { style: "thin", color: { rgb: "000000" } },
-        right: { style: "thin", color: { rgb: "000000" } }
-      }
-    };
-  }
-  for (let R = 1; R <= range2.e.r; ++R) {
-    for (let C = range2.s.c; C <= range2.e.c; ++C) {
-      const addr = XLSX.utils.encode_cell({ r: R, c: C });
-      if (!ws2[addr]) continue;
-      ws2[addr].s = {
-        alignment: { vertical: "top", wrapText: true },
-        border: {
-          top: { style: "thin", color: { rgb: "D1D5DB" } },
-          bottom: { style: "thin", color: { rgb: "D1D5DB" } },
-          left: { style: "thin", color: { rgb: "D1D5DB" } },
-          right: { style: "thin", color: { rgb: "D1D5DB" } }
-        }
-      };
-      if (R % 2 === 0) {
-        ws2[addr].s.fill = { fgColor: { rgb: "F0FDF4" } };
-      }
-    }
-  }
-  ws2['!freeze'] = { xSplit: 0, ySplit: 1 };
-  XLSX.utils.book_append_sheet(wb, ws2, "Items");
+const ws2Data = [itemHeaders, ...itemRows];
+const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
+ws2['!cols'] = itemHeaders.map((h, i) => {
+let maxLen = h.length;
+itemRows.forEach(row => {
+if (row[i] && String(row[i]).length > maxLen) maxLen = String(row[i]).length;
+});
+return { wch: Math.min(Math.max(maxLen + 2, 12), 50) };
+});
+const range2 = XLSX.utils.decode_range(ws2['!ref']);
+for (let C = range2.s.c; C <= range2.e.c; ++C) {
+const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+if (!ws2[addr]) continue;
+ws2[addr].s = {
+font: { bold: true, color: { rgb: "FFFFFF" } },
+fill: { fgColor: { rgb: "10B981" } },
+alignment: { horizontal: "center", vertical: "center" },
+border: {
+top: { style: "thin", color: { rgb: "000000" } },
+bottom: { style: "thin", color: { rgb: "000000" } },
+left: { style: "thin", color: { rgb: "000000" } },
+right: { style: "thin", color: { rgb: "000000" } }
 }
-
+};
+}
+for (let R = 1; R <= range2.e.r; ++R) {
+for (let C = range2.s.c; C <= range2.e.c; ++C) {
+const addr = XLSX.utils.encode_cell({ r: R, c: C });
+if (!ws2[addr]) continue;
+ws2[addr].s = {
+alignment: { vertical: "top", wrapText: true },
+border: {
+top: { style: "thin", color: { rgb: "D1D5DB" } },
+bottom: { style: "thin", color: { rgb: "D1D5DB" } },
+left: { style: "thin", color: { rgb: "D1D5DB" } },
+right: { style: "thin", color: { rgb: "D1D5DB" } }
+}
+};
+if (R % 2 === 0) {
+ws2[addr].s.fill = { fgColor: { rgb: "F0FDF4" } };
+}
+}
+}
+ws2['!freeze'] = { xSplit: 0, ySplit: 1 };
+XLSX.utils.book_append_sheet(wb, ws2, "Items");
+}
 XLSX.writeFile(wb, `report_${rep.refNumber || key.substring(0,8)}_${Date.now()}.xlsx`);
 };
 window.exportSingleReportPdf = async (key) => {
@@ -1006,39 +1129,6 @@ setTimeout(() => printWindow.print(), 700);
 window.deleteReport = (key) => {
 if (confirm('Delete this report?')) remove(ref(db, `reports/${key}`));
 };
-function renderTasks() {
-onValue(ref(db, 'tasks'), async (snapshot) => {
-const data = snapshot.val() || {};
-const tbody = document.getElementById('masterTasksTableBody');
-tbody.innerHTML = '';
-const keys = Object.keys(data);
-for (const key of keys) {
-const task = data[key];
-if (!matchesFilter(task.site)) continue;
-let badgeClass = 'badge-assigned';
-if (task.status === 'Accepted' || task.status === 'Approved') badgeClass = 'badge-valid';
-else if (task.status === 'Returned') badgeClass = 'badge-expired';
-else if (task.status === 'Submitted') badgeClass = 'badge-assigned';
-tbody.innerHTML += `
-<tr>
-<td><strong>${task.refNumber || key.substring(0,8)}</strong></td>
-<td>${task.site || 'N/A'}</td>
-<td>${task.dlm || 'N/A'}</td>
-<td>${task.operative || 'N/A'}</td>
-<td style="max-width:200px;">${task.details || ''}</td>
-<td><span class="badge ${badgeClass}">${task.status || 'Assigned'}</span></td>
-<td>
-<div class="action-row">
-<button class="btn btn-primary" style="padding: 6px 10px; font-size: 0.75rem;" onclick="openTaskView('${key}')">View</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskPdf('${key}')">PDF</button>
-<button class="btn btn-success" style="padding: 6px 10px; font-size: 0.75rem;" onclick="exportTaskCsv('${key}')">CSV</button>
-</div>
-</td>
-</tr>
-`;
-}
-}, { onlyOnce: true });
-}
 window.viewTask = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
 const task = snap.val();
@@ -1076,70 +1166,60 @@ window.exportTaskCsv = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
 const task = snap.val();
 if (!task) return alert('Task not found.');
-
 const history = formatHistory(task.history || []);
-
 // Handle both new format (submissions array) and legacy format
-const submissions = task.submissions && task.submissions.length > 0 
-  ? task.submissions 
-  : [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
-
+const submissions = task.submissions && task.submissions.length > 0
+? task.submissions
+: [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
 // Combine all submissions into one cell
 let allSubmissions = "";
 let hasPhoto = "No";
 for (let i = 0; i < submissions.length; i++) {
-  const sub = submissions[i];
-  const translatedComment = await translateToEnglish(sub.comment || '');
-  if (sub.photo) hasPhoto = "Yes";
-  
-  if (i > 0) allSubmissions += "\n\n";
-  allSubmissions += `Submission ${i+1}: ${translatedComment}\n(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown'})`;
+const sub = submissions[i];
+const translatedComment = await translateToEnglish(sub.comment || '');
+if (sub.photo) hasPhoto = "Yes";
+if (i > 0) allSubmissions += "\n";
+allSubmissions += `Submission ${i+1}: ${translatedComment}\n(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown'})`;
 }
-
 // Prepare headers and data row
 const headers = ["Reference", "Site", "Supervisor", "Team Member", "Task Description", "Status", "Created At", "All Submissions", "Photo Attached", "Full History"];
 const rowData = [
-  task.refNumber || key.substring(0,8),
-  task.site || '',
-  task.dlm || '',
-  task.operative || '',
-  task.details || '',
-  task.status || '',
-  task.createdAt ? new Date(task.createdAt).toLocaleString() : '',
-  allSubmissions,
-  hasPhoto,
-  history
+task.refNumber || key.substring(0,8),
+task.site || '',
+task.dlm || '',
+task.operative || '',
+task.details || '',
+task.status || '',
+task.createdAt ? new Date(task.createdAt).toLocaleString() : '',
+allSubmissions,
+hasPhoto,
+history
 ];
-
 downloadExcel(`task_${task.refNumber || key.substring(0,8)}_${Date.now()}.xlsx`, headers, [rowData]);
 };
 window.exportTaskPdf = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
 const task = snap.val();
 if (!task) return alert('Task not found.');
-
 const dlmPhotoTag = task.dlmPhoto ? `<img src="${task.dlmPhoto}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1;" />` : '<em>No reference photo</em>';
 const history = task.history || [];
 const historyRows = history.map(h => `<tr><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td><td>${h.note || ''}</td></tr>`).join('');
-
 // Handle both new format (submissions array) and legacy format (single comment/photo)
-const submissions = task.submissions && task.submissions.length > 0 
-  ? task.submissions 
-  : [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
-
+const submissions = task.submissions && task.submissions.length > 0
+? task.submissions
+: [{ comment: task.comment, photo: task.operativePhoto || task.photo, timestamp: task.submittedAt }];
 let submissionsHtml = '';
 for (let i = 0; i < submissions.length; i++) {
-  const sub = submissions[i];
-  const translatedComment = await translateToEnglish(sub.comment || '');
-  const photoTag = sub.photo ? `<img src="${sub.photo}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1; margin-top:8px;" />` : '<em>No photo</em>';
-  submissionsHtml += `
-  <div style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 4px solid #3b82f6;">
-    <p style="margin:0 0 8px 0;"><strong>Submission #${i + 1}</strong> <small style="color:#64748b;">(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown date'})</small></p>
-    <p style="margin:0 0 8px 0;"><strong>Comment (translated to English):</strong><br>${translatedComment}</p>
-    <p style="margin:0;"><strong>Photo evidence:</strong><br>${photoTag}</p>
-  </div>`;
+const sub = submissions[i];
+const translatedComment = await translateToEnglish(sub.comment || '');
+const photoTag = sub.photo ? `<img src="${sub.photo}" style="max-width:180px; border-radius:6px; border:1px solid #cbd5e1; margin-top:8px;" />` : '<em>No photo</em>';
+submissionsHtml += `
+<div style="margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 6px; border-left: 4px solid #3b82f6;">
+<p style="margin:0 0 8px 0;"><strong>Submission #${i + 1}</strong> <small style="color:#64748b;">(${sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'Unknown date'})</small></p>
+<p style="margin:0 0 8px 0;"><strong>Comment (translated to English):</strong><br>${translatedComment}</p>
+<p style="margin:0;"><strong>Photo evidence:</strong><br>${photoTag}</p>
+</div>`;
 }
-
 const printWindow = window.open('', '', 'height=900,width=900');
 printWindow.document.write(`
 <html><head><title>Task ${task.refNumber || key.substring(0,8)}</title>
@@ -1156,27 +1236,23 @@ th { background: #f1f5f9; }
 </style></head><body>
 <h2>Task Record — ${task.refNumber || key.substring(0,8)}</h2>
 <div class="meta">Location: ${task.site} | Supervisor: ${task.dlm} | Assigned to: ${task.operative} | Status: <strong>${task.status}</strong></div>
-
 <div class="section">
-  <h3>Supervisor's Description</h3>
-  <p>${task.details || 'N/A'}</p>
-  <p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p>
-  <p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p>
+<h3>Supervisor's Description</h3>
+<p>${task.details || 'N/A'}</p>
+<p><strong>Reference photo:</strong><br>${dlmPhotoTag}</p>
+<p><small>Created: ${task.createdAt ? new Date(task.createdAt).toLocaleString() : 'N/A'}</small></p>
 </div>
-
 <div class="section">
-  <h3>Team Member's Responses (Full History)</h3>
-  ${submissionsHtml}
+<h3>Team Member's Responses (Full History)</h3>
+${submissionsHtml}
 </div>
-
 <div class="section">
-  <h3>Activity Timeline</h3>
-  <table>
-    <thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead>
-    <tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody>
-  </table>
+<h3>Activity Timeline</h3>
+<table>
+<thead><tr><th>Time</th><th>Action</th><th>Note</th></tr></thead>
+<tbody>${historyRows || '<tr><td colspan="3">No history</td></tr>'}</tbody>
+</table>
 </div>
-
 <div class="footer">Generated on ${new Date().toLocaleString()}</div>
 </body></html>`);
 printWindow.document.close();
@@ -1190,15 +1266,13 @@ window.openModal = (src) => {
 document.getElementById('modalImg').src = src;
 document.getElementById('imgModal').style.display = 'flex';
 };
-  // ====== MODAL VIEW FUNCTIONS (same behaviour as dlmplatform) ======
+// ====== MODAL VIEW FUNCTIONS (same behaviour as dlmplatform) ======
 let currentTaskKey = null;
 let currentActiveReportKey = null;
-
 window.openImageModal = (src) => {
 document.getElementById('modalImg').src = src;
 document.getElementById('imgModal').style.display = 'flex';
 };
-
 window.openTaskView = async (key) => {
 currentTaskKey = key;
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${key}`), resolve, { onlyOnce: true }));
@@ -1245,7 +1319,6 @@ historyBox.innerHTML = '<strong>Activity Timeline:</strong>' + history.map(h => 
 } else historyBox.style.display = 'none';
 document.getElementById('taskViewModal').style.display = 'flex';
 };
-
 window.openReportView = async (key) => {
 const snap = await new Promise(resolve => onValue(ref(db, `reports/${key}`), resolve, { onlyOnce: true }));
 const report = snap.val();
@@ -1293,7 +1366,6 @@ historyBox.innerHTML = '<strong>Report Timeline:</strong>' + history.map(h => `<
 } else historyBox.style.display = 'none';
 document.getElementById('reportViewModal').style.display = 'flex';
 };
-
 document.getElementById('btnAcceptTask').addEventListener('click', async () => {
 if (!currentTaskKey) return;
 const snap = await new Promise(resolve => onValue(ref(db, `tasks/${currentTaskKey}`), resolve, { onlyOnce: true }));
@@ -1305,7 +1377,6 @@ await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Accepted', history }
 document.getElementById('taskViewModal').style.display = 'none';
 alert('Task accepted!');
 });
-
 document.getElementById('btnReturnTask').addEventListener('click', async () => {
 if (!currentTaskKey) return;
 const note = document.getElementById('taskReturnNote').value.trim();
@@ -1319,7 +1390,6 @@ await update(ref(db, `tasks/${currentTaskKey}`), { status: 'Returned', returnNot
 document.getElementById('taskViewModal').style.display = 'none';
 alert('Task returned!');
 });
-
 document.getElementById('btnAcceptReport').addEventListener('click', async () => {
 if (!currentActiveReportKey) return;
 const snap = await new Promise(resolve => onValue(ref(db, `reports/${currentActiveReportKey}`), resolve, { onlyOnce: true }));
@@ -1331,7 +1401,6 @@ await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Accepted',
 document.getElementById('reportViewModal').style.display = 'none';
 alert('Report accepted!');
 });
-
 document.getElementById('btnReturnReport').addEventListener('click', async () => {
 if (!currentActiveReportKey) return;
 const note = document.getElementById('reportReturnNote').value.trim();
@@ -1345,6 +1414,27 @@ await update(ref(db, `reports/${currentActiveReportKey}`), { status: 'Returned',
 document.getElementById('reportViewModal').style.display = 'none';
 alert('Report returned!');
 });
+// ====== REFRESH BUTTON — on-demand reload with perceptible feedback ======
+document.getElementById('refreshBtn').addEventListener('click', async () => {
+const b = document.getElementById('refreshBtn');
+b.classList.add('loading');
+b.disabled = true;
+await Promise.all([fetchAndRenderOperatives(), fetchAndRenderTasks(), fetchAndRenderReports()]);
+renderSitesTable();
+b.classList.remove('loading');
+b.disabled = false;
+});
+// ====== one-time staggered card reveal ======
+function staggerCards() {
+document.querySelectorAll('.card').forEach((card, i) => {
+card.classList.add('card--enter');
+card.style.animationDelay = (i * 60) + 'ms';
+});
+}
+// ====== STARTUP ======
+bindNotificationListeners();   // single bounded window, attached once
+applyFilter();                 // initial bounded table load (All Locations)
+staggerCards();
 </script>
 </body>
 </html>
